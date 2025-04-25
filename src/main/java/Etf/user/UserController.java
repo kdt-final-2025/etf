@@ -32,7 +32,7 @@ public class UserController {
         return userService.delete(auth);
     }
 
-    @PostMapping("/api/v1/users/password")
+    @PostMapping("/api/v1/users/me/password")
     public UserPasswordResponse passwordUpdate(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
         return userService.passwordUpdate(auth, passwordRequest);
     }

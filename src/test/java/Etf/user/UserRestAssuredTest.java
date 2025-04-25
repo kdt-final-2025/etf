@@ -255,7 +255,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest("321"))
                 .when()
-                .post("/api/v1/users/password")
+                .post("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
@@ -293,7 +293,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest("123"))
                 .when()
-                .post("/api/v1/users/password")
+                .post("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(500)
                 .extract();
@@ -330,7 +330,7 @@ public class UserRestAssuredTest {
                 .header("Authorization", "Bearer " + token)
                 .body(new UserPasswordRequest(""))
                 .when()
-                .post("/api/v1/users/password")
+                .post("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(500)
                 .extract();
