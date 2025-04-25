@@ -3,10 +3,13 @@ package Etf.user;
 import Etf.loginUtils.SecurityUtils;
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "users")
@@ -39,8 +42,6 @@ public class User extends BaseEntity {
     // 댓글, 구독목록 공개여부
     private Boolean isLikePrivate = false;
 
-    protected User() {
-    }
 
     public User(String loginId,
                 String password,
