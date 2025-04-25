@@ -16,7 +16,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
 
-    public User findByLoginId(String loginId) {
+    public User getByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId).orElseThrow(
                 () -> new NoSuchElementException("회원을 찾을 수 없습니다."));
     }
@@ -41,7 +41,7 @@ public class UserService {
     }
 
     public UserLoginResponse login(UserLoginRequest loginRequest) {
-        User user = findByLoginId(loginRequest.loginId());
+        User user = getByLoginId(loginRequest.loginId());
 
         user.findByPassword(loginRequest.password());
 
@@ -50,7 +50,7 @@ public class UserService {
 
     @Transactional
     public UserUpdateResponse profileUpdate(String loginId, UserUpdateRequest updateRequest) {
-        User user = findByLoginId(loginId);
+        User user = getByLoginId(loginId);
 
         user.profileUpdate(
                 updateRequest.nickName(),
@@ -65,7 +65,7 @@ public class UserService {
 
     @Transactional
     public UserDeleteResponse delete(String loginId) {
-        User user = findByLoginId(loginId);
+        User user = getByLoginId(loginId);
 
         user.deleteUser();
 
@@ -74,7 +74,7 @@ public class UserService {
 
     @Transactional
     public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
-        User user = findByLoginId(loginId);
+        User user = getByLoginId(loginId);
 
         user.passwordUpdate(passwordRequest.password());
 
@@ -82,7 +82,7 @@ public class UserService {
     }
 
     public MypageResponse findByUser(String loginId, Long userId) {
-        findByLoginId(loginId);
+        getByLoginId(loginId);
 
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("존재하지 않는 유저, id : " + userId));
