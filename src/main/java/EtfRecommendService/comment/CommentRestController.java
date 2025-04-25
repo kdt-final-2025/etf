@@ -1,8 +1,5 @@
-package Etf.comment;
+package EtfRecommendService.comment;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController

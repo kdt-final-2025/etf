@@ -1,4 +1,4 @@
-package Etf.user;
+package EtfRecommendService.user;
 
 import jakarta.persistence.Id;
 import org.springframework.web.bind.annotation.RestController;

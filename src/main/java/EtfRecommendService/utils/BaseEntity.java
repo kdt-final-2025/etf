@@ -1,4 +1,4 @@
-package Etf.utils;
+package EtfRecommendService.utils;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;

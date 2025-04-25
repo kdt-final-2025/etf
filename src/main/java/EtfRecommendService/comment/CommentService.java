@@ -1,4 +1,4 @@
-package Etf.comment;
+package EtfRecommendService.comment;
 
 import org.springframework.stereotype.Service;
 

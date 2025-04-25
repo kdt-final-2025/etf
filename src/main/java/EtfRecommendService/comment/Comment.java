@@ -1,4 +1,4 @@
-package Etf.comment;
+package EtfRecommendService.comment;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

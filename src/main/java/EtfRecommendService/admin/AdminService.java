@@ -1,4 +1,4 @@
-package Etf.admin;
+package EtfRecommendService.admin;
 
 import org.springframework.stereotype.Service;
 

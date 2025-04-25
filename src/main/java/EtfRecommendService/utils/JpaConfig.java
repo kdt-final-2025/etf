@@ -1,4 +1,4 @@
-package Etf.utils;
+package EtfRecommendService.utils;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

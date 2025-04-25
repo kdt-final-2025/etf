@@ -1,4 +1,4 @@
-package Etf.user;
+package EtfRecommendService.user;
 
 import org.springframework.stereotype.Service;
 
