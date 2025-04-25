@@ -36,4 +36,9 @@ public class UserController {
     public UserPasswordResponse passwordUpdate(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
         return userService.passwordUpdate(auth, passwordRequest);
     }
+
+    @GetMapping("/api/v1/users/{userId}")
+    public MypageResponse findByUser(@LoginMember String auth, @PathVariable Long userId) {
+        return userService.findByUser(auth, userId);
+    }
 }

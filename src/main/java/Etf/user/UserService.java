@@ -36,7 +36,7 @@ public class UserService {
         return new UserResponse(
                 user.getId(),
                 userRequest.loginId(),
-                userRequest.password(),
+                userRequest.nickName(),
                 userRequest.isLikePrivate());
     }
 
@@ -79,6 +79,20 @@ public class UserService {
         user.passwordUpdate(passwordRequest.password());
 
         return new UserPasswordResponse(user.getId());
+    }
+
+    public MypageResponse findByUser(String loginId, Long userId) {
+        findByLoginId(loginId);
+
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new NoSuchElementException("존재하지 않는 유저, id : " + userId));
+
+        return new MypageResponse(
+                user.getId(),
+                user.getLoginId(),
+                user.getNickName(),
+                user.getImageUrl(),
+                user.getIsLikePrivate());
     }
 
 
