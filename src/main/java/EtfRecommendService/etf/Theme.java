@@ -1,0 +1,20 @@
+package EtfRecommendService.etf;
+
+public enum Theme {
+    EQUITY,
+    BOND,
+    REAL_ESTATE,
+    MULTI_ASSET,
+    COMMODITY,
+    CURRENCY,
+    CASH_EQUIVALENT,
+    REGION,
+    LEVERAGE_INVERSE,
+    SECTOR,
+    INDEX,
+    INNOVATIVE_TECHNOLOGY,
+    INVESTMENT_STRATEGY,
+    ESG,
+    DIVIDEND,
+    SINGLE_STOCK
+}
