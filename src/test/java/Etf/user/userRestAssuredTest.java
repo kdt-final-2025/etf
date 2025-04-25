@@ -225,4 +225,116 @@ public class userRestAssuredTest {
                 .statusCode(400)
                 .extract();
     }
+
+    @Test
+    void 비밀번호재설정Test() {
+        UserResponse userResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new CreateUserRequest("user1", "123", "nick1", false))
+                .when()
+                .post("/api/v1/users")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserResponse.class);
+
+        String token = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserLoginRequest("user1", "123"))
+                .when()
+                .post("/api/v1/users/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getString("token");
+
+        UserPasswordResponse response = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + token)
+                .body(new UserPasswordRequest("321"))
+                .when()
+                .post("/api/v1/users/password")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserPasswordResponse.class);
+    }
+
+    @Test
+    void 같은비밀번호입력Test() {
+        UserResponse userResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new CreateUserRequest("user1", "123", "nick1", false))
+                .when()
+                .post("/api/v1/users")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserResponse.class);
+
+        String token = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserLoginRequest("user1", "123"))
+                .when()
+                .post("/api/v1/users/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getString("token");
+
+        RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + token)
+                .body(new UserPasswordRequest("123"))
+                .when()
+                .post("/api/v1/users/password")
+                .then().log().all()
+                .statusCode(500)
+                .extract();
+    }
+
+    @Test
+    void 공백입력() {
+        UserResponse userResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new CreateUserRequest("user1", "123", "nick1", false))
+                .when()
+                .post("/api/v1/users")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserResponse.class);
+
+        String token = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserLoginRequest("user1", "123"))
+                .when()
+                .post("/api/v1/users/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getString("token");
+
+        RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + token)
+                .body(new UserPasswordRequest(""))
+                .when()
+                .post("/api/v1/users/password")
+                .then().log().all()
+                .statusCode(500)
+                .extract();
+    }
 }
