@@ -1,14 +1,34 @@
 package Etf.user;
 
+import Etf.loginUtils.LoginMember;
+import Etf.user.dto.*;
 import jakarta.persistence.Id;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @PostMapping("/api/v1/users")
+    public UserResponse create(@RequestBody CreateUserRequest userRequest) {
+        return userService.create(userRequest);
+    }
+
+    @PostMapping("/api/v1/users/login")
+    public UserLoginResponse login(@RequestBody UserLoginRequest loginRequest) {
+        return userService.login(loginRequest);
+    }
+
+    @PatchMapping("/api/v1/users")
+    public UserUpdateResponse profileUpdate(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
+        return userService.profileUpdate(auth,updateRequest);
+    }
+
+    @DeleteMapping("/api/v1/users")
+    public UserDeleteResponse delete(@LoginMember String auth) {
+        return userService.delete(auth);
     }
 }
