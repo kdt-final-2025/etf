@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -337,4 +338,46 @@ public class userRestAssuredTest {
                 .statusCode(500)
                 .extract();
     }
+
+    @Test
+    void 유저조회() {
+
+        UserResponse userResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new CreateUserRequest("user1", "123", "nick1", false))
+                .when()
+                .post("/api/v1/users")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserResponse.class);
+
+        String token = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserLoginRequest("user1", "123"))
+                .when()
+                .post("/api/v1/users/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getString("token");
+
+        MypageResponse mypageResponse = RestAssured
+                .given()
+                .pathParam("userId", userResponse.id())
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .get("/api/v1/users/{userId}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(MypageResponse.class);
+
+        assertThat(mypageResponse.id()).isEqualTo(userResponse.id());
+        assertThat(mypageResponse.nickName()).isEqualTo(userResponse.nickName());
+    }
+
 }
