@@ -17,7 +17,7 @@ public class SecurityUtils {
     }
 
     // Java 17 이상에서 사용 가능한 방법
-    public static String sha256EncryptHex2(String plainText) {
+    public static String sha256EncryptHex(String plainText) {
         byte[] hash = SHA256.digest(plainText.getBytes());
         return HexFormat.of().formatHex(hash);
     }
