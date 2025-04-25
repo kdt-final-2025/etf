@@ -31,4 +31,9 @@ public class UserController {
     public UserDeleteResponse delete(@LoginMember String auth) {
         return userService.delete(auth);
     }
+
+    @PostMapping("/api/v1/users/password")
+    public UserPasswordResponse passwordUpdate(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
+        return userService.passwordUpdate(auth, passwordRequest);
+    }
 }

@@ -72,5 +72,14 @@ public class UserService {
         return new UserDeleteResponse(user.getId(), user.getIsDeleted());
     }
 
+    @Transactional
+    public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
+        User user = findByLoginId(loginId);
+
+        user.passwordUpdate(passwordRequest.password());
+
+        return new UserPasswordResponse(user.getId());
+    }
+
 
 }

@@ -73,4 +73,15 @@ public class User extends BaseEntity {
         this.isDeleted = true;
     }
 
+    public void passwordUpdate(String password) {
+        if (password == null || password.isEmpty()) {
+            throw new RuntimeException("공백입니다.");
+        }
+        String newPassword = SecurityUtils.sha256EncryptHex2(password);
+        if (newPassword.equals(this.password)) {
+            throw new RuntimeException("비밀번호가 똑같습니다.");
+        }
+        this.password = newPassword;
+    }
+
 }
