@@ -14,13 +14,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 
 import java.io.IOException;
-import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class userRestAssuredTest {
+public class UserRestAssuredTest {
 
     @LocalServerPort
     int port;
