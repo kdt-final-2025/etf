@@ -1,13 +1,22 @@
 package Etf.admin;
 
+import Etf.admin.dto.AdminLoginRequest;
+import Etf.admin.dto.AdminLoginResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RestController
 public class AdminController {
 
     private final AdminService adminService;
 
-    public AdminController(AdminService adminService) {
-        this.adminService = adminService;
+    @PostMapping("/api/v1/admin/login")
+    public AdminLoginResponse login(@RequestBody AdminLoginRequest loginRequest) {
+        return adminService.login(loginRequest);
     }
+
+
 }
