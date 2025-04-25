@@ -23,7 +23,7 @@ public class UserService {
 
     public UserResponse create(CreateUserRequest userRequest) {
 
-        String hashPassword = SecurityUtils.sha256EncryptHex2(userRequest.password());
+        String hashPassword = SecurityUtils.sha256EncryptHex(userRequest.password());
 
         User user = new User(
                 userRequest.loginId(),

@@ -54,7 +54,7 @@ public class User extends BaseEntity {
     }
 
     public void findByPassword(String password) {
-        if (!this.getPassword().equals(SecurityUtils.sha256EncryptHex2(password))) {
+        if (!this.getPassword().equals(SecurityUtils.sha256EncryptHex(password))) {
             throw new RuntimeException("비밀번호가 다릅니다.");
         }
     }
@@ -77,7 +77,7 @@ public class User extends BaseEntity {
         if (password == null || password.isEmpty()) {
             throw new RuntimeException("공백입니다.");
         }
-        String newPassword = SecurityUtils.sha256EncryptHex2(password);
+        String newPassword = SecurityUtils.sha256EncryptHex(password);
         if (newPassword.equals(this.password)) {
             throw new RuntimeException("비밀번호가 똑같습니다.");
         }

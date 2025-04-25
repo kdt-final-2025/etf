@@ -23,7 +23,7 @@ public class Admin extends BaseEntity {
     }
 
     public void findByPassword(String password) {
-        if (!this.getPassword().equals(SecurityUtils.sha256EncryptHex2(password))) {
+        if (!this.getPassword().equals(SecurityUtils.sha256EncryptHex(password))) {
             throw new RuntimeException("비밀번호가 다릅니다.");
         }
     }
