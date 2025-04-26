@@ -92,7 +92,7 @@ public class UserRestAssuredTest {
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
-                .statusCode(500)
+                .statusCode(401)
                 .extract()
                 .jsonPath()
                 .getString("token");

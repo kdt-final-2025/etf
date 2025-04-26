@@ -25,7 +25,7 @@ public class AdminService {
         Admin admin = adminRepository.findByLoginId(loginRequest.loginId()).orElseThrow(
                 () -> new NoSuchElementException("찾을 수 없는 관리자 id : " + loginRequest.loginId()));
 
-        admin.findByPassword(loginRequest.password());
+        admin.getPassword().equalsPassword(loginRequest.password());
 
         return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
     }

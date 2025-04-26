@@ -1,6 +1,5 @@
 package Etf.user;
 
-import Etf.loginUtils.SecurityUtils;
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -20,7 +19,8 @@ public class User extends BaseEntity {
 
     private String loginId;
 
-    private String password;
+    @Embedded
+    private Password password;
 
     private String nickName;
 
@@ -44,7 +44,7 @@ public class User extends BaseEntity {
 
 
     public User(String loginId,
-                String password,
+                Password password,
                 String nickName,
                 Boolean isLikePrivate
                 ) {
@@ -52,12 +52,6 @@ public class User extends BaseEntity {
         this.password = password;
         this.nickName = nickName;
         this.isLikePrivate = isLikePrivate;
-    }
-
-    public void findByPassword(String password) {
-        if (!this.getPassword().equals(SecurityUtils.sha256EncryptHex(password))) {
-            throw new RuntimeException("비밀번호가 다릅니다.");
-        }
     }
 
     public void profileUpdate(String nickName, Boolean isLikePrivate) {
@@ -74,15 +68,8 @@ public class User extends BaseEntity {
         this.isDeleted = true;
     }
 
-    public void passwordUpdate(String password) {
-        if (password == null || password.isEmpty()) {
-            throw new RuntimeException("공백입니다.");
-        }
-        String newPassword = SecurityUtils.sha256EncryptHex(password);
-        if (newPassword.equals(this.password)) {
-            throw new RuntimeException("비밀번호가 똑같습니다.");
-        }
-        this.password = newPassword;
+    public void passwordUpdate(String newRawPassword) {
+        this.password = new Password(newRawPassword);
     }
 
 }
