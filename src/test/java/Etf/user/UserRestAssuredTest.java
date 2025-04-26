@@ -205,13 +205,50 @@ public class UserRestAssuredTest {
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest("321"))
+                .body(new UserPasswordRequest("123","321","321"))
                 .when()
                 .post("/api/v1/users/me/password")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
                 .as(UserPasswordResponse.class);
+    }
+
+    @Test
+    void 새비밀번호와확인비밀번호불일치Test() {
+        UserResponse userResponse = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new CreateUserRequest("user1", "123", "nick1", false))
+                .when()
+                .post("/api/v1/users")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .as(UserResponse.class);
+
+        String token = RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .body(new UserLoginRequest("user1", "123"))
+                .when()
+                .post("/api/v1/users/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getString("token");
+
+        RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + token)
+                .body(new UserPasswordRequest("123","321","3212"))
+                .when()
+                .post("/api/v1/users/me/password")
+                .then().log().all()
+                .statusCode(500)
+                .extract();
     }
 
     @Test
@@ -243,7 +280,7 @@ public class UserRestAssuredTest {
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest("123"))
+                .body(new UserPasswordRequest("123","123","123"))
                 .when()
                 .post("/api/v1/users/me/password")
                 .then().log().all()
@@ -280,7 +317,7 @@ public class UserRestAssuredTest {
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(""))
+                .body(new UserPasswordRequest("123","",""))
                 .when()
                 .post("/api/v1/users/me/password")
                 .then().log().all()

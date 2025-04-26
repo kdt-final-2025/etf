@@ -1,4 +1,4 @@
 package Etf.user.dto;
 
-public record UserPasswordRequest(String password) {
+public record UserPasswordRequest(String existingPassword, String newPassword,String confirmNewPassword) {
 }

@@ -27,7 +27,7 @@ public class Password {
         }
     }
 
-    public void PasswordUpdateError(Password password) {
+    public void isSamePassword(Password password) {
         if (this.getPassword().equals(password.getPassword())) {
             throw new RuntimeException("변경할 비밀번호가 같습니다.");
         }

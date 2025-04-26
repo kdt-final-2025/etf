@@ -74,11 +74,21 @@ public class UserService {
     public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
-        Password password = new Password(passwordRequest.password());
+        if (!passwordRequest.newPassword().equals(passwordRequest.confirmNewPassword())) {
+            throw new RuntimeException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+        }
 
-        password.PasswordUpdateError(user.getPassword());
+        Password existingPassword = new Password(passwordRequest.existingPassword());
 
-        user.passwordUpdate(passwordRequest.password());
+        // 유저의 비밀번호와 입력받은 비밀번호가 같은지
+        user.getPassword().equalsPassword(passwordRequest.existingPassword());
+
+        Password newPassword = new Password(passwordRequest.newPassword());
+
+        // 유저의 비밀번호와 입력받은 새 비밀번호가 같은지
+        newPassword.isSamePassword(existingPassword);
+
+        user.passwordUpdate(passwordRequest.newPassword());
 
         userRepository.save(user);
 
