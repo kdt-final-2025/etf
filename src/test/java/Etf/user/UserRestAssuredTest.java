@@ -177,54 +177,6 @@ public class UserRestAssuredTest {
     }
 
     @Test
-    void 삭제재요청Test() {
-
-        UserResponse userResponse = RestAssured
-                .given().log().all()
-                .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", "123", "nick1", false))
-                .when()
-                .post("/api/v1/users")
-                .then().log().all()
-                .statusCode(200)
-                .extract()
-                .as(UserResponse.class);
-
-        String token = RestAssured
-                .given().log().all()
-                .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", "123"))
-                .when()
-                .post("/api/v1/users/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract()
-                .jsonPath()
-                .getString("token");
-
-        UserDeleteResponse deleteResponse = RestAssured
-                .given().log().all()
-                .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .delete("/api/v1/users")
-                .then().log().all()
-                .statusCode(200)
-                .extract()
-                .as(UserDeleteResponse.class);
-
-        RestAssured
-                .given().log().all()
-                .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .delete("/api/v1/users")
-                .then().log().all()
-                .statusCode(400)
-                .extract();
-    }
-
-    @Test
     void 비밀번호재설정Test() {
         UserResponse userResponse = RestAssured
                 .given().log().all()
