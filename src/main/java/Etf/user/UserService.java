@@ -67,8 +67,6 @@ public class UserService {
     public UserDeleteResponse delete(String loginId) {
         User user = getByLoginId(loginId);
 
-        user.deleteUser();
-
         return new UserDeleteResponse(user.getId(), user.getIsDeleted());
     }
 

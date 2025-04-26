@@ -61,13 +61,6 @@ public class User extends BaseEntity {
         this.isLikePrivate = isLikePrivate;
     }
 
-    public void deleteUser() {
-        if (this.isDeleted) {
-            throw new DeleteUserException("이미 삭제된 회원입니다.");
-        }
-        this.isDeleted = true;
-    }
-
     public void passwordUpdate(String newRawPassword) {
         this.password = new Password(newRawPassword);
     }
