@@ -23,11 +23,11 @@ public class UserService {
 
     public UserResponse create(CreateUserRequest userRequest) {
 
-        String hashPassword = SecurityUtils.sha256EncryptHex(userRequest.password());
+        Password password = new Password(userRequest.password());
 
         User user = new User(
                 userRequest.loginId(),
-                hashPassword,
+                password,
                 userRequest.nickName(),
                 userRequest.isLikePrivate());
 
@@ -43,7 +43,7 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        user.findByPassword(loginRequest.password());
+        user.getPassword().equalsPassword(loginRequest.password());
 
         return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
     }
@@ -76,7 +76,13 @@ public class UserService {
     public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
+        Password password = new Password(passwordRequest.password());
+
+        password.PasswordUpdateError(user.getPassword());
+
         user.passwordUpdate(passwordRequest.password());
+
+        userRepository.save(user);
 
         return new UserPasswordResponse(user.getId());
     }
