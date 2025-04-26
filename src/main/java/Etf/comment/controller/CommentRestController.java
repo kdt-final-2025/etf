@@ -1,6 +1,6 @@
 package Etf.comment.controller;
 
-import Etf.comment.dto.CommentRequest;
+import Etf.comment.dto.CommentRequest2;
 import Etf.comment.dto.CommentResponse;
 import Etf.comment.serviece.CommentService;
 import jakarta.validation.Valid;
@@ -19,8 +19,8 @@ public class CommentRestController {
     private final CommentService commentService;
 
     @PostMapping("/users/comments")
-    public ResponseEntity<String> createComment(@RequestBody@Valid CommentRequest commentRequest){
-        commentService.create(commentRequest);
+    public ResponseEntity<String> createComment(@RequestBody@Valid CommentRequest2 commentRequest2){
+        commentService.create(commentRequest2);
         return ResponseEntity.status(HttpStatus.CREATED).body("Comment Created Successfully");
     }
 
