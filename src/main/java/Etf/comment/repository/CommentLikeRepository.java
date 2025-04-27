@@ -7,13 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> {
 
-    // 1) 현재 유저가 이 댓글에 좋아요를 눌렀는지
-    boolean existsByCommentAndUser(Comment comment, User user);
+    //좋아요 총 갯수
+    long countByComment_Id(Long commentId);
 
-    // 2) 좋아요 취소 (댓글 + 유저 조합으로 삭제)
-    void deleteByCommentAndUser(Comment comment, User user);
+    //좋아요 여부
+    boolean existsByComment_IdAndUser_Id(Long commentId, Long userId);
 
-    // 3) 댓글별 좋아요 총 개수
-    long countByComment(Comment comment);
-
+    //좋아요 취소
+    void deleteByComment_IdAndUser_Id(Long commentId, Long userId);
 }

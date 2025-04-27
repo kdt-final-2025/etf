@@ -1,9 +1,12 @@
 package Etf.comment.serviece;
 
 import Etf.comment.domain.Comment;
+import Etf.comment.domain.CommentLike;
 import Etf.comment.dto.CommentRequest2;
+import Etf.comment.dto.CommentResponse2;
 import Etf.comment.exception.NoExistsEtfIdException;
 import Etf.comment.exception.NoExistsUserIdException;
+import Etf.comment.repository.CommentLikeRepository;
 import Etf.comment.repository.CommentRepository;
 import Etf.etf.Etf;
 import Etf.etf.EtfRepository;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CommentService2 {
 
+    private final CommentLikeRepository commentLikeRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final EtfRepository etfRepository;
@@ -55,4 +59,25 @@ public class CommentService2 {
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         comment.isDeleted();  // isDeleted = true 로 표시
     }
+
+    //댓글 조회
+    @Transactional
+    public CommentResponse2 getComment(Long commentId, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+
+        boolean hasLiked = commentLikeRepository.existsByComment_IdAndUser_Id(commentId, userId);
+        long likeCount = commentLikeRepository.countByComment_Id(commentId);
+
+        return CommentResponse2.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .user(comment.getUser().getUsername())
+                .hasLiked(hasLiked)
+                .likeCount(likeCount)
+                .createdAt(comment.getCreatedAt())
+                .build();
+    }
+
+
 }

@@ -15,45 +15,30 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/comments")
 public class CommentRestController2 {
 
     private final CommentService2 commentService2;
     private final CommentLikeService commentLikeService;
 
+    //사용자 id는 노출되지 않는게 좋다?
 
-    //CommentLike Or Not
+    //좋아요 토글
     @PostMapping("/{commentId}/likes/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void toggleLike(
             @PathVariable Long commentId,
             @PathVariable Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        commentLikeService.toggleLike(commentId, user);
+        commentLikeService.toggleLike(commentId, userId);
     }
 
-    //When Find Comment Show CommentLike Count
-    @GetMapping("/{commentId}/user/{userId}")
+    //댓글 조회 (좋아요 상태/개수 포함)
+    @GetMapping("/{commentId}/{userId}")
     public CommentResponse getComment(
             @PathVariable Long commentId,
             @PathVariable Long userId) {
-        Comment comment = commentService2.findById(commentId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        boolean hasLiked = commentLikeService.hasLiked(commentId, user);
-        long likeCount = commentLikeService.countLikes(commentId);
-
-        return CommentResponse.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .author(comment.getUser().getUsername())
-                .hasLiked(hasLiked)
-                .likeCount(likeCount)
-                .createdAt(comment.getCreatedAt())
-                .build();
+        return commentLikeService.getComment(commentId, userId);
     }
-
 
     //Comment Create
     @PostMapping
