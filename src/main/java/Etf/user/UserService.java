@@ -17,7 +17,7 @@ public class UserService {
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId).orElseThrow(
-                () -> new NoSuchElementException("회원을 찾을 수 없습니다."));
+                () -> new UserMismatchException("회원을 찾을 수 없습니다."));
     }
 
     public UserResponse create(CreateUserRequest userRequest) {
@@ -44,7 +44,7 @@ public class UserService {
             return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
         }
 
-        throw new PasswordMismatchException("비밀번호가 다릅니다.");
+        throw new UserMismatchException("회원을 찾을 수 없습니다.");
     }
 
     @Transactional
@@ -74,7 +74,7 @@ public class UserService {
         User user = getByLoginId(loginId);
 
         if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new RuntimeException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+            throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
 
         // 유저의 비밀번호와 입력받은 비밀번호가 같지않으면 예외처리
