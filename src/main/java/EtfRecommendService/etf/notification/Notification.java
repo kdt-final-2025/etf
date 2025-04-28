@@ -1,9 +1,7 @@
 package EtfRecommendService.etf.notification;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import EtfRecommendService.user.User;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,9 +14,9 @@ import java.time.LocalDateTime;
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NonNull
     private Long id;
 
+    @NonNull
     private String userId; // 알림 받을 사용자 ID
 
     @NonNull

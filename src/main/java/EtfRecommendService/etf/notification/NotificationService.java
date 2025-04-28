@@ -35,8 +35,8 @@ public class NotificationService {
         return emitter;
     }
 
-    public void sendNotificationToUser(NotificationRequest request, NotificationDto data) {
-        SseEmitter emitter = emitters.get(request.userId());
+    public void sendNotificationToUser(String userId, NotificationDto data) {
+        SseEmitter emitter = emitters.get(userId);
 
         if (emitter != null) {
             try {
@@ -45,17 +45,20 @@ public class NotificationService {
                         .data(data));
             } catch (IOException e) {
                 emitter.completeWithError(e);
-                emitters.remove(String.valueOf(request.userId()));
-                saveNotification(request.userId(), data);
+                emitters.remove(userId);
+                saveNotification(userId, data);
             }
         } else {
-            saveNotification(request.userId(), data);
+            saveNotification(userId, data);
         }
     }
 
-    private void saveNotification(Long userId, NotificationDto data) {
-        Notification notification = new Notification(userId, data.message(), data.expiredTime());
-        notificationRepository.save(notification);
+    private void saveNotification(String userId, NotificationDto data) {
+        notificationRepository.save(new Notification(
+                userId,
+                data.message(),
+                data.expiredTime()
+        ));
     }
 
     @Scheduled(cron = "0 0 9 * * *") // 매일 오전 9시 실행
@@ -79,10 +82,9 @@ public class NotificationService {
             LocalDateTime expiredTime = subscribe.getExpiredTime();
 
             NotificationDto notificationDto = new NotificationDto(message, expiredTime);
-            NotificationRequest notificationRequest = new NotificationRequest(user.getId(), message, expiredTime);
 
-            // 알림 전송
-            sendNotificationToUser(notificationRequest, notificationDto);
+            // user.getId()를 String으로 변환
+            sendNotificationToUser(String.valueOf(user.getId()), notificationDto);
         }
     }
 
