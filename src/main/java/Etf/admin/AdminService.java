@@ -32,6 +32,4 @@ public class AdminService {
         }
         throw new PasswordMismatchException("비밀번호가 다릅니다.");
     }
-
-
 }
