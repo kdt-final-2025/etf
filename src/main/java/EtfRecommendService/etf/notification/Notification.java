@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NonNull
     private Long id;
 
-    @NonNull
     private String userId; // 알림 받을 사용자 ID
 
     @NonNull

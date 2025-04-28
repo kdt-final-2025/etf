@@ -3,7 +3,7 @@ package EtfRecommendService.etf.notification;
 import java.time.LocalDateTime;
 
 public record NotificationRequest(
-        String userId,
+        Long userId,
         String message,
         LocalDateTime expiredTime
 ) {
