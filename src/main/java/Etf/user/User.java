@@ -2,6 +2,7 @@ package Etf.user;
 
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,11 +19,14 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     private String loginId;
 
     @Embedded
+    @NotNull
     private Password password;
 
+    @NotNull
     private String nickName;
 
     private String imageUrl = "";

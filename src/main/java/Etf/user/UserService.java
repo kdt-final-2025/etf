@@ -89,8 +89,6 @@ public class UserService {
 
         user.passwordUpdate(passwordRequest.newPassword());
 
-        userRepository.save(user);
-
         return new UserPasswordResponse(user.getId());
     }
 

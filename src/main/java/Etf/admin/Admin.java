@@ -4,6 +4,7 @@ import Etf.loginUtils.SecurityUtils;
 import Etf.user.Password;
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,9 +17,11 @@ public class Admin extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     private String loginId;
 
     @Embedded
+    @NotNull
     private Password password;
 
 }
