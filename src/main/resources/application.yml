@@ -1,7 +1,0 @@
-spring:
-  ai:
-    vertex:
-      ai:
-        gemini:
-          project-id: {복사한 프로젝트 ID}
-          location: {리전명 (예시)asia-northeast3}
