@@ -13,6 +13,7 @@ import Etf.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.List;
 
 @Service
@@ -23,25 +24,19 @@ public class CommentService {
     private final UserRepository userRepository;
     private final EtfRepository etfRepository;
 
-    public void create(CommentRequest commentRequest) {
-        User user = userRepository.findById(commentRequest.parentId()).orElseThrow(()->new NoExistsUserIdException("User ID not found"));
-        Etf etf = etfRepository.findById(commentRequest.etfId()).orElseThrow(()-> new NoExistsEtfIdException("Etf Id not found"));
-        commentRepository.save(
-                Comment.builder()
-                        .content(commentRequest.content())
-                        .etf(etf)
-                        .user(user)
-                        .build()
-        );
-    }
-
-    public List<CommentResponse> readAll(int page, int size, String sort, Long etfId) {
-        return null;
-    }
-
-    public void update(Long commentId) {
-    }
-
-    public void delete(Long commentId) {
+    public List<CommentResponse> readAll(Pageable pageable, Long etfId) {
+        List<Comment> commentList = commentRepository.findByAllEtfId(etfId, pageable);
+        List<CommentResponse> commentResponseList = commentList.stream().map(
+                        c-> CommentResponse
+                                .builder()
+                                .id(c.getId())
+                                .etfId(c.getEtf().getId())
+                                .userId(c.getUser().getId())
+                                .content(c.getContent())
+                                .createdAt(c.getCreatedAt())
+                                .build()
+                )
+                .toList();
+        return commentResponseList;
     }
 }
