@@ -64,7 +64,7 @@ public class CommentService {
                                     .build()
                     )
                     .toList();
-//            return new PageImpl<>(commentResponseList, pageable, commentPage.getTotalElements());
+            return new PageImpl<>(commentResponseList, pageable, commentPage.getTotalElements());
         }
     }
 }
