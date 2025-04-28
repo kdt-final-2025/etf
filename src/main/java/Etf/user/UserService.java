@@ -40,7 +40,7 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        if (Password.isSamePassword(user.getPassword(),loginRequest.password())) {
+        if (loginRequest.password().isSamePassword(user.getPassword())) {
             return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
         }
 
@@ -73,17 +73,17 @@ public class UserService {
     public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
-        if (!passwordRequest.newPassword().equals(passwordRequest.confirmNewPassword())) {
+        if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
             throw new RuntimeException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
 
         // 유저의 비밀번호와 입력받은 비밀번호가 같지않으면 예외처리
-        if (!Password.isSamePassword(user.getPassword(), passwordRequest.existingPassword())) {
+        if (!user.isSamePassword(passwordRequest.existingPassword())) {
             throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
         }
 
         // 유저의 비밀번호와 입력받은 새 비밀번호가 같으면 예외처리
-        if (Password.isSamePassword(passwordRequest.existingPassword(), passwordRequest.confirmNewPassword())) {
+        if (user.isSamePassword(passwordRequest.confirmNewPassword())) {
             throw new RuntimeException("변경할 비밀번호가 같습니다.");
         }
 

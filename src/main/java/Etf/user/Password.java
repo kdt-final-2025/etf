@@ -21,8 +21,8 @@ public class Password {
         this.password = SecurityUtils.sha256EncryptHex(password);
     }
 
-    public static boolean isSamePassword(Password password1, Password password2) {
-        if (password1.equals(password2)) {
+    public boolean isSamePassword(Password otherPassword) {
+        if (this.password.equals(otherPassword.getPassword())) {
             return true;
         }
         return false;

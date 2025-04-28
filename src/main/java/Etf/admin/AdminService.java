@@ -27,7 +27,7 @@ public class AdminService {
         Admin admin = adminRepository.findByLoginId(loginRequest.loginId()).orElseThrow(
                 () -> new NoSuchElementException("찾을 수 없는 관리자 id : " + loginRequest.loginId()));
 
-        if (Password.isSamePassword(admin.getPassword(), loginRequest.password())) {
+        if (loginRequest.password().isSamePassword(admin.getPassword())) {
             return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
         }
         throw new PasswordMismatchException("비밀번호가 다릅니다.");

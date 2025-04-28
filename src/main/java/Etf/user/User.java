@@ -66,6 +66,13 @@ public class User extends BaseEntity {
         this.password = newRawPassword;
     }
 
+    public boolean isSamePassword(Password otherPassword) {
+        if (this.getPassword().isSamePassword(otherPassword)) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
