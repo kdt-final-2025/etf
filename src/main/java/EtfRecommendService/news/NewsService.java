@@ -28,7 +28,8 @@ public class NewsService {
     private final NewsRepository newsRepository;
     private static final Logger logger = LoggerFactory.getLogger(NewsService.class);
 
-    @Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
+    //@Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
+    @Scheduled(cron = "0 * * * * ?") // 매일 오전 6시에 실행
     public void executePythonScript() {
         logger.info("뉴스 크롤링 스케줄러 실행 시작");
         try {
@@ -105,6 +106,12 @@ public class NewsService {
                     new TypeReference<List<News>>() {});
 
             logger.info("뉴스 항목 {}개 파싱 성공", newsItems.size());
+
+            // 기존 데이터 모두 삭제
+            newsRepository.deleteAll();
+            logger.info("기존 뉴스 데이터 모두 삭제 완료");
+
+            // 새 데이터 저장
             List<News> savedItems = newsRepository.saveAll(newsItems);
             logger.info("뉴스 항목 {}개 저장 성공", savedItems.size());
 
