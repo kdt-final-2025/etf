@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -28,6 +29,4 @@ public class Subscribe {
 
     @Column(nullable = false)
     private LocalDateTime expiredTime;
-
-
 }
