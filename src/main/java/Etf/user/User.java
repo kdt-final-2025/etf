@@ -1,5 +1,6 @@
 package Etf.user;
 
+import Etf.reply.Reply;
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -7,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -42,6 +45,9 @@ public class User extends BaseEntity {
 
     // 댓글, 구독목록 공개여부
     private Boolean isLikePrivate = false;
+    
+    @OneToMany(mappedBy = "user")
+    private List<Reply> replyList = new ArrayList<>();
 
 
     public User(String loginId,
