@@ -4,6 +4,8 @@ import Etf.admin.dto.AdminLoginRequest;
 import Etf.admin.dto.AdminLoginResponse;
 import Etf.loginUtils.JwtProvider;
 import Etf.loginUtils.SecurityUtils;
+import Etf.user.Password;
+import Etf.user.PasswordMismatchException;
 import Etf.user.User;
 import Etf.user.dto.CreateUserRequest;
 import Etf.user.dto.UserLoginRequest;
@@ -25,9 +27,10 @@ public class AdminService {
         Admin admin = adminRepository.findByLoginId(loginRequest.loginId()).orElseThrow(
                 () -> new NoSuchElementException("찾을 수 없는 관리자 id : " + loginRequest.loginId()));
 
-        admin.getPassword().equalsPassword(loginRequest.password());
-
-        return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
+        if (Password.isSamePassword(admin.getPassword(), loginRequest.password())) {
+            return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
+        }
+        throw new PasswordMismatchException("비밀번호가 다릅니다.");
     }
 
 

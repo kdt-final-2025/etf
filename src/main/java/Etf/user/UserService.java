@@ -1,7 +1,6 @@
 package Etf.user;
 
 import Etf.loginUtils.JwtProvider;
-import Etf.loginUtils.SecurityUtils;
 import Etf.user.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +22,9 @@ public class UserService {
 
     public UserResponse create(CreateUserRequest userRequest) {
 
-        Password password = new Password(userRequest.password());
-
         User user = new User(
                 userRequest.loginId(),
-                password,
+                userRequest.password(),
                 userRequest.nickName(),
                 userRequest.isLikePrivate());
 
@@ -43,9 +40,11 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        user.getPassword().equalsPassword(loginRequest.password());
+        if (Password.isSamePassword(user.getPassword(),loginRequest.password())) {
+            return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
+        }
 
-        return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
+        throw new PasswordMismatchException("비밀번호가 다릅니다.");
     }
 
     @Transactional
@@ -78,15 +77,15 @@ public class UserService {
             throw new RuntimeException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
 
-        Password existingPassword = new Password(passwordRequest.existingPassword());
+        // 유저의 비밀번호와 입력받은 비밀번호가 같지않으면 예외처리
+        if (!Password.isSamePassword(user.getPassword(), passwordRequest.existingPassword())) {
+            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
+        }
 
-        // 유저의 비밀번호와 입력받은 비밀번호가 같은지
-        user.getPassword().equalsPassword(passwordRequest.existingPassword());
-
-        Password newPassword = new Password(passwordRequest.newPassword());
-
-        // 유저의 비밀번호와 입력받은 새 비밀번호가 같은지
-        newPassword.isSamePassword(existingPassword);
+        // 유저의 비밀번호와 입력받은 새 비밀번호가 같으면 예외처리
+        if (Password.isSamePassword(passwordRequest.existingPassword(), passwordRequest.confirmNewPassword())) {
+            throw new RuntimeException("변경할 비밀번호가 같습니다.");
+        }
 
         user.passwordUpdate(passwordRequest.newPassword());
 

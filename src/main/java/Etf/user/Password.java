@@ -21,17 +21,23 @@ public class Password {
         this.password = SecurityUtils.sha256EncryptHex(password);
     }
 
-    public void equalsPassword(String password) {
-        if (!this.getPassword().equals(SecurityUtils.sha256EncryptHex(password))) {
-            throw new PasswordMismatchException("비밀번호가 다릅니다.");
+    public static boolean isSamePassword(Password password1, Password password2) {
+        if (password1.equals(password2)) {
+            return true;
         }
+        return false;
     }
 
-    public void isSamePassword(Password password) {
-        if (this.getPassword().equals(password.getPassword())) {
-            throw new RuntimeException("변경할 비밀번호가 같습니다.");
-        }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Password password1 = (Password) o;
+        return Objects.equals(password, password1.password);
     }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(password);
+    }
 }

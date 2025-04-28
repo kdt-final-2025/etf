@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -61,8 +62,20 @@ public class User extends BaseEntity {
         this.isLikePrivate = isLikePrivate;
     }
 
-    public void passwordUpdate(String newRawPassword) {
-        this.password = new Password(newRawPassword);
+    public void passwordUpdate(Password newRawPassword) {
+        this.password = newRawPassword;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(password, user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(password);
+    }
 }
