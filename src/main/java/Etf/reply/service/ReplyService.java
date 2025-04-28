@@ -43,7 +43,7 @@ public class ReplyService {
                 throw new DuplicateCommentException("Duplicate comment detected");
             }
 
-            Instant instantFromCreatedAtTime = recentReply.get().getCreatedAt().atZone(ZoneId.of("UTC")).toInstant();
+            Instant instantFromCreatedAtTime = recentReply.get().getCreatedAt().atZone(ZoneId.of("Asia/Seoul")).toInstant();
             Instant instantFromClock = clock.instant();
             Duration duration = Duration.between(instantFromCreatedAtTime, instantFromClock);
             //5초 이하의 간격으로 대댓글 작성시 예외 발생
