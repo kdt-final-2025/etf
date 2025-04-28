@@ -1,16 +1,9 @@
 package EtfRecommendService.admin;
 
-import Etf.admin.dto.AdminLoginRequest;
-import Etf.admin.dto.AdminLoginResponse;
-import Etf.loginUtils.JwtProvider;
-import Etf.loginUtils.SecurityUtils;
-import Etf.user.Password;
-import Etf.user.PasswordMismatchException;
-import Etf.user.User;
-import Etf.user.dto.CreateUserRequest;
-import Etf.user.dto.UserLoginRequest;
-import Etf.user.dto.UserLoginResponse;
-import Etf.user.dto.UserResponse;
+import EtfRecommendService.admin.dto.AdminLoginRequest;
+import EtfRecommendService.admin.dto.AdminLoginResponse;
+import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.user.PasswordMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

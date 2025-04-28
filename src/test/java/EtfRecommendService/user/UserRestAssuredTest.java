@@ -1,7 +1,7 @@
-package Etf.user;
+package EtfRecommendService.user;
 
 import Etf.DatabaseCleanup;
-import Etf.user.dto.*;
+import EtfRecommendService.user.dto.*;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;

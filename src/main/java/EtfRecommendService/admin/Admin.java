@@ -1,8 +1,9 @@
 package EtfRecommendService.admin;
 
-import Etf.loginUtils.SecurityUtils;
-import Etf.user.Password;
-import Etf.utils.BaseEntity;
+
+import EtfRecommendService.user.Password;
+
+import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

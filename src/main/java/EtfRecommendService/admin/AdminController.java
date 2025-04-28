@@ -1,7 +1,7 @@
 package EtfRecommendService.admin;
 
-import Etf.admin.dto.AdminLoginRequest;
-import Etf.admin.dto.AdminLoginResponse;
+import EtfRecommendService.admin.dto.AdminLoginRequest;
+import EtfRecommendService.admin.dto.AdminLoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

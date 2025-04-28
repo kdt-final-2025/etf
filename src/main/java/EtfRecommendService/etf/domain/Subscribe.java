@@ -1,5 +1,6 @@
 package EtfRecommendService.etf.domain;
 
+import EtfRecommendService.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,9 +21,9 @@ public class Subscribe {
     @ToString.Exclude
     private Etf etf;
 
-/*    @ManyToOne
+    @ManyToOne
     @ToString.Exclude
-    private User user;*/
+    private User user;
 
     @Column(nullable = false)
     private LocalDateTime startTime;

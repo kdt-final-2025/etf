@@ -1,7 +1,7 @@
 package EtfRecommendService.user;
 
-import Etf.loginUtils.JwtProvider;
-import Etf.user.dto.*;
+import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.user.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

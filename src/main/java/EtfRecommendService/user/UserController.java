@@ -1,7 +1,7 @@
 package EtfRecommendService.user;
 
-import Etf.loginUtils.LoginMember;
-import Etf.user.dto.*;
+import EtfRecommendService.loginUtils.LoginMember;
+import EtfRecommendService.user.dto.*;
 import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

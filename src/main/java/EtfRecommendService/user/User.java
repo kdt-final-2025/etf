@@ -1,6 +1,6 @@
 package EtfRecommendService.user;
 
-import Etf.utils.BaseEntity;
+import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
