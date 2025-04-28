@@ -20,7 +20,7 @@ public class UserService {
                 () -> new UserMismatchException("회원을 찾을 수 없습니다."));
     }
 
-    public UserResponse create(CreateUserRequest userRequest) {
+    public UserResponse create(UserCreateRequest userRequest) {
 
         User user = new User(
                 userRequest.loginId(),

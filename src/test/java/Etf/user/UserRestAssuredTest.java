@@ -40,7 +40,7 @@ public class UserRestAssuredTest {
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1",password,"nick1",false))
+                .body(new UserCreateRequest("user1",password,"nick1",false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -55,7 +55,7 @@ public class UserRestAssuredTest {
 
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -83,7 +83,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -111,7 +111,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -153,7 +153,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -193,7 +193,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -236,7 +236,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -277,7 +277,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -316,7 +316,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -355,7 +355,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()
@@ -394,7 +394,7 @@ public class UserRestAssuredTest {
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new CreateUserRequest("user1", password, "nick1", false))
+                .body(new UserCreateRequest("user1", password, "nick1", false))
                 .when()
                 .post("/api/v1/users")
                 .then().log().all()

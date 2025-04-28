@@ -2,7 +2,6 @@ package Etf.user;
 
 import Etf.loginUtils.LoginMember;
 import Etf.user.dto.*;
-import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +13,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping()
-    public UserResponse create(@RequestBody CreateUserRequest userRequest) {
+    public UserResponse create(@RequestBody UserCreateRequest userRequest) {
         return userService.create(userRequest);
     }
 
