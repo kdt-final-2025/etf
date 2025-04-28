@@ -36,7 +36,7 @@ public class EtfService {
 
     //회원 맞는지 확인 - 이미 구독된 종목인지 확인 - 구독
     @Transactional
-    public SubscribeResponse save(String memberLoginId, Long etfId) {
+    public SubscribeResponse subscribe(String memberLoginId, Long etfId) {
         User user = userRepository.findByLoginId(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
 
         Etf etf = etfRepository.findById(etfId)
@@ -89,7 +89,7 @@ public class EtfService {
 
     //로그인 확인 - 취소하려는 etfid가 구독이 돼있던건지 확인 후 구독 취소
     @Transactional
-    public SubscribeDeleteResponse delete(String memberLoginId, Long etfId) {
+    public SubscribeDeleteResponse unsubscribe(String memberLoginId, Long etfId) {
         User user = userRepository.findByLoginId(memberLoginId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
 
