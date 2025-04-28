@@ -15,7 +15,7 @@ public class Password {
     private String password;
 
     public Password(String password) {
-        if (SecurityUtils.sha256EncryptHex(password).equals(SecurityUtils.sha256EncryptHex(""))) {
+        if (password == null || password.isEmpty()) {
             throw new RuntimeException("비밀번호가 공백이면 안됩니다.");
         }
         this.password = SecurityUtils.sha256EncryptHex(password);
