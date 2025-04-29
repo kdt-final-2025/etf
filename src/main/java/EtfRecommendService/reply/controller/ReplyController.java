@@ -38,4 +38,10 @@ public class ReplyController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Reply update successfully");
     }
 
+    @DeleteMapping("/{replyId}")
+    public ResponseEntity<String> deleteReply(@LoginMember String loginId, @PathVariable Long replyId){
+        replyService.delete(loginId, replyId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Reply delete successfully");
+    }
+
 }
