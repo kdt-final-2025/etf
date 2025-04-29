@@ -3,9 +3,7 @@ package EtfRecommendService.reply.service;
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.comment.CommentRepository;
 import EtfRecommendService.comment.NotFoundCommentIdException;
-import EtfRecommendService.reply.DuplicateCommentException;
-import EtfRecommendService.reply.Reply;
-import EtfRecommendService.reply.TooFrequentCommentException;
+import EtfRecommendService.reply.*;
 import EtfRecommendService.reply.dto.RepliesPageList;
 import EtfRecommendService.reply.dto.ReplyRequest;
 import EtfRecommendService.reply.dto.ReplyResponse;
@@ -125,5 +123,16 @@ public class ReplyService {
                     .replyResponses(replyResponseList)
                     .build();
         }
+    }
+
+    @Transactional
+    public void update(String loginId, Long replyId, ReplyRequest rq) {
+        User user = userRepository.findByLoginId(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
+        Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
+
+        if (reply.getUser().equals(user)){
+            reply.update(rq.commentId(), rq.content());
+        }
+        else throw new IllegalArgumentException("Permission denied to edit this comment.");
     }
 }

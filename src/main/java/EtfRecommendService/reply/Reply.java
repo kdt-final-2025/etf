@@ -4,6 +4,8 @@ import EtfRecommendService.comment.Comment;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -41,5 +43,9 @@ public class Reply extends BaseEntity {
         comment.getReplyList().add(this);
         //User 엔티티에 관계 필드 생성될때까지 주석처리
 //        user.getReplyList().add(this);
+    }
+
+    public void update(Long commentId, String content) {
+
     }
 }
