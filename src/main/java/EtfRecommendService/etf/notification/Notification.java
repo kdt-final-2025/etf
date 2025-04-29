@@ -1,6 +1,5 @@
 package EtfRecommendService.etf.notification;
 
-import EtfRecommendService.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,17 +14,24 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userId; // 알림 받을 사용자 ID
+    private String receiverId; // 실제 ID 값 (예: "1")
+
+    @Enumerated(EnumType.STRING)
+    private ReceiverType receiverType; // USER, ADMIN 구별
 
     private String message;
-
-    private LocalDateTime expiredTime;
-
     private boolean isRead = false;
 
-    public Notification(String userId, String message, LocalDateTime expiredTime) {
-        this.userId = userId;
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
+
+    private String targetId;
+
+    public Notification(String receiverId, ReceiverType receiverType, String message, NotificationType type, String targetId) {
+        this.receiverId = receiverId;
+        this.receiverType = receiverType;
         this.message = message;
-        this.expiredTime = expiredTime;
+        this.type = type;
+        this.targetId = targetId;
     }
 }

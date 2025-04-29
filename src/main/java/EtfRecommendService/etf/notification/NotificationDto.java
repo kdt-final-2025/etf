@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 
 public record NotificationDto(
         String message,
-        LocalDateTime expiredTime
+        ReceiverType receiverType,
+        NotificationType type,
+        String targetId
 ) {
+
 }

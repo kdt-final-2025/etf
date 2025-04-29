@@ -1,8 +1,6 @@
 package EtfRecommendService.etf.notification;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -13,9 +11,10 @@ public class NotificationRestController {
     private final NotificationService notificationService;
 
     @GetMapping("/sse/notifications")
-    public SseEmitter streamNotifications(@RequestParam String emitterId) {
-        System.out.println("연결 요청: " + emitterId);
-        return notificationService.createEmitter(emitterId);
+    public SseEmitter streamNotifications(@RequestParam String receiveId,
+                                          @RequestParam ReceiverType receiverType) {
+        System.out.println("연결 요청: " + receiveId);
+        return notificationService.createEmitter(receiveId, receiverType);
     }
 
     /*
