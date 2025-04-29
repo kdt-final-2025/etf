@@ -11,8 +11,10 @@ import java.util.Optional;
 
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
+
     Optional<Comment> findTopByUserOrderByCreatedAtDesc(User user);
 
     Optional<Comment> findTopByUserAndEtfOrderByCreatedAtDesc(User user, Etf etf);
+
     Page<Comment> findAllByEtfId(Long etfId, Pageable pageable);
 }

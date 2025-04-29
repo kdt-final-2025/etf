@@ -36,7 +36,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final EtfRepository etfRepository;
 
-    public CommentsPageList readAll(String loginId, Pageable pageable, Long etfId) {
+    public CommentsPageList readAll(Pageable pageable, Long etfId) {
         Sort sort = pageable.getSort();
         String sortOrderName = sort.get().findFirst().map(Sort.Order::getProperty).orElse("createdAt");
 
@@ -92,7 +92,7 @@ public class CommentService {
     //Comment Create
     @Transactional
     public void create(CommentCreateRequest commentCreateRequest) {
-        User user = userRepository.findById(commentCreateRequest.userId())
+        User user = userRepository.findByLoginId(commentCreateRequest.loginId())
                 .orElseThrow(() -> new NoExistsUserIdException("User ID not found"));
         Etf etf = etfRepository.findById(commentCreateRequest.etfId())
                 .orElseThrow(() -> new NoExistsEtfIdException("Etf Id not found"));
@@ -130,10 +130,10 @@ public class CommentService {
 
     //Comment Update
     @Transactional
-    public void update(Long commentId, Long userId, CommentUpdateRequest commentUpdateRequest) {
+    public void update(String loginId, Long commentId, CommentUpdateRequest commentUpdateRequest) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
-        if (!comment.getUser().getId().equals(userId)) {
+        if (!comment.getUser().getId().equals(loginId)) {
             throw new IllegalArgumentException("댓글 수정 권한이 없습니다.");
         }
         comment.setContent(commentUpdateRequest.content());
@@ -145,7 +145,7 @@ public class CommentService {
 
     //Comment Soft Delete
     @Transactional
-    public void delete(Long commentId, Long userId) {
+    public void delete(String loginId, Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         comment.setDeleted(true); // isDeleted = true 로 표시

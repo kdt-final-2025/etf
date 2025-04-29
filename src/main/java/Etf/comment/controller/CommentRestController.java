@@ -25,16 +25,16 @@ public class CommentRestController {
 
     @GetMapping
     public ResponseEntity<CommentsPageList> readAllComment(@LoginMember String loginId, @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(name = "etf_id") Long etfId){
-        CommentsPageList commentsPageList = commentService.readAll(loginId, pageable, etfId);
+        CommentsPageList commentsPageList = commentService.readAll(pageable, etfId);
         return ResponseEntity.status(HttpStatus.OK).body(commentsPageList);
     }
 
     //좋아요 토글
-    @PostMapping("/{commentId}/likes/{userId}")
+    @PostMapping("/{commentId}/likes/")
     public void toggleLike(
-            @PathVariable Long commentId,
-            @PathVariable Long userId) {
-        commentLikeService.toggleLike(commentId, userId);
+            @LoginMember String loginId,
+            @PathVariable Long commentId) {
+        commentLikeService.toggleLike(loginId, commentId);
     }
 
     //Comment Create
@@ -46,21 +46,21 @@ public class CommentRestController {
     }
 
     //Comment Update
-    @PutMapping("/{commentId}/{userId}")
+    @PutMapping("/{commentId}/")
     public void updateComment(
+            @LoginMember String loginId,
             @PathVariable Long commentId,
-            @PathVariable Long userId,
             @RequestBody CommentUpdateRequest commentUpdateRequest) {
-        commentService.update(commentId, userId, commentUpdateRequest);
+        commentService.update(loginId, commentId, commentUpdateRequest);
 
     }
 
     //Comment Soft Delete
     @DeleteMapping("/{commentId}/{userId}")
     public void deleteComment(
-            @PathVariable Long commentId,
-            @PathVariable Long userId) {
-        commentService.delete(commentId, userId);
+            @LoginMember String loginId,
+            @PathVariable Long commentId) {
+        commentService.delete(loginId, commentId);
 
     }
 }

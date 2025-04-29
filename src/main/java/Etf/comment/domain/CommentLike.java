@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.*;
 
 @Entity
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Table(
         name = "comment_likes",
         uniqueConstraints = @UniqueConstraint(
