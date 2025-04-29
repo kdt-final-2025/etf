@@ -21,7 +21,7 @@ public class UserService {
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId).orElseThrow(
-                () -> new UserMismatchException("회원을 찾을 수 없습니다."));
+                () -> new UserMismatchException("아이디 또는 비밀번호가 틀립니다"));
     }
 
     public UserResponse create(CreateUserRequest userRequest) {
