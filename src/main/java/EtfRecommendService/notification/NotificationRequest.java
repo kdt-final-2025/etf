@@ -1,4 +1,4 @@
-package EtfRecommendService.etf.notification;
+package EtfRecommendService.notification;
 
 import java.time.LocalDateTime;
 

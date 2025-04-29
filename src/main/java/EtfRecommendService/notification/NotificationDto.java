@@ -1,6 +1,4 @@
-package EtfRecommendService.etf.notification;
-
-import java.time.LocalDateTime;
+package EtfRecommendService.notification;
 
 public record NotificationDto(
         String message,

@@ -1,4 +1,4 @@
-package EtfRecommendService.etf.notification;
+package EtfRecommendService.notification;
 
 public enum NotificationType {
     ETF_SUBSCRIPTION,

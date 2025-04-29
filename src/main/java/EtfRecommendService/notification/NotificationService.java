@@ -1,4 +1,4 @@
-package EtfRecommendService.etf.notification;
+package EtfRecommendService.notification;
 
 import EtfRecommendService.etf.SubscribeRepository;
 import EtfRecommendService.etf.domain.Etf;

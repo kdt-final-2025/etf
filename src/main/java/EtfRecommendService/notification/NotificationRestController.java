@@ -1,4 +1,4 @@
-package EtfRecommendService.etf.notification;
+package EtfRecommendService.notification;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
