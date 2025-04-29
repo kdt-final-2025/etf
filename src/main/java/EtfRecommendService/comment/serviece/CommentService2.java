@@ -18,6 +18,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService2 {
@@ -35,6 +38,28 @@ public class CommentService2 {
         Etf etf = etfRepository.findById(commentCreateRequest.etfId())
                 .orElseThrow(() -> new NoExistsEtfIdException("Etf Id not found"));
 
+
+        // 1) 같은 ETF에 동일한 내용의 마지막 댓글이 있다면 차단
+        commentRepository
+                .findTopByUserAndEtfOrderByCreatedAtDesc(user, etf)
+                .ifPresent(last -> {
+                    if (last.getContent().equals(commentCreateRequest.content())) {
+                        throw new IllegalArgumentException("똑같은 댓글은 다시 작성할 수 없습니다.");
+                    }
+                });
+
+        // 2) 어떤 ETF든 사용자가 마지막으로 작성한 댓글과의 시간 차가 5초 미만이면 차단
+        commentRepository
+                .findTopByUserOrderByCreatedAtDesc(user)
+                .ifPresent(last -> {
+                    Duration diff = Duration.between(last.getCreatedAt(), LocalDateTime.now());
+                    if (diff.getSeconds() < 5) {
+                        throw new IllegalArgumentException("한 번 작성 후 최소 5초 뒤에 다시 작성 가능합니다.");
+                    }
+                });
+
+
+// 조건 통과 시 저장
         commentRepository.save(
                 Comment.builder()
                         .content(commentCreateRequest.content())
