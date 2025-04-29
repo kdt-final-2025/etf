@@ -1,5 +1,4 @@
-package Etf.reply;
-
+package EtfRecommendService.reply;
 
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.user.User;
@@ -39,7 +38,8 @@ public class Reply extends BaseEntity {
     public void addCommentAndUser(Comment comment, User user){
         this.comment = comment;
         this.user = user;
-//        comment.getReplyList().add(this);
+        comment.getReplyList().add(this);
+        //User 엔티티에 관계 필드 생성될때까지 주석처리
 //        user.getReplyList().add(this);
     }
 }
