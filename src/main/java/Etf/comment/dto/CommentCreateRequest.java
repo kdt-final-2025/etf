@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotNull;
 
 public record CommentCreateRequest(
 
-        @NotNull(message = "작성자 ID는 필수입니다.")
-        String loginId,
-
         @NotNull(message = "ETF ID는 필수입니다.")
         Long etfId,
 

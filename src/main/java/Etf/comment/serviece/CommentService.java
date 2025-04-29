@@ -40,12 +40,12 @@ public class CommentService {
         Sort sort = pageable.getSort();
         String sortOrderName = sort.get().findFirst().map(Sort.Order::getProperty).orElse("createdAt");
 
-        if(sortOrderName.equals("likes")){
+        if (sortOrderName.equals("likes")) {
             SortedCommentsQDto qDto = commentRepositoryCustom.findAllByEtfIdOrderByLikes(pageable, etfId);
             List<CommentAndLikesCountQDto> commentAndLikesCountQDtoPage = qDto.commentAndLikesCountQDtoPage();
 
             List<CommentResponse> commentResponseList = commentAndLikesCountQDtoPage.stream()
-                    .map(c->{
+                    .map(c -> {
                         return CommentResponse.builder()
                                 .id(c.comment().getId())
                                 .userId(c.comment().getUser().getId())
@@ -60,16 +60,15 @@ public class CommentService {
                     .page(pageable.getPageNumber())
                     .size(pageable.getPageSize())
                     .totalElements(qDto.totalCount())
-                    .totalPages((int)Math.ceil((double) qDto.totalCount()/pageable.getPageSize()))
+                    .totalPages((int) Math.ceil((double) qDto.totalCount() / pageable.getPageSize()))
                     .etfId(etfId)
                     .commentResponses(commentResponseList)
                     .build();
-        }
-        else {
+        } else {
             Page<Comment> commentPage = commentRepository.findAllByEtfId(etfId, pageable);
             List<Comment> commentList = commentPage.getContent();
             List<CommentResponse> commentResponseList = commentList.stream().map(
-                            c-> CommentResponse
+                            c -> CommentResponse
                                     .builder()
                                     .id(c.getId())
                                     .userId(c.getUser().getId())
@@ -82,7 +81,7 @@ public class CommentService {
                     .page(pageable.getPageNumber())
                     .size(pageable.getPageSize())
                     .totalElements(commentPage.getTotalElements())
-                    .totalPages((int)Math.ceil((double) commentPage.getTotalElements()/pageable.getPageSize()))
+                    .totalPages((int) Math.ceil((double) commentPage.getTotalElements() / pageable.getPageSize()))
                     .etfId(etfId)
                     .commentResponses(commentResponseList)
                     .build();
@@ -91,8 +90,8 @@ public class CommentService {
 
     //Comment Create
     @Transactional
-    public void create(CommentCreateRequest commentCreateRequest) {
-        User user = userRepository.findByLoginId(commentCreateRequest.loginId())
+    public void create(String loginId, CommentCreateRequest commentCreateRequest) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new NoExistsUserIdException("User ID not found"));
         Etf etf = etfRepository.findById(commentCreateRequest.etfId())
                 .orElseThrow(() -> new NoExistsEtfIdException("Etf Id not found"));
@@ -129,19 +128,39 @@ public class CommentService {
     }
 
     //Comment Update
+
     @Transactional
     public void update(String loginId, Long commentId, CommentUpdateRequest commentUpdateRequest) {
+        // 1) 로그인된 유저 조회
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("User ID not found"));
+
+        // 2) 수정 대상 댓글 로드
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
-        if (!comment.getUser().getId().equals(loginId)) {
+                .orElseThrow(() -> new IllegalArgumentException("Comment ID not found"));
+
+        // 3) 권한 검사: 작성자와 일치해야
+        if (!comment.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("댓글 수정 권한이 없습니다.");
         }
         comment.setContent(commentUpdateRequest.content());
 
-        // 즉시 flush & audit 적용 확인
         commentRepository.flush();
         System.out.println("▶ updatedAt = " + comment.getUpdatedAt());
     }
+
+//    public void update(String loginId, Long commentId, CommentUpdateRequest commentUpdateRequest) {
+//        Comment comment = commentRepository.findById(commentId)
+//                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+//        if (!comment.getUser().getId().equals(loginId)) {
+//            throw new IllegalArgumentException("댓글 수정 권한이 없습니다.");
+//        }
+//        comment.setContent(commentUpdateRequest.content());
+//
+//        // 즉시 flush & audit 적용 확인
+//        commentRepository.flush();
+//        System.out.println("▶ updatedAt = " + comment.getUpdatedAt());
+//    }
 
     //Comment Soft Delete
     @Transactional

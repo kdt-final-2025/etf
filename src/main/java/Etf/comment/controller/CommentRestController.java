@@ -30,7 +30,7 @@ public class CommentRestController {
     }
 
     //좋아요 토글
-    @PostMapping("/{commentId}/likes/")
+    @PostMapping("/{commentId}/likes")
     public void toggleLike(
             @LoginMember String loginId,
             @PathVariable Long commentId) {
@@ -40,23 +40,23 @@ public class CommentRestController {
     //Comment Create
     @PostMapping
     public void createComment(
+            @LoginMember String loginId,
             @RequestBody CommentCreateRequest commentCreateRequest) {
-        commentService.create(commentCreateRequest);
+        commentService.create(loginId, commentCreateRequest);
 
     }
 
     //Comment Update
-    @PutMapping("/{commentId}/")
+    @PutMapping("/{commentId}")
     public void updateComment(
             @LoginMember String loginId,
             @PathVariable Long commentId,
             @RequestBody CommentUpdateRequest commentUpdateRequest) {
         commentService.update(loginId, commentId, commentUpdateRequest);
-
     }
 
     //Comment Soft Delete
-    @DeleteMapping("/{commentId}/{userId}")
+    @DeleteMapping("/{commentId}")
     public void deleteComment(
             @LoginMember String loginId,
             @PathVariable Long commentId) {
