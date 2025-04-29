@@ -1,5 +1,7 @@
 package Etf.user;
 
+import Etf.comment.Comment;
+import Etf.reply.domain.Reply;
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -7,7 +9,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.lang.reflect.Member;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -28,6 +33,12 @@ public class User extends BaseEntity {
 
     @NotNull
     private String nickName;
+
+    @OneToMany(mappedBy = "user")
+    private List<Reply> replyList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> commentList = new ArrayList<>();
 
     private String imageUrl = "";
 
