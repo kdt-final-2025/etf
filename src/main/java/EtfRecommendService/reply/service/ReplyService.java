@@ -3,16 +3,23 @@ package EtfRecommendService.reply.service;
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.comment.CommentRepository;
 import EtfRecommendService.comment.NotFoundCommentIdException;
-import EtfRecommendService.reply.*;
+import EtfRecommendService.reply.domain.Reply;
+import EtfRecommendService.reply.domain.ReplyLike;
 import EtfRecommendService.reply.dto.RepliesPageList;
 import EtfRecommendService.reply.dto.ReplyRequest;
 import EtfRecommendService.reply.dto.ReplyResponse;
+import EtfRecommendService.reply.exception.DuplicateCommentException;
+import EtfRecommendService.reply.exception.NotFoundReplyIdException;
+import EtfRecommendService.reply.exception.NotFoundUserLoginIdException;
+import EtfRecommendService.reply.exception.TooFrequentCommentException;
+import EtfRecommendService.reply.repository.ReplyLikeRepository;
 import EtfRecommendService.reply.repository.ReplyRepository;
 import EtfRecommendService.reply.repository.ReplyRepositoryCustom;
 import EtfRecommendService.reply.repository.qdto.ReplyAndLikesCountQDto;
 import EtfRecommendService.reply.repository.qdto.SortedRepliesQDto;
 import EtfRecommendService.user.User;
 import EtfRecommendService.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +43,7 @@ public class ReplyService {
     private final CommentRepository commentRepository;
     private final Clock clock;
     private final ReplyRepositoryCustom replyRepositoryCustom;
+    private final ReplyLikeRepository replyLikeRepository;
 
     @Transactional
     public void create(String loginId, @Valid ReplyRequest rq) {
@@ -144,5 +152,27 @@ public class ReplyService {
             replyRepository.deleteById(replyId);
         }
         else throw new IllegalArgumentException("Permission denied to delete this comment.");
+    }
+
+    @Transactional
+    public void toggleLike(String loginId, Long replyId) {
+        Reply reply = replyRepository.findById(replyId)
+                .orElseThrow(() -> new EntityNotFoundException("Reply not found"));
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        Optional<ReplyLike> replyLike = replyLikeRepository.findByUserIdAndReplyId(user.getId(), reply.getId());
+        if (replyLike.isPresent()) {
+            // 이미 좋아요가 있으면 삭제
+            replyLikeRepository.deleteById(replyLike.get().getId());
+        } else {
+            // 좋아요 없으면 추가
+            ReplyLike like = ReplyLike.builder()
+                    .reply(reply)
+                    .user(user)
+                    .build();
+            like.toggleLike(user, reply);
+            replyLikeRepository.save(like);
+        }
     }
 }

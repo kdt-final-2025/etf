@@ -1,11 +1,9 @@
-package EtfRecommendService.reply;
+package EtfRecommendService.reply.domain;
 
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.ArrayList;

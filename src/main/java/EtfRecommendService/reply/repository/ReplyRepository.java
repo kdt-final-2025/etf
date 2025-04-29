@@ -1,6 +1,6 @@
 package EtfRecommendService.reply.repository;
 
-import EtfRecommendService.reply.Reply;
+import EtfRecommendService.reply.domain.Reply;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

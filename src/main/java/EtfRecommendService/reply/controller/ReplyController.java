@@ -44,4 +44,10 @@ public class ReplyController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Reply delete successfully");
     }
 
+    @PostMapping("/{replyId}/likes")
+    public void toggleLike(
+            @LoginMember String loginId,
+            @PathVariable Long commentId) {
+        replyService.toggleLike(loginId, commentId);
+    }
 }

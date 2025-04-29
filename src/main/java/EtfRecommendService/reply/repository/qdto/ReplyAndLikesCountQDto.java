@@ -1,6 +1,6 @@
 package EtfRecommendService.reply.repository.qdto;
 
-import EtfRecommendService.reply.Reply;
+import EtfRecommendService.reply.domain.Reply;
 
 public record ReplyAndLikesCountQDto(
         Reply reply,

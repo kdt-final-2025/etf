@@ -1,6 +1,6 @@
 package EtfRecommendService.comment;
 
-import EtfRecommendService.reply.Reply;
+import EtfRecommendService.reply.domain.Reply;
 import jakarta.persistence.*;
 import lombok.Getter;
 
