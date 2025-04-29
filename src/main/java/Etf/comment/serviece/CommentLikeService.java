@@ -25,16 +25,16 @@ public class CommentLikeService {
 
     //좋아요 토글
     @Transactional
-    public void toggleLike( String loginId, Long commentId) {
+    public void toggleLike(String loginId, Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        boolean exists = commentLikeRepository.existsByCommentIdAndUserId(loginId, commentId);
+        boolean exists = commentLikeRepository.existsByUser_LoginIdAndComment_Id(loginId, commentId);
         if (exists) {
             // 이미 좋아요가 있으면 삭제
-            commentLikeRepository.deleteByCommentIdAndUserId(loginId, commentId);
+            commentLikeRepository.deleteByUser_LoginIdAndComment_Id(loginId, commentId);
         } else {
             // 좋아요 없으면 추가
             CommentLike like = CommentLike.builder()
