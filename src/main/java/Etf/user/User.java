@@ -85,4 +85,8 @@ public class User extends BaseEntity {
     public int hashCode() {
         return Objects.hashCode(password);
     }
+
+    public void profileImgUpdate(String updateUrl) {
+        this.imageUrl=updateUrl;
+    }
 }

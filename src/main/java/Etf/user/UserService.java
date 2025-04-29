@@ -1,12 +1,16 @@
 package Etf.user;
 
+import Etf.S3Service;
 import Etf.loginUtils.JwtProvider;
 import Etf.user.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -14,6 +18,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final S3Service s3Service;
+
+
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId).orElseThrow(
@@ -108,5 +115,12 @@ public class UserService {
                 user.getIsLikePrivate());
     }
 
+    @Transactional
+    public UserProfileResponse imageUpdate(String loginId, String imageUrl) {
+        User user = getByLoginId(loginId);
+         user.profileImgUpdate(imageUrl);
+
+        return new UserProfileResponse(user.getId(), user.getImageUrl());
+    }
 
 }
