@@ -2,9 +2,7 @@ package Etf.user;
 
 import Etf.utils.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -13,6 +11,8 @@ import java.util.Objects;
 @Getter
 @Entity
 @Table(name = "users")
+@AllArgsConstructor
+@Builder
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
