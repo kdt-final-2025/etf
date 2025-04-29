@@ -1,7 +1,7 @@
-package Etf.comment.domain;
+package EtfRecommendService.comment.domain;
 
-import Etf.user.User;
-import Etf.utils.BaseEntity;
+import EtfRecommendService.user.User;
+import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

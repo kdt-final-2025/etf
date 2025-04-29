@@ -1,6 +1,4 @@
-package Etf.comment.dto;
-
-import jakarta.validation.constraints.NotNull;
+package EtfRecommendService.comment.dto;
 
 import java.time.LocalDateTime;
 
