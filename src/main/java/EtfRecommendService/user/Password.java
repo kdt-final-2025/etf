@@ -18,7 +18,7 @@ public class Password {
         if (password == null || password.isEmpty()) {
             throw new RuntimeException("비밀번호가 공백이면 안됩니다.");
         }
-        this.password = SecurityUtils.sha256EncryptHex(password);
+        this.password = SecurityUtils.sha256EncryptHex2(password);
     }
 
     public boolean isSamePassword(Password otherPassword) {
@@ -40,4 +40,5 @@ public class Password {
     public int hashCode() {
         return Objects.hashCode(password);
     }
+
 }
