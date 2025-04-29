@@ -414,7 +414,7 @@ public class UserRestAssuredTest {
                 .jsonPath()
                 .getString("token");
 
-        MypageResponse mypageResponse = RestAssured
+        UserPageResponse userPageResponse = RestAssured
                 .given()
                 .pathParam("userId", userResponse.id())
                 .header("Authorization", "Bearer " + token)
@@ -423,10 +423,10 @@ public class UserRestAssuredTest {
                 .then()
                 .statusCode(200)
                 .extract()
-                .as(MypageResponse.class);
+                .as(UserPageResponse.class);
 
-        assertThat(mypageResponse.id()).isEqualTo(userResponse.id());
-        assertThat(mypageResponse.nickName()).isEqualTo(userResponse.nickName());
+        assertThat(userPageResponse.id()).isEqualTo(userResponse.id());
+        assertThat(userPageResponse.nickName()).isEqualTo(userResponse.nickName());
     }
 
 }

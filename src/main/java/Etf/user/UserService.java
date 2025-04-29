@@ -1,11 +1,15 @@
 package Etf.user;
 
+import Etf.comment.Comment;
+import Etf.etf.Etf;
 import Etf.loginUtils.JwtProvider;
 import Etf.user.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
@@ -92,18 +96,35 @@ public class UserService {
         return new UserPasswordResponse(user.getId());
     }
 
-    public MypageResponse findByUser(String loginId, Long userId) {
+    public UserPageResponse findByUser(String loginId, Long userId) {
         getByLoginId(loginId);
 
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("존재하지 않는 유저, id : " + userId));
 
-        return new MypageResponse(
+        Comment comment1 = new Comment();
+        Comment comment2 = new Comment();
+
+        List<Comment> list = new ArrayList<>();
+        list.add(comment1);
+        list.add(comment2);
+
+        Etf etf1 = new Etf();
+        Etf etf2 = new Etf();
+
+        List<Etf> etfs = new ArrayList<>();
+        etfs.add(etf1);
+        etfs.add(etf2);
+
+        return new UserPageResponse(
                 user.getId(),
                 user.getLoginId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.getIsLikePrivate());
+                user.getIsLikePrivate(),
+                list,
+                etfs
+                );
     }
 
 

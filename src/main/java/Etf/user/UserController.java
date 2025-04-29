@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public MypageResponse findByUser(@LoginMember String auth, @PathVariable Long userId) {
+    public UserPageResponse findByUser(@LoginMember String auth, @PathVariable Long userId) {
         return userService.findByUser(auth, userId);
     }
 }
