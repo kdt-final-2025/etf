@@ -24,14 +24,14 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private String loginId;
 
     @Embedded
-    @NotNull
+    @Column(nullable = false)
     private Password password;
 
-    @NotNull
+    @Column(nullable = false)
     private String nickName;
 
     @OneToMany(mappedBy = "user")
