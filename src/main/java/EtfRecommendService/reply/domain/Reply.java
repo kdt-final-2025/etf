@@ -38,8 +38,7 @@ public class Reply extends BaseEntity {
     public void addCommentAndUser(Comment comment, User user){
         this.comment = comment;
         this.user = user;
-        comment.getReplyList().add(this);
-        //User 엔티티에 관계 필드 생성될때까지 주석처리
+//        comment.getReplyList().add(this);
 //        user.getReplyList().add(this);
     }
 
