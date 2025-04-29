@@ -1,4 +1,4 @@
-package Etf.user.dto;
+package EtfRecommendService.user.dto;
 
 public record UserProfileResponse(Long id, String imageUrl) {
 

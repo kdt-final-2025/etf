@@ -1,18 +1,14 @@
 package EtfRecommendService.user;
 
-import Etf.S3Service;
-import Etf.loginUtils.JwtProvider;
-import Etf.user.dto.*;
+
+import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.Optional;
+
 
 @RequiredArgsConstructor
 @Service

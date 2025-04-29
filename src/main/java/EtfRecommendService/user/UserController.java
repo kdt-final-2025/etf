@@ -1,14 +1,10 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.user.dto.*;
-import Etf.S3Service;
-import Etf.loginUtils.LoginMember;
-import Etf.user.dto.*;
-import jakarta.persistence.Id;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
