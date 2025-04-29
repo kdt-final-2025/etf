@@ -1,14 +1,10 @@
-package EtfRecommendService.comment.controller;
+package Etf.comment.controller;
 
-import EtfRecommendService.comment.dto.CommentCreateRequest;
-import EtfRecommendService.comment.dto.CommentRequest2;
-import EtfRecommendService.comment.dto.CommentResponse2;
-import EtfRecommendService.comment.dto.CommentUpdateRequest;
-import EtfRecommendService.comment.serviece.CommentLikeService;
-import EtfRecommendService.comment.serviece.CommentService2;
+import Etf.comment.dto.CommentCreateRequest;
+import Etf.comment.dto.CommentUpdateRequest;
+import Etf.comment.serviece.CommentLikeService;
+import Etf.comment.serviece.CommentService2;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

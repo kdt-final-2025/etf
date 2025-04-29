@@ -1,6 +1,6 @@
-package EtfRecommendService.comment.repository;
+package Etf.comment.repository;
 
-import EtfRecommendService.comment.domain.CommentLike;
+import Etf.comment.domain.CommentLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> {

@@ -1,4 +1,4 @@
-package EtfRecommendService.comment.dto;
+package Etf.comment.dto;
 
 import java.time.LocalDateTime;
 

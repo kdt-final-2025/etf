@@ -1,6 +1,6 @@
-package EtfRecommendService.comment.repository;
+package Etf.comment.repository;
 
-import EtfRecommendService.comment.domain.Comment;
+import Etf.comment.domain.Comment;
 import EtfRecommendService.etf.Etf;
 import EtfRecommendService.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;

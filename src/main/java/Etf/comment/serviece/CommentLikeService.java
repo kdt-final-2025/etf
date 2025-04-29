@@ -1,10 +1,10 @@
-package EtfRecommendService.comment.serviece;
+package Etf.comment.serviece;
 
 
-import EtfRecommendService.comment.domain.Comment;
-import EtfRecommendService.comment.domain.CommentLike;
-import EtfRecommendService.comment.repository.CommentLikeRepository;
-import EtfRecommendService.comment.repository.CommentRepository;
+import Etf.comment.domain.Comment;
+import Etf.comment.domain.CommentLike;
+import Etf.comment.repository.CommentLikeRepository;
+import Etf.comment.repository.CommentRepository;
 import EtfRecommendService.user.User;
 import EtfRecommendService.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;

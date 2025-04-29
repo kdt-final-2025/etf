@@ -1,4 +1,4 @@
-package EtfRecommendService.comment.domain;
+package Etf.comment.domain;
 
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
