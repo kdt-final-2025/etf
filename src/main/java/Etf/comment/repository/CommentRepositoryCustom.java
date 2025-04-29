@@ -1,19 +1,15 @@
 package Etf.comment.repository;
 
-import Etf.comment.domain.Comment;
 import Etf.comment.domain.QComment;
 import Etf.comment.domain.QCommentLike;
 import Etf.comment.repository.qdto.CommentAndLikesCountQDto;
 import Etf.comment.repository.qdto.SortedCommentsQDto;
 import Etf.etf.QEtf;
 import Etf.user.QUser;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
