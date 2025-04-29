@@ -9,11 +9,13 @@ import Etf.etf.QEtf;
 import Etf.user.QUser;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,30 +33,48 @@ public class CommentRepositoryCustom {
 
 
     public SortedCommentsQDto findAllByEtfIdOrderByLikes(Pageable pageable, Long etfId) {
+        //전체 데이터 개수
         long totalCount = Optional.ofNullable(queryFactory
                 .select(qComment.etf.count())
                 .from(qComment)
                 .where(qComment.etf.id.eq(etfId))
                 .fetchOne()).orElse(0L);
 
-        List<CommentAndLikesCountQDto> commentAndLikesCountQDtoList = queryFactory
+        //해당 ETF 에 달린 댓글과 좋아요 개수
+        JPAQuery<CommentAndLikesCountQDto> query = queryFactory
                 .select(Projections.constructor(
                         CommentAndLikesCountQDto.class,
                         qComment,
                         qCommentLike.count()
                 ))
                 .from(qComment)
-                .join(qComment.etf,qEtf).fetchJoin()
-                .join(qComment.user,qUser).fetchJoin()
+                .join(qComment.etf, qEtf)
+                .join(qComment.user, qUser)
                 .leftJoin(qComment.commentLikeList, qCommentLike)
                 .where(qComment.etf.id.eq(etfId))
-                .groupBy(qComment.id)
-                .orderBy(qCommentLike.count().desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+                .groupBy(qComment.id);
+
+        //정렬기준이 내림차순인지 오름차순인지 확인
+        Sort.Order order = pageable.getSort().getOrderFor("likes");
+        boolean isDescending = Optional.ofNullable(order)
+                .map(Sort.Order::getDirection)
+                .map(Sort.Direction::isDescending)
+                .orElse(true);
 
 
+        //정렬 기준에 따라 맞게 쿼리 생성
+        if (isDescending) {
+            query = query.orderBy(qCommentLike.count().desc());
+        } else {
+            query = query.orderBy(qCommentLike.count().asc());
+        }
+
+        //페이징 구성에 맞게 조회
+        List<CommentAndLikesCountQDto> commentAndLikesCountQDtoList =
+                query
+                        .offset(pageable.getOffset())
+                        .limit(pageable.getPageSize())
+                        .fetch();
 
         return SortedCommentsQDto.builder()
                 .commentAndLikesCountQDtoPage(commentAndLikesCountQDtoList)

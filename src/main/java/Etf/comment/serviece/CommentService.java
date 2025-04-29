@@ -29,8 +29,9 @@ public class CommentService {
 
     public CommentsPageList readAll(String loginId, Pageable pageable, Long etfId) {
         Sort sort = pageable.getSort();
+        String sortOrderName = sort.get().findFirst().map(Sort.Order::getProperty).orElse("createdAt");
 
-        if(sort.toString().equals("likes")){
+        if(sortOrderName.equals("likes")){
             SortedCommentsQDto qDto = commentRepositoryCustom.findAllByEtfIdOrderByLikes(pageable, etfId);
             List<CommentAndLikesCountQDto> commentAndLikesCountQDtoPage = qDto.commentAndLikesCountQDtoPage();
 
@@ -45,6 +46,7 @@ public class CommentService {
                                 .createdAt(c.comment().getCreatedAt())
                                 .build();
                     }).toList();
+
             return CommentsPageList.builder()
                     .page(pageable.getPageNumber())
                     .size(pageable.getPageSize())
