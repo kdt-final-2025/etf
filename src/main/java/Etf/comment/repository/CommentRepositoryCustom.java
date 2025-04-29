@@ -3,14 +3,15 @@ package Etf.comment.repository;
 import Etf.comment.domain.Comment;
 import Etf.comment.domain.QComment;
 import Etf.comment.domain.QCommentLike;
-import Etf.comment.dto.CommentResponse;
-import Etf.comment.dto.SortedCommentsQDto;
+import Etf.comment.repository.qdto.CommentAndLikesCountQDto;
+import Etf.comment.repository.qdto.SortedCommentsQDto;
 import Etf.etf.QEtf;
 import Etf.user.QUser;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -36,8 +37,12 @@ public class CommentRepositoryCustom {
                 .where(qComment.etf.id.eq(etfId))
                 .fetchOne()).orElse(0L);
 
-        List<Tuple> tupleList = queryFactory
-                .select(qComment, qCommentLike.count())
+        List<CommentAndLikesCountQDto> commentAndLikesCountQDtoList = queryFactory
+                .select(Projections.constructor(
+                        CommentAndLikesCountQDto.class,
+                        qComment,
+                        qCommentLike.count()
+                ))
                 .from(qComment)
                 .join(qComment.etf,qEtf).fetchJoin()
                 .join(qComment.user,qUser).fetchJoin()
@@ -49,22 +54,10 @@ public class CommentRepositoryCustom {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        List<Comment> commentList = tupleList.stream().map(
-                        t-> t.get(0, Comment.class)
-                )
-                .toList();
-        List<Long> likesCountList = tupleList.stream().map(
-                t->{
-                    Long likesCount = t.get(1, Long.class);
-                    if(likesCount == null) likesCount = 0L;
-                    return likesCount;
-                }
-        )
-                .toList();
+
 
         return SortedCommentsQDto.builder()
-                .commentList(commentList)
-                .likesCountList(likesCountList)
+                .commentAndLikesCountQDtoPage(commentAndLikesCountQDtoList)
                 .totalCount(totalCount)
                 .build();
     }

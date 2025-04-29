@@ -1,11 +1,13 @@
-package Etf.comment.dto;
+package Etf.comment.repository.qdto;
 
 import lombok.Builder;
+
 import java.time.LocalDateTime;
 
 @Builder
-public record CommentResponse(
+public record CommentQDto(
         Long id,
+        Long etfId,
         Long userId,
         String nickName,
         String content,

@@ -2,10 +2,12 @@ package Etf.comment.serviece;
 
 import Etf.comment.domain.Comment;
 import Etf.comment.dto.CommentResponse;
-import Etf.comment.dto.SortedCommentsQDto;
+import Etf.comment.dto.CommentsPageList;
+import Etf.comment.repository.qdto.CommentAndLikesCountQDto;
+import Etf.comment.repository.qdto.SortedCommentsQDto;
 import Etf.comment.repository.CommentRepository;
 import Etf.comment.repository.CommentRepositoryCustom;
-import Etf.etf.EtfRepository;
+import Etf.user.User;
 import Etf.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,32 +25,34 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentRepositoryCustom commentRepositoryCustom;
+    private final UserRepository userRepository;
 
-    public Page<CommentResponse> readAll(Pageable pageable, Long etfId) {
+    public CommentsPageList readAll(String loginId, Pageable pageable, Long etfId) {
         Sort sort = pageable.getSort();
 
         if(sort.toString().equals("likes")){
             SortedCommentsQDto qDto = commentRepositoryCustom.findAllByEtfIdOrderByLikes(pageable, etfId);
-            List<Comment> commentList = qDto.commentList();
-            Long totalCount = qDto.totalCount();
-            List<Long> likesCountList = qDto.likesCountList();
+            List<CommentAndLikesCountQDto> commentAndLikesCountQDtoPage = qDto.commentAndLikesCountQDtoPage();
 
-            List<CommentResponse> commentResponseList = new ArrayList<>();
-            for (int i = 0; i < commentList.size(); i++) {
-                commentResponseList.add(
-                        CommentResponse.builder()
-                                .content(commentList.get(i).getContent())
-                                .likesCount(likesCountList.get(i))
-                                .userName(commentList.get(i).getUser().getNickName())
-                                .etfId(commentList.get(i).getEtf().getId())
-                                .createdAt(commentList.get(i).getCreatedAt())
-                                .id(commentList.get(i).getId())
-                                .userId(commentList.get(i).getUser().getId())
-                                .build()
-                );
-            }
-
-            return new PageImpl<>(commentResponseList,pageable,totalCount);
+            List<CommentResponse> commentResponseList = commentAndLikesCountQDtoPage.stream()
+                    .map(c->{
+                        return CommentResponse.builder()
+                                .id(c.comment().getId())
+                                .userId(c.comment().getUser().getId())
+                                .nickName(c.comment().getUser().getNickName())
+                                .content(c.comment().getContent())
+                                .likesCount(c.likesCount())
+                                .createdAt(c.comment().getCreatedAt())
+                                .build();
+                    }).toList();
+            return CommentsPageList.builder()
+                    .page(pageable.getPageNumber())
+                    .size(pageable.getPageSize())
+                    .totalElements(qDto.totalCount())
+                    .totalPages((int)Math.ceil((double) qDto.totalCount()/pageable.getPageSize()))
+                    .etfId(etfId)
+                    .commentResponses(commentResponseList)
+                    .build();
         }
         else {
             Page<Comment> commentPage = commentRepository.findAllByEtfId(etfId, pageable);
@@ -57,14 +61,20 @@ public class CommentService {
                             c-> CommentResponse
                                     .builder()
                                     .id(c.getId())
-                                    .etfId(c.getEtf().getId())
                                     .userId(c.getUser().getId())
                                     .content(c.getContent())
                                     .createdAt(c.getCreatedAt())
                                     .build()
                     )
                     .toList();
-            return new PageImpl<>(commentResponseList, pageable, commentPage.getTotalElements());
+            return CommentsPageList.builder()
+                    .page(pageable.getPageNumber())
+                    .size(pageable.getPageSize())
+                    .totalElements(commentPage.getTotalElements())
+                    .totalPages((int)Math.ceil((double) commentPage.getTotalElements()/pageable.getPageSize()))
+                    .etfId(etfId)
+                    .commentResponses(commentResponseList)
+                    .build();
         }
     }
 }
