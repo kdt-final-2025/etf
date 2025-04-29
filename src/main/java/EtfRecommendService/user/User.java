@@ -1,5 +1,7 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.Reply.Reply;
+import EtfRecommendService.comment.Comment;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -32,11 +34,11 @@ public class User extends BaseEntity {
     @NotNull
     private String nickName;
 
-//    @OneToMany(mappedBy = "user")
-//    private List<Reply> replyList = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "user")
-//    private List<Comment> commentList = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Reply> replyList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> commentList = new ArrayList<>();
 
     private String imageUrl = "";
 
