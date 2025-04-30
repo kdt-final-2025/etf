@@ -3,6 +3,7 @@ package EtfRecommendService.notification;
 import EtfRecommendService.etf.SubscribeRepository;
 import EtfRecommendService.etf.domain.Etf;
 import EtfRecommendService.etf.domain.Subscribe;
+import EtfRecommendService.notification.dto.NotificationDto;
 import EtfRecommendService.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -130,14 +131,30 @@ public class NotificationService {
         }
     }
 
+    //TODO: 댓글 신고 10개 쌓이면 관리자에게 알림 보내는 기본 코드 - 수정 필요
+    /*public void notifyIfReportedOverLimit(String commentId) {
+        int reportCount = reportRepository.countByCommentId(commentId);
 
+        if (reportCount >= 10) {
+            // 여러 관리자에게 알림을 보내야 할 수도 있음
+            List<String> adminIds = adminService.getAllAdminIds(); // 예시
 
-    /*public long countUnreadNotifications(String emitterId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(emitterId);
-    }
+            for (String adminId : adminIds) {
+                String emitterId = generateEmitterId(adminId, ReceiverType.ADMIN);
+                SseEmitter emitter = emitters.get(emitterId);
 
-    public void markAllAsRead(String emitterId) {
-        notificationRepository.markAllAsRead(emitterId);
+                if (emitter != null) {
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("comment-report-alert")
+                                .data("댓글 ID " + commentId + "이(가) 10회 이상 신고되었습니다."));
+                    } catch (IOException e) {
+                        log.warn("관리자 알림 전송 실패 {}: {}", emitterId, e.getMessage());
+                        emitters.remove(emitterId);
+                    }
+                }
+            }
+        }
     }*/
 
 }
