@@ -14,7 +14,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping()
+    @PostMapping
     public UserResponse create(@RequestBody CreateUserRequest userRequest) {
         return userService.create(userRequest);
     }
@@ -24,12 +24,12 @@ public class UserController {
         return userService.login(loginRequest);
     }
 
-    @PatchMapping()
+    @PatchMapping
     public UserUpdateResponse profileUpdate(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
         return userService.profileUpdate(auth,updateRequest);
     }
 
-    @DeleteMapping()
+    @DeleteMapping
     public UserDeleteResponse delete(@LoginMember String auth) {
         return userService.delete(auth);
     }
