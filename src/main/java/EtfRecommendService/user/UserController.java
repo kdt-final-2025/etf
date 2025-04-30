@@ -3,6 +3,8 @@ package EtfRecommendService.user;
 import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.user.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(value = "/api/v1/users")
@@ -38,7 +40,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserPageResponse findByUser(@LoginMember String auth, @PathVariable Long userId) {
-        return userService.findByUser(auth, userId);
+    public UserPageResponse findByUser(
+            @LoginMember String auth,
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return userService.findByUser(auth, userId,pageable);
     }
 }

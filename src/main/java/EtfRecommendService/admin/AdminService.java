@@ -3,12 +3,9 @@ package EtfRecommendService.admin;
 import EtfRecommendService.admin.dto.AdminLoginRequest;
 import EtfRecommendService.admin.dto.AdminLoginResponse;
 import EtfRecommendService.loginUtils.JwtProvider;
-import EtfRecommendService.user.PasswordMismatchException;
-import EtfRecommendService.user.UserMismatchException;
+import EtfRecommendService.user.exception.UserMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service

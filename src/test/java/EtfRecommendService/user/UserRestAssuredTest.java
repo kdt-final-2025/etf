@@ -1,6 +1,6 @@
 package EtfRecommendService.user;
 
-import Etf.DatabaseCleanup;
+import EtfRecommendService.DatabaseCleanup;
 import EtfRecommendService.user.dto.*;
 
 import io.restassured.RestAssured;
@@ -15,7 +15,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -387,46 +386,5 @@ public class UserRestAssuredTest {
                 .extract();
     }
 
-    @Test
-    void 유저조회() {
-        Password password = new Password("123");
-
-        UserResponse userResponse = RestAssured
-                .given().log().all()
-                .contentType(ContentType.JSON)
-                .body(new UserCreateRequest("user1", password, "nick1", false))
-                .when()
-                .post("/api/v1/users")
-                .then().log().all()
-                .statusCode(200)
-                .extract()
-                .as(UserResponse.class);
-
-        String token = RestAssured
-                .given().log().all()
-                .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
-                .when()
-                .post("/api/v1/users/login")
-                .then().log().all()
-                .statusCode(200)
-                .extract()
-                .jsonPath()
-                .getString("token");
-
-        UserPageResponse userPageResponse = RestAssured
-                .given()
-                .pathParam("userId", userResponse.id())
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .get("/api/v1/users/{userId}")
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(UserPageResponse.class);
-
-        assertThat(userPageResponse.id()).isEqualTo(userResponse.id());
-        assertThat(userPageResponse.nickName()).isEqualTo(userResponse.nickName());
-    }
 
 }

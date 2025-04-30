@@ -1,14 +1,15 @@
 package EtfRecommendService.user;
 
-import EtfRecommendService.comment.Comment;
-import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.comment.CommentRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
+import EtfRecommendService.user.exception.PasswordMismatchException;
+import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final UserQueryRepository userQueryRepository;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId).orElseThrow(
@@ -96,20 +98,22 @@ public class UserService {
         return new UserPasswordResponse(user.getId());
     }
 
-    public UserPageResponse findByUser(String loginId, Long userId) {
+    public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
         getByLoginId(loginId);
 
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NoSuchElementException("존재하지 않는 유저, id : " + userId));
 
+        List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
+        long totalCount = userQueryRepository.countUserComments(userId);
+
 
         return new UserPageResponse(
-                user.getId(),
-                user.getLoginId(),
-                user.getNickName(),
-                user.getImageUrl(),
-                user.getIsLikePrivate()
-                );
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                totalCount,
+                (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
+                list);
     }
 
 
