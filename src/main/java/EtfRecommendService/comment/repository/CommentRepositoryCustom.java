@@ -30,11 +30,7 @@ public class CommentRepositoryCustom {
 
     public SortedCommentsQDto findAllByEtfIdOrderByLikes(Pageable pageable, Long etfId) {
         //전체 데이터 개수
-        long totalCount = Optional.ofNullable(queryFactory
-                .select(qComment.etf.count())
-                .from(qComment)
-                .where(qComment.etf.id.eq(etfId))
-                .fetchOne()).orElse(0L);
+        long totalCount = countTotalElements(etfId);
 
         //해당 ETF 에 달린 댓글과 좋아요 개수
         JPAQuery<CommentAndLikesCountQDto> query = queryFactory
@@ -52,10 +48,7 @@ public class CommentRepositoryCustom {
 
         //정렬기준이 내림차순인지 오름차순인지 확인
         Sort.Order order = pageable.getSort().getOrderFor("likes");
-        boolean isDescending = Optional.ofNullable(order)
-                .map(Sort.Order::getDirection)
-                .map(Sort.Direction::isDescending)
-                .orElse(true);
+        boolean isDescending = isDescending(order);
 
 
         //정렬 기준에 따라 맞게 쿼리 생성
@@ -76,5 +69,20 @@ public class CommentRepositoryCustom {
                 .commentAndLikesCountQDtoPage(commentAndLikesCountQDtoList)
                 .totalCount(totalCount)
                 .build();
+    }
+
+    private long countTotalElements(Long etfId){
+        return Optional.ofNullable(queryFactory
+                .select(qComment.etf.count())
+                .from(qComment)
+                .where(qComment.etf.id.eq(etfId))
+                .fetchOne()).orElse(0L);
+    }
+
+    private boolean isDescending(Sort.Order order){
+        return Optional.ofNullable(order)
+                .map(Sort.Order::getDirection)
+                .map(Sort.Direction::isDescending)
+                .orElse(true);
     }
 }
