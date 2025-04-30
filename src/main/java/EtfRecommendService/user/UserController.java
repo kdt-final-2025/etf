@@ -44,7 +44,7 @@ public class UserController {
             @LoginMember String auth,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return userService.findByUser(auth, userId,pageable);
     }

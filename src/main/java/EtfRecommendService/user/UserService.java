@@ -105,12 +105,9 @@ public class UserService {
     public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
         getByLoginId(loginId);
 
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new NoSuchElementException("존재하지 않는 유저, id : " + userId));
-
         List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
-        long totalCount = userQueryRepository.countUserComments(userId);
 
+        long totalCount = userQueryRepository.countUserComments(userId);
 
         return new UserPageResponse(
                 pageable.getPageNumber(),
