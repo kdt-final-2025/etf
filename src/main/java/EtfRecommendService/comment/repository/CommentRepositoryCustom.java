@@ -4,7 +4,7 @@ import EtfRecommendService.comment.domain.QComment;
 import EtfRecommendService.comment.domain.QCommentLike;
 import EtfRecommendService.comment.repository.qdto.CommentAndLikesCountQDto;
 import EtfRecommendService.comment.repository.qdto.SortedCommentsQDto;
-import EtfRecommendService.etf.QEtf;
+import EtfRecommendService.etf.domain.QEtf;
 import EtfRecommendService.user.QUser;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;

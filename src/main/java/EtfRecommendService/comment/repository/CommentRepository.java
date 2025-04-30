@@ -1,7 +1,7 @@
 package EtfRecommendService.comment.repository;
 
 import EtfRecommendService.comment.domain.Comment;
-import EtfRecommendService.etf.Etf;
+import EtfRecommendService.etf.domain.Etf;
 import EtfRecommendService.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
