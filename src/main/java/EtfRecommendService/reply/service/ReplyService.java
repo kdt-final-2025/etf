@@ -55,10 +55,11 @@ public class ReplyService {
 
         if (recentReply.isPresent()){
             //해당 댓글의 가장 최근 본인이 작성한 대댓글과 같은 내용 작성시 예외 발생
-            if (recentReply.equals(rq.content())){
+            if (recentReply.get().getContent().equals(rq.content())){
                 throw new DuplicateCommentException("Duplicate comment detected");
             }
 
+            //가장 최신 대댓글과 현재 시각을 "Asia/Seoul" 기준시각으로 비교
             Instant instantFromCreatedAtTime = recentReply.get().getCreatedAt().atZone(ZoneId.of("Asia/Seoul")).toInstant();
             Instant instantFromClock = clock.instant();
             Duration duration = Duration.between(instantFromCreatedAtTime, instantFromClock);

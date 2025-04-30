@@ -10,10 +10,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Getter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString
 @Table(
-        name = "reply_likes",
+        name = "reply_like",
         uniqueConstraints = @UniqueConstraint(
                 columnNames = {"user_id", "reply_id"}
         )
