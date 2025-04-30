@@ -29,7 +29,7 @@ public class ReplyController {
     @GetMapping
     public ResponseEntity<RepliesPageList> readAllReplies(@LoginMember String loginId, Long commentId, @PageableDefault(page = 0,size = 10,sort = "createdAt",direction = Sort.Direction.DESC)Pageable pageable){
         RepliesPageList repliesPageList = replyService.readAll(loginId, commentId, pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(repliesPageList);
+        return ResponseEntity.ok(repliesPageList);
     }
 
     @PutMapping("/{replyId}")
