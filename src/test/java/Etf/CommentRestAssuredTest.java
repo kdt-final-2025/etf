@@ -2,7 +2,9 @@ package Etf;
 
 import Etf.comment.dto.CommentCreateRequest;
 import Etf.comment.dto.CommentUpdateRequest;
+import Etf.comment.dto.CommentsPageList;
 import Etf.loginUtils.JwtProvider;
+import Etf.loginUtils.LoginMember;
 import Etf.user.Password;
 import Etf.user.dto.CreateUserRequest;
 import Etf.user.dto.UserResponse;
@@ -14,8 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
 
@@ -197,4 +205,38 @@ public class CommentRestAssuredTest extends AcceptanceTest {
     }
 
 
+    // 댓글 조회 테스트
+    @DisplayName("댓글 조회 테스트")
+    @Test
+    void 댓글조회테스트() {
+
+        String token = jwtProvider.createToken("pepero");
+
+        Long etfId = 1L;
+        int page = 0;
+        int size = 20;
+
+        RestAssured
+                .given().log().all()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .body(new CommentCreateRequest(1L, "이 ETF 대박나게 해주세요"))
+                .when()
+                .post("/api/v1/comments")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        RestAssured
+                .given().log().all()
+                .header("Authorization", "Bearer " + token)
+                .contentType("application/json")
+                .queryParam("etf_id", etfId)
+                .queryParam("page", page)
+                .queryParam("size", size)
+                .when()
+                .get("/api/v1/comments")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+    }
 }

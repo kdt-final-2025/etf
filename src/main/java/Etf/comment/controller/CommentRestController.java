@@ -23,8 +23,13 @@ public class CommentRestController {
     private final CommentService commentService;
     private final CommentLikeService commentLikeService;
 
+
+    //댓글 조회
     @GetMapping
-    public ResponseEntity<CommentsPageList> readAllComment(@LoginMember String loginId, @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable, @RequestParam(name = "etf_id") Long etfId){
+    public ResponseEntity<CommentsPageList> readAllComment(
+            @LoginMember String loginId,
+            @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(name = "etf_id") Long etfId){
         CommentsPageList commentsPageList = commentService.readAll(pageable, etfId);
         return ResponseEntity.status(HttpStatus.OK).body(commentsPageList);
     }
