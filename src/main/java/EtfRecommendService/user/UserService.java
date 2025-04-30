@@ -47,7 +47,7 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        if (!loginRequest.password().isSamePassword(user.getPassword())) {
+        if (!user.isSamePassword(loginRequest.password())) {
             throw new UserMismatchException(userMismatchExceptionMessage);
         }
 
