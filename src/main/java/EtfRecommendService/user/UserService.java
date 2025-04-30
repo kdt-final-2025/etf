@@ -116,7 +116,8 @@ public class UserService {
     @Transactional
     public UserProfileResponse imageUpdate(String loginId, String imageUrl) {
         User user = getByLoginId(loginId);
-         user.profileImgUpdate(imageUrl);
+
+        user.updateProfileImg(imageUrl);
 
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }
