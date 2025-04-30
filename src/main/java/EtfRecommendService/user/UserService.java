@@ -22,7 +22,7 @@ public class UserService {
     private final UserQueryRepository userQueryRepository;
 
     public User getByLoginId(String loginId) {
-        return userRepository.findByLoginId(loginId).orElseThrow(
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
                 () -> new UserMismatchException());
     }
 
@@ -45,10 +45,6 @@ public class UserService {
 
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
-
-        if (user.getIsDeleted()) {
-            throw new UserMismatchException();
-        }
 
         if (!loginRequest.password().isSamePassword(user.getPassword())) {
             throw new UserMismatchException();
@@ -104,6 +100,9 @@ public class UserService {
 
     public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
         getByLoginId(loginId);
+
+        userRepository.findById(userId).orElseThrow(
+                () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
         List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
 
