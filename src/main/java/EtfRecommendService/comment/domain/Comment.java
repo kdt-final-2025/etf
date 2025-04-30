@@ -1,6 +1,7 @@
 package EtfRecommendService.comment.domain;
 
 import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.report.domain.CommentReport;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
@@ -47,6 +48,10 @@ public class Comment extends BaseEntity {
     @ToString.Exclude
     @Builder.Default
     private List<CommentLike> commentLikeList = new ArrayList<>();
+    @OneToMany(mappedBy = "comment")
+    @Builder.Default
+    @ToString.Exclude
+    private List<CommentReport> commentReportList = new ArrayList<>();
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
