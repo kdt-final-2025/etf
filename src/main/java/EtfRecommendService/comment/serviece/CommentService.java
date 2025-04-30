@@ -1,12 +1,11 @@
 package EtfRecommendService.comment.serviece;
 
 import EtfRecommendService.comment.domain.Comment;
-import EtfRecommendService.comment.dto.CommentCreateRequest;
-import EtfRecommendService.comment.dto.CommentResponse;
-import EtfRecommendService.comment.dto.CommentUpdateRequest;
-import EtfRecommendService.comment.dto.CommentsPageList;
+import EtfRecommendService.comment.domain.CommentLike;
+import EtfRecommendService.comment.dto.*;
 import EtfRecommendService.comment.exception.NoExistsEtfIdException;
 import EtfRecommendService.comment.exception.NoExistsUserIdException;
+import EtfRecommendService.comment.repository.CommentLikeRepository;
 import EtfRecommendService.comment.repository.qdto.CommentAndLikesCountQDto;
 import EtfRecommendService.comment.repository.qdto.SortedCommentsQDto;
 import EtfRecommendService.comment.repository.CommentRepository;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +35,7 @@ public class CommentService {
     private final CommentRepositoryCustom commentRepositoryCustom;
     private final UserRepository userRepository;
     private final EtfRepository etfRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     public CommentsPageList readAll(Pageable pageable, Long etfId) {
         Sort sort = pageable.getSort();
@@ -149,18 +150,6 @@ public class CommentService {
         System.out.println("▶ updatedAt = " + comment.getUpdatedAt());
     }
 
-//    public void update(String loginId, Long commentId, CommentUpdateRequest commentUpdateRequest) {
-//        Comment comment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
-//        if (!comment.getUser().getId().equals(loginId)) {
-//            throw new IllegalArgumentException("댓글 수정 권한이 없습니다.");
-//        }
-//        comment.setContent(commentUpdateRequest.content());
-//
-//        // 즉시 flush & audit 적용 확인
-//        commentRepository.flush();
-//        System.out.println("▶ updatedAt = " + comment.getUpdatedAt());
-//    }
 
     //Comment Soft Delete
     @Transactional
@@ -175,4 +164,40 @@ public class CommentService {
 
 
     }
+
+    //좋아요 토글
+    @Transactional
+    public ToggleLikeResponse toggleLike(String loginId, Long commentId) {
+        // 댓글 & 유저 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // 기존 좋아요 여부 확인
+        Optional<CommentLike> existing = commentLikeRepository
+                .findByUser_LoginIdAndComment_Id(loginId, commentId);
+
+        boolean liked;
+        if (existing.isPresent()) {
+            // 좋아요 취소
+            commentLikeRepository.delete(existing.get());
+            liked = false;
+        } else {
+            // 새 좋아요 저장
+            CommentLike saved = CommentLike.builder()
+                    .comment(comment)
+                    .user(user)
+                    .build();
+            commentLikeRepository.save(saved);
+            liked = true;
+        }
+
+        // 최신 좋아요 개수 집계
+        Long count = commentLikeRepository.countByComment_Id(commentId);
+
+        // DTO로 묶어서 반환
+        return new ToggleLikeResponse(commentId, liked, count);
+    }
+
 }
