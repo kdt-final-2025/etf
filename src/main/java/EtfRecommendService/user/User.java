@@ -76,7 +76,9 @@ public class User extends BaseEntity {
         if (nickName != null) {
             this.nickName = nickName;
         }
-        this.isLikePrivate = isLikePrivate;
+        if (isLikePrivate != null) {
+            this.isLikePrivate = isLikePrivate;
+        }
     }
 
     public void updatePassword(Password newRawPassword) {
