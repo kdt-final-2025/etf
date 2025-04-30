@@ -120,4 +120,16 @@ public class NewsService {
             throw new RuntimeException("뉴스 데이터 저장 실패", e);
         }
     }
+
+    public List<NewsResponse> read() {
+        return newsRepository.findAll()
+                .stream()
+                .map(news -> new NewsResponse(
+                        news.getTitle(),
+                        news.getLink(),
+                        news.getImageUrl()
+                ))
+                .toList();
+
+    }
 }
