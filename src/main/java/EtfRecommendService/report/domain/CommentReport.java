@@ -1,7 +1,6 @@
-package EtfRecommendService.report;
+package EtfRecommendService.report.domain;
 
 import EtfRecommendService.comment.Comment;
-import EtfRecommendService.reply.domain.Reply;
 import EtfRecommendService.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,4 +28,10 @@ public class CommentReport {
 
     @Column(nullable = false)
     private ReportReason reportReason;
+
+    //유저 엔티티에 리포트가 연결된 후 활성화
+    public void addReport(Comment comment, User user){
+//        comment.getReportList().add(this);
+//        user.getReportList().add(this);
+    }
 }

@@ -1,10 +1,9 @@
-package EtfRecommendService.report;
+package EtfRecommendService.report.domain;
 
 import EtfRecommendService.reply.domain.Reply;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -29,4 +28,10 @@ public class ReplyReport extends BaseEntity {
 
     @Column(nullable = false)
     private ReportReason reportReason;
+
+    //Reply 와 User 에 Report 연결된 후 활성화
+    public void addReport(Reply reply, User user) {
+//        reply.getReportList().add(this);
+//        user.getReportList().add(this);
+    }
 }

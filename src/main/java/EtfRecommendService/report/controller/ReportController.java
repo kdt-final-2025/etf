@@ -1,6 +1,8 @@
-package EtfRecommendService.report;
+package EtfRecommendService.report.controller;
 
 import EtfRecommendService.loginUtils.LoginMember;
+import EtfRecommendService.report.dto.ReportRequest;
+import EtfRecommendService.report.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
