@@ -6,8 +6,7 @@ import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.exception.UserMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
+import static EtfRecommendService.user.User.userMismatchExceptionMessage;
 
 @RequiredArgsConstructor
 @Service
@@ -18,11 +17,11 @@ public class AdminService {
 
     public AdminLoginResponse login(AdminLoginRequest loginRequest) {
         Admin admin = adminRepository.findByLoginId(loginRequest.loginId()).orElseThrow(
-                () -> new UserMismatchException());
+                () -> new UserMismatchException(userMismatchExceptionMessage));
 
         if (loginRequest.password().isSamePassword(admin.getPassword())) {
             return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
         }
-        throw new UserMismatchException();
+        throw new UserMismatchException(userMismatchExceptionMessage);
     }
 }

@@ -1,6 +1,5 @@
 package EtfRecommendService.user;
 
-import EtfRecommendService.comment.CommentRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.PasswordMismatchException;
@@ -13,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static EtfRecommendService.user.User.userMismatchExceptionMessage;
+
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -23,7 +24,7 @@ public class UserService {
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
-                () -> new UserMismatchException());
+                () -> new UserMismatchException(userMismatchExceptionMessage));
     }
 
     public UserResponse create(CreateUserRequest userRequest) {
@@ -47,17 +48,17 @@ public class UserService {
         User user = getByLoginId(loginRequest.loginId());
 
         if (!loginRequest.password().isSamePassword(user.getPassword())) {
-            throw new UserMismatchException();
+            throw new UserMismatchException(userMismatchExceptionMessage);
         }
 
         return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
     }
 
     @Transactional
-    public UserUpdateResponse profileUpdate(String loginId, UserUpdateRequest updateRequest) {
+    public UserUpdateResponse UpdateProfile(String loginId, UserUpdateRequest updateRequest) {
         User user = getByLoginId(loginId);
 
-        user.profileUpdate(
+        user.updateProfile(
                 updateRequest.nickName(),
                 updateRequest.isLikePrivate());
 
@@ -69,14 +70,14 @@ public class UserService {
     }
 
     @Transactional
-    public UserDeleteResponse delete(String loginId) {
+    public void delete(String loginId) {
         User user = getByLoginId(loginId);
 
-        return new UserDeleteResponse(user.getId(), user.getIsDeleted());
+        user.deleteUser();
     }
 
     @Transactional
-    public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
+    public UserPasswordResponse updatePassword(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
         if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
@@ -93,7 +94,7 @@ public class UserService {
             throw new RuntimeException("변경할 비밀번호가 같습니다.");
         }
 
-        user.passwordUpdate(passwordRequest.newPassword());
+        user.updatePassword(passwordRequest.newPassword());
 
         return new UserPasswordResponse(user.getId());
     }

@@ -5,6 +5,7 @@ import EtfRecommendService.user.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(value = "/api/v1/users")
@@ -25,18 +26,19 @@ public class UserController {
     }
 
     @PatchMapping
-    public UserUpdateResponse profileUpdate(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
-        return userService.profileUpdate(auth,updateRequest);
+    public UserUpdateResponse updateProfile(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
+        return userService.UpdateProfile(auth,updateRequest);
     }
 
     @DeleteMapping
-    public UserDeleteResponse delete(@LoginMember String auth) {
-        return userService.delete(auth);
+    public ResponseEntity<Void> delete(@LoginMember String auth) {
+        userService.delete(auth);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/me/password")
-    public UserPasswordResponse passwordUpdate(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
-        return userService.passwordUpdate(auth, passwordRequest);
+    public UserPasswordResponse updateProfile(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
+        return userService.updatePassword(auth, passwordRequest);
     }
 
     @GetMapping("/{userId}")

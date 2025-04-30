@@ -4,12 +4,10 @@ import EtfRecommendService.Reply.Reply;
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.lang.reflect.Member;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,14 +68,18 @@ public class User extends BaseEntity {
         this.isLikePrivate = isLikePrivate;
     }
 
-    public void profileUpdate(String nickName, Boolean isLikePrivate) {
+    public void deleteUser() {
+        this.isDeleted = true;
+    }
+
+    public void updateProfile(String nickName, Boolean isLikePrivate) {
         if (nickName != null) {
             this.nickName = nickName;
         }
         this.isLikePrivate = isLikePrivate;
     }
 
-    public void passwordUpdate(Password newRawPassword) {
+    public void updatePassword(Password newRawPassword) {
         this.password = newRawPassword;
     }
 
@@ -100,4 +102,6 @@ public class User extends BaseEntity {
     public int hashCode() {
         return Objects.hashCode(password);
     }
+
+    public static String userMismatchExceptionMessage = "아이디 또는 비밀번호가 다릅니다.";
 }
