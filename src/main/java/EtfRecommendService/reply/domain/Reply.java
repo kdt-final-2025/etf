@@ -54,7 +54,11 @@ public class Reply extends BaseEntity {
         this.content = content;
     }
 
-    public void softDelete(){
-        this.isDeleted = true;
+    public void softDelete(User user){
+            this.isDeleted = true;
+    }
+
+    public void validateUserPermission(User user){
+        if (!this.user.equals(user)) throw new RuntimeException("Permission denied to delete this comment.");
     }
 }

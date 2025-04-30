@@ -149,10 +149,8 @@ public class ReplyService {
     public void delete(String loginId, Long replyId) {
         User user = userRepository.findByLoginId(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
         Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
-        if (reply.getUser().equals(user)){
-            reply.softDelete();
-        }
-        else throw new IllegalArgumentException("Permission denied to delete this comment.");
+        reply.validateUserPermission(user);
+        reply.softDelete(user);
     }
 
     @Transactional
