@@ -42,8 +42,9 @@ public class ReportService {
                     .reporter(user)
                     .reportReason(ReportReason.toEnum(rq.reportReason()))
                     .build();
-
             report.addReport(comment, user);
+
+            commentReportRepository.save(report);
 
             long reportedCount = commentReportRepository.countByCommentId(rq.commentId());
             if (reportedCount >= 10){
@@ -61,8 +62,9 @@ public class ReportService {
                     .build();
 
             report.addReport(reply, user);
+            replyReportRepository.save(report);
 
-            long reportedCount = replyReportRepository.countByCommentId(rq.replyId());
+            long reportedCount = replyReportRepository.countByReplyId(rq.replyId());
             if (reportedCount >= 10){
                 notificationService.notifyIfReportedOverLimit(rq.replyId(), ReportType.REPLY);
             }
