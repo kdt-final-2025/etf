@@ -7,6 +7,7 @@ import EtfRecommendService.reply.service.ReplyService;
 import jakarta.validation.Valid;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -27,7 +28,19 @@ public class ReplyController {
     }
 
     @GetMapping
-    public ResponseEntity<RepliesPageList> readAllReplies(@LoginMember String loginId, Long commentId, @PageableDefault(page = 0,size = 10,sort = "createdAt",direction = Sort.Direction.DESC)Pageable pageable){
+    public ResponseEntity<RepliesPageList> readAllReplies(@LoginMember String loginId, Long commentId,
+                                                          @RequestParam(required = false, defaultValue = "1") int page,
+                                                          @RequestParam(required = false, defaultValue = "10") int size,
+                                                          @RequestParam(required = false, defaultValue = "createdAt,desc") String sort){
+        String[] orderAndDirection = sort.split(",");
+        Sort sortObj;
+        if (orderAndDirection.length > 1) {
+            Sort.Direction direction = Sort.Direction.fromString(orderAndDirection[1]);
+            sortObj = Sort.by(direction, orderAndDirection[0]);
+        } else {
+            sortObj = Sort.by(Sort.Direction.DESC, orderAndDirection[0]);
+        }
+        Pageable pageable = PageRequest.of(page-1, size,sortObj);
         RepliesPageList repliesPageList = replyService.readAll(loginId, commentId, pageable);
         return ResponseEntity.ok(repliesPageList);
     }
