@@ -7,6 +7,9 @@ import EtfRecommendService.user.dto.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.NoSuchElementException;
 
 
@@ -114,10 +117,18 @@ public class UserService {
     }
 
     @Transactional
-    public UserProfileResponse imageUpdate(String loginId, String imageUrl) {
+    public UserProfileResponse imageUpdate(String loginId, MultipartFile file) throws IOException {
         User user = getByLoginId(loginId);
 
-        user.updateProfileImg(imageUrl);
+        String existingImageUrl = user.getImageUrl();
+
+        if (existingImageUrl != null && !existingImageUrl.isEmpty()) {
+            s3Service.deleteFile(existingImageUrl);
+        }
+
+        String newImageUrl = s3Service.uploadFile(file);
+
+        user.updateProfileImg(newImageUrl);
 
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }

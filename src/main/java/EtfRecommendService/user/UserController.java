@@ -49,14 +49,9 @@ public class UserController {
     }
 
     @PatchMapping("/image")
-    public UserProfileResponse imageUpdate(@LoginMember String auth,@RequestPart(value = "images") MultipartFile files) throws IOException {
-        User user = userService.getByLoginId(auth); // 기존 사용자 정보 조회
-        String oldImageUrl = user.getImageUrl();    // 기존 이미지 URL
-
-        // 기존 이미지 삭제 후 새 이미지 업로드
-        String newImageUrl = s3Service.replaceFile(files, oldImageUrl);
-
-        return userService.imageUpdate(auth, newImageUrl);
+    public UserProfileResponse imageUpdate(@LoginMember String auth,
+                                           @RequestPart(value = "images") MultipartFile file) throws IOException {
+        return userService.imageUpdate(auth, file);
     }
 
 }
