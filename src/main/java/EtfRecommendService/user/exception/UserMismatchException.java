@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class UserMismatchException extends RuntimeException {
-    public UserMismatchException(String message) {
-        super(message);
+    public UserMismatchException() {
+        super("아이디 또는 비밀번호가 다릅니다.");
     }
 }

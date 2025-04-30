@@ -23,7 +23,7 @@ public class UserService {
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginId(loginId).orElseThrow(
-                () -> new UserMismatchException("아이디 또는 비밀번호가 틀립니다"));
+                () -> new UserMismatchException());
     }
 
     public UserResponse create(CreateUserRequest userRequest) {
@@ -46,11 +46,15 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        if (loginRequest.password().isSamePassword(user.getPassword())) {
-            return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
+        if (user.getIsDeleted()) {
+            throw new UserMismatchException();
         }
 
-        throw new UserMismatchException("회원을 찾을 수 없습니다.");
+        if (!loginRequest.password().isSamePassword(user.getPassword())) {
+            throw new UserMismatchException();
+        }
+
+        return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
     }
 
     @Transactional
