@@ -50,7 +50,11 @@ public class Reply extends BaseEntity {
 //        user.getReplyList().add(this);
     }
 
-    public void update(Long commentId, String content) {
+    public void update(String content) {
+        this.content = content;
+    }
 
+    public void softDelete(){
+        this.isDeleted = true;
     }
 }

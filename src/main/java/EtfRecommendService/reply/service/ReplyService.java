@@ -140,7 +140,7 @@ public class ReplyService {
         Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
 
         if (reply.getUser().equals(user)){
-            reply.update(rq.commentId(), rq.content());
+            reply.update(rq.content());
         }
         else throw new IllegalArgumentException("Permission denied to edit this comment.");
     }
@@ -150,7 +150,7 @@ public class ReplyService {
         User user = userRepository.findByLoginId(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
         Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
         if (reply.getUser().equals(user)){
-            replyRepository.deleteById(replyId);
+            reply.softDelete();
         }
         else throw new IllegalArgumentException("Permission denied to delete this comment.");
     }
