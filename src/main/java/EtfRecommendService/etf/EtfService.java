@@ -29,8 +29,8 @@ public class EtfService {
     }
 
     //etf 전체 조회 (테마별, 순위별)
-    public EtfResponse readAll(Pageable pageable, Theme theme, SortOrder sortOrder) {
-        Page<Etf> etfs = etfQueryRepository.findAllByThemeAndSort(theme, sortOrder, pageable);
+    public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, SortOrder sortOrder) {
+        Page<Etf> etfs = etfQueryRepository.findAllByThemeAndSort(theme, sortOrder,keyword,pageable);
 
         List<EtfReadResponse> etfReadResponseList = etfs.getContent()
                 .stream()
