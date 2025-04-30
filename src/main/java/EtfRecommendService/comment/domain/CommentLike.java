@@ -11,7 +11,6 @@ import lombok.*;
 @Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Table(
-        name = "comment_likes",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_comment_user",
                 columnNames = {"comment_id", "user_id"}
