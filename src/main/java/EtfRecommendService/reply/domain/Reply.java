@@ -1,6 +1,7 @@
 package EtfRecommendService.reply.domain;
 
 import EtfRecommendService.comment.Comment;
+import EtfRecommendService.report.domain.ReplyReport;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
@@ -28,12 +29,19 @@ public class Reply extends BaseEntity {
     private boolean isDeleted = false;
 
     @ManyToOne
+    @ToString.Exclude
     private Comment comment;
     @ManyToOne
+    @ToString.Exclude
     private User user;
     @OneToMany(mappedBy = "reply")
     @Builder.Default
+    @ToString.Exclude
     private List<ReplyLike> replyLikeList = new ArrayList<>();
+    @OneToMany(mappedBy = "reply")
+    @Builder.Default
+    @ToString.Exclude
+    private List<ReplyReport> replyReportList = new ArrayList<>();
 
     public void addCommentAndUser(Comment comment, User user){
         this.comment = comment;
