@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static EtfRecommendService.user.User.userMismatchExceptionMessage;
+import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
+
 
 @RequiredArgsConstructor
 @Service
@@ -24,7 +25,7 @@ public class UserService {
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
-                () -> new UserMismatchException(userMismatchExceptionMessage));
+                () -> new UserMismatchException(USER_MISMATCH));
     }
 
     public UserResponse create(CreateUserRequest userRequest) {
@@ -48,7 +49,7 @@ public class UserService {
         User user = getByLoginId(loginRequest.loginId());
 
         if (!user.isSamePassword(loginRequest.password())) {
-            throw new UserMismatchException(userMismatchExceptionMessage);
+            throw new UserMismatchException(USER_MISMATCH);
         }
 
         return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
