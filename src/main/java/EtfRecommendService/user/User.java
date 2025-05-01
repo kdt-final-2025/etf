@@ -2,6 +2,7 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.Reply.Reply;
 import EtfRecommendService.comment.Comment;
+import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -81,8 +82,17 @@ public class User extends BaseEntity {
         }
     }
 
-    public void updatePassword(Password newRawPassword) {
-        this.password = newRawPassword;
+    public void updatePassword(Password existingPassword,Password newPassword, Password confirmNewPassword) {
+        if (!newPassword.isSamePassword(confirmNewPassword)) {
+            throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+        }
+        if (!this.isSamePassword(existingPassword)) {
+            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
+        }
+        if (this.isSamePassword(confirmNewPassword)) {
+            throw new RuntimeException("변경할 비밀번호가 같습니다.");
+        }
+        this.password = newPassword;
     }
 
     public boolean isSamePassword(Password otherPassword) {

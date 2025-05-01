@@ -81,21 +81,10 @@ public class UserService {
     public UserPasswordResponse updatePassword(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
-        if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-        }
-
-        // 유저의 비밀번호와 입력받은 비밀번호가 같지않으면 예외처리
-        if (!user.isSamePassword(passwordRequest.existingPassword())) {
-            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
-        }
-
-        // 유저의 비밀번호와 입력받은 새 비밀번호가 같으면 예외처리
-        if (user.isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new RuntimeException("변경할 비밀번호가 같습니다.");
-        }
-
-        user.updatePassword(passwordRequest.newPassword());
+        user.updatePassword(
+                passwordRequest.existingPassword(),
+                passwordRequest.newPassword(),
+                passwordRequest.confirmNewPassword());
 
         return new UserPasswordResponse(user.getId());
     }
