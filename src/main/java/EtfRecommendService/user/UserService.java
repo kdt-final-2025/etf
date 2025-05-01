@@ -2,7 +2,6 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
-import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +47,7 @@ public class UserService {
     public UserLoginResponse login(UserLoginRequest loginRequest) {
         User user = getByLoginId(loginRequest.loginId());
 
-        if (!user.verifyPassword(loginRequest.password())) {
+        if (!user.isSamePassword(loginRequest.password())) {
             throw new UserMismatchException(USER_MISMATCH);
         }
 

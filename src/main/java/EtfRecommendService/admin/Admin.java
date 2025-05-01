@@ -5,7 +5,6 @@ import EtfRecommendService.user.Password;
 
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +24,7 @@ public class Admin extends BaseEntity {
     @Column(nullable = false)
     private Password password;
 
-    public boolean verifyPassword(Password inputPassword) {
+    public boolean isSamePassword(Password inputPassword) {
         return this.getPassword().isSamePassword(inputPassword);
     }
 

@@ -95,13 +95,7 @@ public class User extends BaseEntity {
         this.password = newPassword;
     }
 
-    // 로그인 확인용
-    public boolean verifyPassword(Password inputPassword) {
-        return isSamePassword(inputPassword);
-    }
-
-    // 비밀번호 변경 검증용
-    private boolean isSamePassword(Password otherPassword) {
+    public boolean isSamePassword(Password otherPassword) {
         if (this.getPassword().isSamePassword(otherPassword)) {
             return true;
         }

@@ -21,7 +21,7 @@ public class AdminService {
         Admin admin = adminRepository.findByLoginId(loginRequest.loginId()).orElseThrow(
                 () -> new UserMismatchException(USER_MISMATCH));
 
-        if (!admin.verifyPassword(loginRequest.password())) {
+        if (!admin.isSamePassword(loginRequest.password())) {
             throw new UserMismatchException(USER_MISMATCH);
         }
 
