@@ -15,6 +15,7 @@ import EtfRecommendService.report.repository.ReplyReportRepository;
 import EtfRecommendService.user.User;
 import EtfRecommendService.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,47 +28,58 @@ public class ReportService {
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
     private final NotificationService notificationService;
+    private final int reportLimit;
 
     @Transactional
     public void create(String loginId, ReportRequest rq) {
         User user = userRepository.findByLoginId(loginId)
-                .orElseThrow(()->new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (rq.commentId() != null){
-            Comment comment = commentRepository.findById(rq.commentId())
-                    .orElseThrow(()->new IllegalArgumentException("Comment Not found"));
-
-            CommentReport report = CommentReport.builder()
-                    .comment(comment)
-                    .reporter(user)
-                    .reportReason(ReportReason.toEnum(rq.reportReason()))
-                    .build();
-            report.addReport(comment, user);
-
-            commentReportRepository.save(report);
-
-            long reportedCount = commentReportRepository.countByCommentId(rq.commentId());
-            if (reportedCount >= 10){
-                notificationService.notifyIfReportedOverLimit(rq.commentId(), ReportType.COMMENT);
-            }
+        if (rq.commentId() != null) {
+            handleCommentReport(user, rq);
+        } else {
+            handleReplyReport(user, rq);
         }
-        else {
-            Reply reply = replyRepository.findById(rq.replyId())
-                    .orElseThrow(()->new IllegalArgumentException("Reply not found"));
+    }
 
-            ReplyReport report = ReplyReport.builder()
-                    .reporter(user)
-                    .reply(reply)
-                    .reportReason(ReportReason.toEnum(rq.reportReason()))
-                    .build();
+    private void handleCommentReport(User user, ReportRequest rq) {
+        Comment comment = commentRepository.findById(rq.commentId())
+                .orElseThrow(() -> new IllegalArgumentException("Comment Not found"));
 
-            report.addReport(reply, user);
-            replyReportRepository.save(report);
+        CommentReport report = CommentReport.builder()
+                .comment(comment)
+                .reporter(user)
+                .reportReason(ReportReason.toEnum(rq.reportReason()))
+                .build();
+        report.addReport(comment, user);
 
-            long reportedCount = replyReportRepository.countByReplyId(rq.replyId());
-            if (reportedCount >= 10){
-                notificationService.notifyIfReportedOverLimit(rq.replyId(), ReportType.REPLY);
-            }
+        commentReportRepository.save(report);
+
+        checkReportLimit(rq.commentId(), ReportType.COMMENT,
+                commentReportRepository.countByCommentId(rq.commentId()));
+    }
+
+    private void handleReplyReport(User user, ReportRequest rq) {
+        Reply reply = replyRepository.findById(rq.replyId())
+                .orElseThrow(() -> new IllegalArgumentException("Reply not found"));
+
+        ReplyReport report = ReplyReport.builder()
+                .reporter(user)
+                .reply(reply)
+                .reportReason(ReportReason.toEnum(rq.reportReason()))
+                .build();
+
+        report.addReport(reply, user);
+        replyReportRepository.save(report);
+
+        checkReportLimit(rq.replyId(), ReportType.REPLY,
+                replyReportRepository.countByReplyId(rq.replyId()));
+    }
+
+    private void checkReportLimit(Long contentId, ReportType type, @Value("${report.limit}")long reportedCount) {
+
+        if (reportedCount >= reportLimit) {
+            notificationService.notifyIfReportedOverLimit(contentId, type);
         }
     }
 }

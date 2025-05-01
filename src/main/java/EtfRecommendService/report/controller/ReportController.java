@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/reports")
+@RequestMapping("api/v1/")
 public class ReportController {
     private final ReportService reportService;
 
-    @PostMapping
+    @PostMapping("user/reports")
     public ResponseEntity<String> createReport(@LoginMember String loginId, @RequestBody ReportRequest rq){
         reportService.create(loginId, rq);
         return ResponseEntity.status(HttpStatus.CREATED).body("Reply was Reported");
