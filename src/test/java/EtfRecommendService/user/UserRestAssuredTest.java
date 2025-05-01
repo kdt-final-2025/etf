@@ -172,16 +172,15 @@ public class UserRestAssuredTest {
                 .jsonPath()
                 .getString("token");
 
-        UserDeleteResponse deleteResponse = RestAssured
+        RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
                 .when()
                 .delete("/api/v1/users")
                 .then().log().all()
-                .statusCode(200)
-                .extract()
-                .as(UserDeleteResponse.class);
+                .statusCode(204)
+                .extract();
     }
 
     @Test
