@@ -2,6 +2,7 @@ package EtfRecommendService.report.domain;
 
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.user.User;
+import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import lombok.*;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString
-public class CommentReport {
+public class CommentReport extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
@@ -28,6 +29,9 @@ public class CommentReport {
 
     @Column(nullable = false)
     private ReportReason reportReason;
+
+    @Column(nullable = false)
+    private boolean isChecked = false;
 
     //유저 엔티티에 리포트가 연결된 후 활성화
     public void addReport(Comment comment, User user){

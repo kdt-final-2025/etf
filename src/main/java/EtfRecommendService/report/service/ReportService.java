@@ -1,5 +1,7 @@
 package EtfRecommendService.report.service;
 
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.comment.Comment;
 import EtfRecommendService.comment.CommentRepository;
 import EtfRecommendService.notification.NotificationService;
@@ -9,15 +11,21 @@ import EtfRecommendService.report.domain.ReportType;
 import EtfRecommendService.report.domain.CommentReport;
 import EtfRecommendService.report.domain.ReplyReport;
 import EtfRecommendService.report.domain.ReportReason;
+import EtfRecommendService.report.dto.CommentReportResponse;
+import EtfRecommendService.report.dto.ReplyReportResponse;
+import EtfRecommendService.report.dto.ReportListResponse;
 import EtfRecommendService.report.dto.ReportRequest;
 import EtfRecommendService.report.repository.CommentReportRepository;
 import EtfRecommendService.report.repository.ReplyReportRepository;
 import EtfRecommendService.user.User;
 import EtfRecommendService.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +37,7 @@ public class ReportService {
     private final ReplyRepository replyRepository;
     private final NotificationService notificationService;
     private final int reportLimit;
+    private final AdminRepository adminRepository;
 
     @Transactional
     public void create(String loginId, ReportRequest rq) {
@@ -81,5 +90,24 @@ public class ReportService {
         if (reportedCount >= reportLimit) {
             notificationService.notifyIfReportedOverLimit(contentId, type);
         }
+    }
+
+    public ReportListResponse readAll(String loginId) {
+        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()-> new EntityNotFoundException("User is not "));
+        List<CommentReportResponse> commentReportResponseList =
+                commentReportRepository.findAllByIsCheckedFalse()
+                        .stream()
+                        .map(CommentReportResponse::toDto)
+                        .toList();
+        List<ReplyReportResponse> replyReportResponseList =
+                replyReportRepository.findByIsCheckedFalse()
+                        .stream()
+                        .map(ReplyReportResponse::toDto)
+                        .toList();
+
+        return ReportListResponse.builder()
+                .commentReportResponseList(commentReportResponseList)
+                .replyReportResponseList(replyReportResponseList)
+                .build();
     }
 }

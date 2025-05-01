@@ -29,6 +29,9 @@ public class ReplyReport extends BaseEntity {
     @Column(nullable = false)
     private ReportReason reportReason;
 
+    @Column(nullable = false)
+    private boolean isChecked = false;
+
     //Reply 와 User 에 Report 연결된 후 활성화
     public void addReport(Reply reply, User user) {
 //        reply.getReportList().add(this);
