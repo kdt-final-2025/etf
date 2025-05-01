@@ -108,18 +108,4 @@ public class User extends BaseEntity {
         return false;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(password, user.password);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(password);
-    }
-
-    public static String userMismatchExceptionMessage = "아이디 또는 비밀번호가 다릅니다.";
 }

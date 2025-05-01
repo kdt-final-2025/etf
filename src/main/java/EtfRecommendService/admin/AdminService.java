@@ -21,9 +21,10 @@ public class AdminService {
         Admin admin = adminRepository.findByLoginId(loginRequest.loginId()).orElseThrow(
                 () -> new UserMismatchException(USER_MISMATCH));
 
-        if (loginRequest.password().isSamePassword(admin.getPassword())) {
-            return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
+        if (!admin.verifyPassword(loginRequest.password())) {
+            throw new UserMismatchException(USER_MISMATCH);
         }
-        throw new UserMismatchException(USER_MISMATCH);
+
+        return new AdminLoginResponse(jwtProvider.createToken(admin.getLoginId()));
     }
 }

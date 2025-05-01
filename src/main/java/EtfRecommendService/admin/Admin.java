@@ -18,11 +18,15 @@ public class Admin extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private String loginId;
 
     @Embedded
-    @NotNull
+    @Column(nullable = false)
     private Password password;
+
+    public boolean verifyPassword(Password inputPassword) {
+        return this.getPassword().isSamePassword(inputPassword);
+    }
 
 }
