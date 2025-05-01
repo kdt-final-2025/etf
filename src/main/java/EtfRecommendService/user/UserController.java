@@ -2,6 +2,7 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.user.dto.*;
+import EtfRecommendService.user.exception.PasswordMismatchException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,7 +38,10 @@ public class UserController {
     }
 
     @PostMapping("/me/password")
-    public UserPasswordResponse updateProfile(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
+    public UserPasswordResponse updatePassword(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
+        if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
+            throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+        }
         return userService.updatePassword(auth, passwordRequest);
     }
 

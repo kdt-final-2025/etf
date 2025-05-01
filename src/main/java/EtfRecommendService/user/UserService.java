@@ -82,8 +82,7 @@ public class UserService {
 
         user.updatePassword(
                 passwordRequest.existingPassword(),
-                passwordRequest.newPassword(),
-                passwordRequest.confirmNewPassword());
+                passwordRequest.newPassword());
 
         return new UserPasswordResponse(user.getId());
     }
