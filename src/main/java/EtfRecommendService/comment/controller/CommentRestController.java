@@ -1,10 +1,7 @@
 package EtfRecommendService.comment.controller;
 
 
-import EtfRecommendService.comment.dto.CommentCreateRequest;
-import EtfRecommendService.comment.dto.CommentUpdateRequest;
-import EtfRecommendService.comment.dto.CommentsPageList;
-import EtfRecommendService.comment.dto.ToggleLikeResponse;
+import EtfRecommendService.comment.dto.*;
 import EtfRecommendService.comment.serviece.CommentService;
 import EtfRecommendService.loginUtils.LoginMember;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/comments")
+@RequestMapping("/api/v1")
 public class CommentRestController {
 
     private final CommentService commentService;
 
     //댓글 생성
-    @PostMapping
+    @PostMapping("/user/comments")
     public void createComment(
             @LoginMember String loginId,
             @RequestBody CommentCreateRequest commentCreateRequest) {
@@ -31,7 +28,7 @@ public class CommentRestController {
     }
 
     //댓글 조회
-    @GetMapping
+    @GetMapping("/user/comments")
     public ResponseEntity<CommentsPageList> readAllComment(
             @LoginMember String loginId,
             @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
@@ -41,7 +38,7 @@ public class CommentRestController {
     }
 
     //댓글 수정
-    @PutMapping("/{commentId}")
+    @PutMapping("/user/comments/{commentId}")
     public void updateComment(
             @LoginMember String loginId,
             @PathVariable Long commentId,
@@ -50,7 +47,7 @@ public class CommentRestController {
     }
 
     //Comment Soft Delete
-    @DeleteMapping("/{commentId}")
+    @DeleteMapping("/user/comments/{commentId}")
     public void deleteComment(
             @LoginMember String loginId,
             @PathVariable Long commentId) {
@@ -58,7 +55,7 @@ public class CommentRestController {
     }
 
     //좋아요 토글
-    @PostMapping("/{commentId}/likes")
+    @PostMapping("/user/comments/{commentId}/likes")
     public ResponseEntity<ToggleLikeResponse> toggleLike(
             @LoginMember String loginId,
             @PathVariable Long commentId) {
@@ -66,5 +63,10 @@ public class CommentRestController {
         return ResponseEntity.ok(response);
     }
 
-
+    //관리자가 신고된 댓글 조회할 때 사용할 API
+    //유저별 신고목록 조회와 함께 사용
+    @GetMapping("/admin/comments/{commentId}")
+    public ResponseEntity<CommentResponse> readOneComment(@LoginMember String loginId, @PathVariable Long commentId){
+        return ResponseEntity.ok(commentService.readOneComment(loginId, commentId));
+    }
 }

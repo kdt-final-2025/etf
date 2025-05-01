@@ -1,5 +1,7 @@
 package EtfRecommendService.comment.serviece;
 
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.comment.domain.Comment;
 import EtfRecommendService.comment.domain.CommentLike;
 import EtfRecommendService.comment.dto.*;
@@ -36,6 +38,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final EtfRepository etfRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final AdminRepository adminRepository;
 
     public CommentsPageList readAll(Pageable pageable, Long etfId) {
         Sort sort = pageable.getSort();
@@ -200,4 +203,10 @@ public class CommentService {
         return new ToggleLikeResponse(commentId, liked, count);
     }
 
+    public CommentResponse readOneComment(String loginId, Long commentId) {
+        //이부분은 Spring Security 적용해서 권한 검증하는 방식으로 교체할것- 임시 권한 검증책
+        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()->new EntityNotFoundException("User is not Admin"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(()->new EntityNotFoundException("Not found Comment"));
+        return CommentResponse.toDto(comment);
+    }
 }
