@@ -30,7 +30,6 @@ public class EtfQueryRepository {
                 .selectFrom(qEtf)
                 .where(themeEq(theme),
                         keywordContains(keyword))
-                .orderBy(getOrderSpecifier(sortOrder))
                 .offset(pageable.getOffset())  //페이지네이션
                 .limit(pageable.getPageSize())  //페이지네이션
                 .fetch();
@@ -68,22 +67,6 @@ public class EtfQueryRepository {
         }
         return qEtf.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
                 .or(qEtf.etfCode.containsIgnoreCase(keyword));
-    }
-
-    private OrderSpecifier<?> getOrderSpecifier(SortOrder sortOrder) {
-        if (sortOrder == null){
-            sortOrder = SortOrder.VOLUME; // 기본 정렬 = 거래량
-        }
-        switch (sortOrder) {
-            case VOLUME:
-                return qEtf.volume.desc();
-            case RISING_RATE:
-                return qEtf.risingRate.desc();
-            case FALLING_RATE:
-                return qEtf.fallingRate.asc();
-            default:
-                return qEtf.volume.desc(); // 기본 정렬은 거래량
-        }
     }
 }
 
