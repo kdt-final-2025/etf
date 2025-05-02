@@ -1,5 +1,8 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.Reply.Reply;
+import EtfRecommendService.comment.Comment;
+import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,12 +21,21 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String loginId;
 
     @Embedded
+    @Column(nullable = false)
     private Password password;
 
+    @Column(nullable = false)
     private String nickName;
+
+    @OneToMany(mappedBy = "user")
+    private List<Reply> replyList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> commentList = new ArrayList<>();
 
     private String imageUrl = "";
 
@@ -55,15 +67,27 @@ public class User extends BaseEntity {
         this.isLikePrivate = isLikePrivate;
     }
 
-    public void profileUpdate(String nickName, Boolean isLikePrivate) {
+    public void deleteUser() {
+        this.isDeleted = true;
+    }
+
+    public void updateProfile(String nickName, Boolean isLikePrivate) {
         if (nickName != null) {
             this.nickName = nickName;
         }
-        this.isLikePrivate = isLikePrivate;
+        if (isLikePrivate != null) {
+            this.isLikePrivate = isLikePrivate;
+        }
     }
 
-    public void passwordUpdate(Password newRawPassword) {
-        this.password = newRawPassword;
+    public void updatePassword(Password existingPassword,Password newPassword) {
+        if (!this.isSamePassword(existingPassword)) {
+            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
+        }
+        if (this.isSamePassword(newPassword)) {
+            throw new RuntimeException("변경할 비밀번호가 같습니다.");
+        }
+        this.password = newPassword;
     }
 
     public boolean isSamePassword(Password otherPassword) {
@@ -73,20 +97,4 @@ public class User extends BaseEntity {
         return false;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(password, user.password);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(password);
-    }
-
-    public void updateProfileImg(String updateUrl) {
-        this.imageUrl=updateUrl;
-    }
 }
