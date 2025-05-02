@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -78,6 +80,10 @@ public class User extends BaseEntity {
         if (isLikePrivate != null) {
             this.isLikePrivate = isLikePrivate;
         }
+    }
+
+    public void updateProfileImg(String imgUrl) {
+        this.imageUrl = imgUrl;
     }
 
     public void updatePassword(Password existingPassword,Password newPassword) {

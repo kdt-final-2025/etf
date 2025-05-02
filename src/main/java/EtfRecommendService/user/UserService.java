@@ -1,5 +1,6 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
