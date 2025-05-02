@@ -1,8 +1,8 @@
 package EtfRecommendService.reply.service;
 
-import EtfRecommendService.comment.Comment;
-import EtfRecommendService.comment.CommentRepository;
 import EtfRecommendService.comment.NotFoundCommentIdException;
+import EtfRecommendService.comment.domain.Comment;
+import EtfRecommendService.comment.repository.CommentRepository;
 import EtfRecommendService.reply.domain.Reply;
 import EtfRecommendService.reply.domain.ReplyLike;
 import EtfRecommendService.reply.dto.RepliesPageList;
@@ -47,7 +47,7 @@ public class ReplyService {
 
     @Transactional
     public void create(String loginId, @Valid ReplyRequest rq) {
-        User user = userRepository.findByLoginId(loginId).orElseThrow(() -> new IllegalArgumentException("Not found Login Id"));
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() -> new IllegalArgumentException("Not found Login Id"));
         Comment comment = commentRepository.findById(rq.commentId()).orElseThrow(() -> new NotFoundCommentIdException("Not found Comment Id"));
 
         //유저가 해당 댓글에 작성한 가장 최근 대댓글 조회( 작성한 대댓글이 없을 시 Null 반환 )
@@ -136,7 +136,7 @@ public class ReplyService {
 
     @Transactional
     public void update(String loginId, Long replyId, ReplyRequest rq) {
-        User user = userRepository.findByLoginId(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
         Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
 
         if (reply.getUser().equals(user)){
@@ -147,7 +147,7 @@ public class ReplyService {
 
     @Transactional
     public void delete(String loginId, Long replyId) {
-        User user = userRepository.findByLoginId(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
         Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
         reply.validateUserPermission(user);
         reply.softDelete(user);
@@ -157,7 +157,7 @@ public class ReplyService {
     public void toggleLike(String loginId, Long replyId) {
         Reply reply = replyRepository.findById(replyId)
                 .orElseThrow(() -> new EntityNotFoundException("Reply not found"));
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         Optional<ReplyLike> replyLike = replyLikeRepository.findByUserIdAndReplyId(user.getId(), reply.getId());

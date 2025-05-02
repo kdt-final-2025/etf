@@ -1,6 +1,6 @@
 package EtfRecommendService.reply.domain;
 
-import EtfRecommendService.comment.Comment;
+import EtfRecommendService.comment.domain.Comment;
 import EtfRecommendService.report.domain.ReplyReport;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;

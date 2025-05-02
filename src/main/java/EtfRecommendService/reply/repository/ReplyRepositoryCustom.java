@@ -1,6 +1,6 @@
 package EtfRecommendService.reply.repository;
 
-import EtfRecommendService.comment.QComment;
+import EtfRecommendService.comment.domain.QComment;
 import EtfRecommendService.reply.domain.QReply;
 import EtfRecommendService.reply.domain.QReplyLike;
 import EtfRecommendService.reply.repository.qdto.ReplyAndLikesCountQDto;
