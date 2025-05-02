@@ -1,29 +1,41 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.comment.domain.Comment;
+import EtfRecommendService.reply.domain.Reply;
+import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "users")
+
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String loginId;
 
     @Embedded
+    @Column(nullable = false)
     private Password password;
 
+    @Column(nullable = false)
     private String nickName;
+
+    @OneToMany(mappedBy = "user")
+    private List<Reply> replyList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Comment> commentList = new ArrayList<>();
 
     private String imageUrl = "";
 
@@ -55,15 +67,31 @@ public class User extends BaseEntity {
         this.isLikePrivate = isLikePrivate;
     }
 
-    public void profileUpdate(String nickName, Boolean isLikePrivate) {
+    public void deleteUser() {
+        this.isDeleted = true;
+    }
+
+    public void updateProfile(String nickName, Boolean isLikePrivate) {
         if (nickName != null) {
             this.nickName = nickName;
         }
-        this.isLikePrivate = isLikePrivate;
+        if (isLikePrivate != null) {
+            this.isLikePrivate = isLikePrivate;
+        }
     }
 
-    public void passwordUpdate(Password newRawPassword) {
-        this.password = newRawPassword;
+    public void updateProfileImg(String imgUrl) {
+        this.imageUrl = imgUrl;
+    }
+
+    public void updatePassword(Password existingPassword,Password newPassword) {
+        if (!this.isSamePassword(existingPassword)) {
+            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
+        }
+        if (this.isSamePassword(newPassword)) {
+            throw new RuntimeException("변경할 비밀번호가 같습니다.");
+        }
+        this.password = newPassword;
     }
 
     public boolean isSamePassword(Password otherPassword) {
@@ -73,16 +101,4 @@ public class User extends BaseEntity {
         return false;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(password, user.password);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(password);
-    }
 }
