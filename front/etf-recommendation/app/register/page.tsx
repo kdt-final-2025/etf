@@ -15,20 +15,27 @@ export default function RegisterPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">이름</Label>
-            <Input id="name" placeholder="이름을 입력하세요" />
+            <Label htmlFor="id">아이디</Label>
+            <Input id="id" type="id" placeholder="아이디를 입력하세요" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">이메일</Label>
-            <Input id="email" type="email" placeholder="이메일을 입력하세요" />
+            <Label htmlFor="nickname">닉네임</Label>
+            <Input id="nickname" type="text" placeholder="닉네임을 입력하세요" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">비밀번호</Label>
             <Input id="password" type="password" placeholder="비밀번호를 입력하세요" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-            <Input id="confirmPassword" type="password" placeholder="비밀번호를 다시 입력하세요" />
+          <div className="flex items-center space-x-2">
+            <input
+                type="checkbox"
+                id="isLikePrivate"
+                name="isLikePrivate"
+                className="h-4 w-4"
+            />
+            <label htmlFor="isLikePrivate" className="text-sm">
+              내 ETF 목록을 비공개로 설정합니다
+            </label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox id="terms" />
