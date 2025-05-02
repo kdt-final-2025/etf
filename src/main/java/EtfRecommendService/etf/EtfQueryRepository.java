@@ -18,8 +18,6 @@ import java.util.List;
 @Repository
 public class EtfQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
-    private final QEtf etf = QEtf.etf;
-    private final QEtfData etfData = QEtfData.etfData;
     private final QEtfReadData etfReadData = QEtfReadData.etfReadData;
 
     public List<WeeklyEtfDto> findWeeklyEtfs(
@@ -33,7 +31,7 @@ public class EtfQueryRepository {
                         etfReadData.etfCode,
                         etfReadData.theme,
                         etfReadData.weeklyReturn))
-                .from(etf)
+                .from(etfReadData)
                 .where(themeEq(theme),
                         keywordContains(keyword))
                 .offset(pageable.getOffset())
@@ -49,7 +47,7 @@ public class EtfQueryRepository {
                         etfReadData.etfCode,
                         etfReadData.theme,
                         etfReadData.monthlyReturn))
-                .from(etf)
+                .from(etfReadData)
                 .where(themeEq(theme), keywordContains(keyword))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -58,8 +56,8 @@ public class EtfQueryRepository {
 
     public Long fetchTotalCount(Theme theme, String keyword){
         Long count = jpaQueryFactory
-                .select(etf.count())
-                .from(etf)
+                .select(etfReadData.count())
+                .from(etfReadData)
                 .where(themeEq(theme),
                         keywordContains(keyword))
                 .fetchOne();
@@ -72,7 +70,7 @@ public class EtfQueryRepository {
         if (theme == null) {
             return null;  // dsl은 null값 무시 -> 전체 조회
         }
-        return etf.theme.eq(theme);
+        return etfReadData.theme.eq(theme);
     }
 
     //검색어 기능 - 종목명, 종목코드
@@ -80,8 +78,8 @@ public class EtfQueryRepository {
         if (keyword == null || keyword.trim().isEmpty()) {
             return null;
         }
-        return etf.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
-                .or(etf.etfCode.containsIgnoreCase(keyword));
+        return etfReadData.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
+                .or(etfReadData.etfCode.containsIgnoreCase(keyword));
     }
 }
 
