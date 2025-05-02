@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -32,18 +33,8 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
-//    public String replaceFile(MultipartFile multipartFile, String oldFileUrl) throws IOException {
-//        // 1. 기존 파일 삭제
-//        if (oldFileUrl != null && !oldFileUrl.isEmpty()) {
-//            deleteFileFromUrl(oldFileUrl);
-//        }
-//
-//        // 2. 새 파일 업로드
-//        return uploadFile(multipartFile);
-//    }
-
     public String uploadFile(MultipartFile multipartFile) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + multipartFile.getOriginalFilename();
+        String fileName = UUID.randomUUID().toString();
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(multipartFile.getContentType());
@@ -137,14 +128,6 @@ public class S3Service {
             throw new IllegalArgumentException("잘못된 S3 URL 형식입니다: " + fileUrl, e);
         }
     }
-//    public void deleteFileFromUrl(String fileUrl) {
-//        String fileName = extractKeyFromUrl(fileUrl);
-//        amazonS3.deleteObject(new DeleteObjectRequest(bucketName, fileName));
-//    }
-//
-//    private String extractKeyFromUrl(String fileUrl) {
-//        // 모든 도메인 패턴 대응 (s3.amazonaws.com, CloudFront 등)
-//        return fileUrl.substring(fileUrl.lastIndexOf("/") + 1); // 단순 객체 이름만 필요한 경우
-//    }
+
 
 }
