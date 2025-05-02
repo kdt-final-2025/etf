@@ -1,6 +1,7 @@
 package EtfRecommendService.comment.domain;
 
 import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.reply.domain.Reply;
 import EtfRecommendService.report.domain.CommentReport;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
@@ -48,6 +49,10 @@ public class Comment extends BaseEntity {
     @Builder.Default
     @ToString.Exclude
     private List<CommentReport> ReportList = new ArrayList<>();
+    @OneToMany(mappedBy = "comment")
+    @Builder.Default
+    @ToString.Exclude
+    private List<Reply> replyList = new ArrayList<>();
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
@@ -55,5 +60,10 @@ public class Comment extends BaseEntity {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public void addEtfAndUser(Etf etf, User user) {
+        etf.getCommentList().add(this);
+        user.getCommentList().add(this);
     }
 }

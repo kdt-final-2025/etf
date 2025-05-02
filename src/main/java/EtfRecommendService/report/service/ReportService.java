@@ -93,7 +93,6 @@ public class ReportService {
     }
 
     public ReportListResponse readAll(String loginId) {
-        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(() -> new EntityNotFoundException("User is not "));
         List<CommentReportResponse> commentReportResponseList =
                 commentReportRepository.findAllByIsCheckedFalse()
                         .stream()

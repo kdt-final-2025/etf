@@ -37,6 +37,6 @@ public class CommentReport extends BaseEntity {
     //유저 엔티티에 리포트가 연결된 후 활성화
     public void addReport(Comment comment, User user){
         comment.getReportList().add(this);
-//        user.getReportList().add(this);
+        user.getCommentReportList().add(this);
     }
 }

@@ -35,7 +35,7 @@ public class ReplyReport extends BaseEntity {
 
     //Reply 와 User 에 Report 연결된 후 활성화
     public void addReport(Reply reply, User user) {
-//        reply.getReportList().add(this);
-//        user.getReportList().add(this);
+        reply.getReportList().add(this);
+        user.getReplyReportList().add(this);
     }
 }
