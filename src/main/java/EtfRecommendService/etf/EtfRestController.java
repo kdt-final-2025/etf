@@ -16,13 +16,15 @@ public class EtfRestController {
 
     private final EtfService etfService;
 
+    //sortorder "" 변경 : Enum은 "" (빈 문자열)이 들어오면 바인딩 에러가 나기 때문, 없으면 null로 오게
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "20") int size,
-                                           @RequestParam(required = false) Theme theme,
-                                           @RequestParam(defaultValue = "") SortOrder sortOrder) {
+                                            @RequestParam(defaultValue = "20") int size,
+                                            @RequestParam(required = false) Theme theme,
+                                            @RequestParam(required = false, defaultValue = "") String keyword,
+                                            @RequestParam(required = false) SortOrder sortOrder) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme, sortOrder);
+        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword,sortOrder);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
@@ -33,22 +35,24 @@ public class EtfRestController {
     }
 
     @PostMapping("/users/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeResponse> create(@LoginMember String memberLoginId, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeResponse> create(@LoginMember String memberLoginId,
+                                                    @PathVariable Long etfId){
         SubscribeResponse subscribeResponse = etfService.subscribe(memberLoginId, etfId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscribeResponse);
     }
 
     @GetMapping("/users/etfs/subscribes")
     public ResponseEntity<SubscribeListResponse> subscribeReadAll(@LoginMember String memberLoginId,
-                                                  @RequestParam(defaultValue = "1") int page,
-                                                  @RequestParam(defaultValue = "20") int size){
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "20") int size){
         Pageable pageable = PageRequest.of(page - 1, size);
         SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, memberLoginId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
     }
 
     @DeleteMapping("/users/etf/{etfId}/subscription")
-    public ResponseEntity<SubscribeDeleteResponse> delete(@LoginMember String memberLoginId, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeDeleteResponse> delete(@LoginMember String memberLoginId,
+                                                          @PathVariable Long etfId){
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(memberLoginId, etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
