@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "users")
+
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,6 +78,10 @@ public class User extends BaseEntity {
         if (isLikePrivate != null) {
             this.isLikePrivate = isLikePrivate;
         }
+    }
+
+    public void updateProfileImg(String imgUrl) {
+        this.imageUrl = imgUrl;
     }
 
     public void updatePassword(Password existingPassword,Password newPassword) {
