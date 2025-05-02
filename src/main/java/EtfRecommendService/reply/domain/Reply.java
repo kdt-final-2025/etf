@@ -61,4 +61,8 @@ public class Reply extends BaseEntity {
     public void validateUserPermission(User user){
         if (!this.user.equals(user)) throw new RuntimeException("Permission denied to delete this comment.");
     }
+
+    public boolean isWrittenBy(User user){
+        return this.user.equals(user);
+    }
 }

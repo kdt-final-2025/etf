@@ -27,20 +27,14 @@ public class ReplyController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Reply Create Successfully");
     }
 
-    @GetMapping
-    public ResponseEntity<RepliesPageList> readAllReplies(@LoginMember String loginId, Long commentId,
+    @GetMapping("/{commentId}")
+    public ResponseEntity<RepliesPageList> readAllReplies(@LoginMember String loginId,
+                                                          @PathVariable Long commentId,
                                                           @RequestParam(required = false, defaultValue = "1") int page,
                                                           @RequestParam(required = false, defaultValue = "10") int size,
                                                           @RequestParam(required = false, defaultValue = "createdAt,desc") String sort){
-        String[] orderAndDirection = sort.split(",");
-        Sort sortObj;
-        if (orderAndDirection.length > 1) {
-            Sort.Direction direction = Sort.Direction.fromString(orderAndDirection[1]);
-            sortObj = Sort.by(direction, orderAndDirection[0]);
-        } else {
-            sortObj = Sort.by(Sort.Direction.DESC, orderAndDirection[0]);
-        }
-        Pageable pageable = PageRequest.of(page-1, size,sortObj);
+
+        Pageable pageable = createPageable(page,size,sort);
         RepliesPageList repliesPageList = replyService.readAll(loginId, commentId, pageable);
         return ResponseEntity.ok(repliesPageList);
     }
@@ -62,5 +56,17 @@ public class ReplyController {
             @LoginMember String loginId,
             @PathVariable Long replyId) {
         replyService.toggleLike(loginId, replyId);
+    }
+
+    private Pageable createPageable(int page, int size,String sort){
+        String[] orderAndDirection = sort.split(",");
+        Sort sortObj;
+        if (orderAndDirection.length > 1) {
+            Sort.Direction direction = Sort.Direction.fromString(orderAndDirection[1]);
+            sortObj = Sort.by(direction, orderAndDirection[0]);
+        } else {
+            sortObj = Sort.by(Sort.Direction.DESC, orderAndDirection[0]);
+        }
+        return PageRequest.of(page-1, size,sortObj);
     }
 }

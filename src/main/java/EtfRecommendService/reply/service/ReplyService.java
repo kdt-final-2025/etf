@@ -139,7 +139,7 @@ public class ReplyService {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->new NotFoundUserLoginIdException("Not found User"));
         Reply reply = replyRepository.findById(replyId).orElseThrow(()->new NotFoundReplyIdException("Not found Reply Id"));
 
-        if (reply.getUser().equals(user)){
+        if (reply.isWrittenBy(user)){
             reply.update(rq.content());
         }
         else throw new IllegalArgumentException("Permission denied to edit this comment.");
