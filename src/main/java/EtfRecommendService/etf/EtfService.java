@@ -28,29 +28,21 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
-    //etf 전체 조회 (테마별, 순위별)
-    public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, SortOrder sortOrder) {
-        Page<Etf> etfs = etfQueryRepository.findAllByThemeAndSort(theme, sortOrder,keyword,pageable);
+    public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, String period) {
+        long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
+        int totalPage = (int) Math.ceil((double) totalCount / pageable.getPageSize());
+        int currentPage = pageable.getPageNumber() + 1;
+        int pageSize = pageable.getPageSize();
 
-        List<EtfReadResponse> etfReadResponseList = etfs.getContent()
-                .stream()
-                .map(etfList -> new EtfReadResponse(
-                        etfList.getId(),
-                        etfList.getEtfName(),
-                        etfList.getEtfCode()
-                ))
-                .toList();
-
-        return new EtfResponse(
-                etfs.getTotalPages(),
-                etfs.getTotalElements(),
-                etfs.getNumber()+1,
-                etfs.getSize(),
-                etfReadResponseList
-        );
+        if ("monthly".equalsIgnoreCase(period)) {
+            List<MonthlyEtfDto> monthlyList = etfQueryRepository.findMonthlyEtfs(theme, keyword, pageable);
+            return new EtfResponse<>(totalPage, totalCount, currentPage, pageSize, monthlyList);
+        } else {
+            List<WeeklyEtfDto> weeklyList = etfQueryRepository.findWeeklyEtfs(theme, keyword, pageable);
+            return new EtfResponse<>(totalPage, totalCount, currentPage, pageSize, weeklyList);
+        }
     }
 
-    //etf상세조회
     public EtfDetailResponse findById(Long etfId) {
         Etf etf = etfRepository.findById(etfId)
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
@@ -78,7 +70,7 @@ public class EtfService {
         }
 
         Subscribe subscribe = Subscribe.builder()
-//                .user(user)
+                .user(user)
                 .etf(etf)
                 .startTime(LocalDateTime.now())
                 .expiredTime(LocalDateTime.now().plusMonths(1))

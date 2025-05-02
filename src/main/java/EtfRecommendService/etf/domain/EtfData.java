@@ -35,4 +35,9 @@ public class EtfData {
     @Column(nullable = false)
     private int lastPrice;
 
+    private double returnRate;
+
+    @ManyToOne
+    private Etf etf;
+
 }
