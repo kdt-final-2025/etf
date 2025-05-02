@@ -1,6 +1,6 @@
 package EtfRecommendService.report.domain;
 
-import EtfRecommendService.comment.Comment;
+import EtfRecommendService.comment.domain.Comment;
 import EtfRecommendService.user.User;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
@@ -30,6 +30,7 @@ public class CommentReport extends BaseEntity {
     @Column(nullable = false)
     private ReportReason reportReason;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean isChecked = false;
 
