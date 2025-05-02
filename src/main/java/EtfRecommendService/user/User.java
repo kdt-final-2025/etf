@@ -1,23 +1,25 @@
 package EtfRecommendService.user;
 
-import EtfRecommendService.Reply.Reply;
-import EtfRecommendService.comment.Comment;
+import EtfRecommendService.comment.domain.Comment;
+import EtfRecommendService.comment.domain.CommentLike;
+import EtfRecommendService.reply.domain.Reply;
+import EtfRecommendService.reply.domain.ReplyLike;
+import EtfRecommendService.report.domain.CommentReport;
+import EtfRecommendService.report.domain.ReplyReport;
 import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "users")
+
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +40,18 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user")
     private List<Comment> commentList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<ReplyLike> replyLikeList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<CommentLike> commentLikeList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporter")
+    private List<CommentReport> commentReportList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporter")
+    private List<ReplyReport> replyReportList = new ArrayList<>();
 
     private String imageUrl = "";
 

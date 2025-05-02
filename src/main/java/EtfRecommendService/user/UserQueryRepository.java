@@ -1,7 +1,7 @@
 package EtfRecommendService.user;
 
 
-import EtfRecommendService.comment.QComment;
+import EtfRecommendService.comment.domain.QComment;
 import EtfRecommendService.user.dto.UserCommentResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -26,7 +26,8 @@ public class UserQueryRepository {
                 .select(Projections.constructor(UserCommentResponse.class,
                         comment.id,
                         comment.user.id,
-                        comment.user.nickName))
+                        comment.user.nickName,
+                        comment.user.imageUrl))
                 .from(comment)
                 .join(comment.user, user)
                 .where(user.id.eq(userId)
