@@ -1,0 +1,13 @@
+kis:
+  domain: https://openapivts.koreainvestment.com:29443
+  appkey: PSjhhzEUYrE8VlrZdQ6w8KIWQA1CtQ7OAMAv
+  secretkey: W77agFlCdJwi2KqABnaCVOSvF7nuZk8yl2A+FJoleHjzkfS/fNgHeRWmENpgOxFScKl0VFNB7GeTdNi/KLGGKGYNpCPMYWFpvo0obGt/Uk5fETyCxJgX1t9GSHq1FT2dRrmYuQ0GiGUhVMprdMiT8aNjmGJksNZnI6s6wMyrq24gvV3YQZs=
+  websocket-url: ws://ops.koreainvestment.com:31000/websocket
+
+
+#domain = 토큰 발급용
+#websocket-url = 웹소켓 연결용 url 전체
+
+#spring:
+#  profiles:
+#    active: ""   # 기본(empty) 프로파일, test 프로파일이 활성화되지 않음
