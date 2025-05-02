@@ -2,8 +2,8 @@ package EtfRecommendService.report.service;
 
 import EtfRecommendService.admin.Admin;
 import EtfRecommendService.admin.AdminRepository;
-import EtfRecommendService.comment.Comment;
-import EtfRecommendService.comment.CommentRepository;
+import EtfRecommendService.comment.domain.Comment;
+import EtfRecommendService.comment.repository.CommentRepository;
 import EtfRecommendService.notification.NotificationService;
 import EtfRecommendService.reply.domain.Reply;
 import EtfRecommendService.reply.repository.ReplyRepository;
@@ -41,7 +41,7 @@ public class ReportService {
 
     @Transactional
     public void create(String loginId, ReportRequest rq) {
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (rq.commentId() != null) {
@@ -85,7 +85,7 @@ public class ReportService {
                 replyReportRepository.countByReplyId(rq.replyId()));
     }
 
-    private void checkReportLimit(Long contentId, ReportType type, @Value("${report.limit}")long reportedCount) {
+    private void checkReportLimit(Long contentId, ReportType type, @Value("${report.limit}") long reportedCount) {
 
         if (reportedCount >= reportLimit) {
             notificationService.notifyIfReportedOverLimit(contentId, type);
@@ -93,7 +93,7 @@ public class ReportService {
     }
 
     public ReportListResponse readAll(String loginId) {
-        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()-> new EntityNotFoundException("User is not "));
+        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(() -> new EntityNotFoundException("User is not "));
         List<CommentReportResponse> commentReportResponseList =
                 commentReportRepository.findAllByIsCheckedFalse()
                         .stream()

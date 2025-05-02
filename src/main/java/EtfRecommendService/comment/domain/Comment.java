@@ -33,10 +33,6 @@ public class Comment extends BaseEntity {
     @Builder.Default
     private List<CommentLike> commentLikes = new ArrayList<>();
 
-    @Column(nullable = false)
-    @Builder.Default
-    private int reportCount = 0;
-
     @ManyToOne
     @ToString.Exclude
     private Etf etf;
@@ -51,7 +47,7 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "comment")
     @Builder.Default
     @ToString.Exclude
-    private List<CommentReport> commentReportList = new ArrayList<>();
+    private List<CommentReport> ReportList = new ArrayList<>();
 
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;

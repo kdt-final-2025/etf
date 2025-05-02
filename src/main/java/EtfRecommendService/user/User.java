@@ -15,8 +15,6 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "users")
-@AllArgsConstructor
-@Builder
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +37,7 @@ public class User extends BaseEntity {
     private List<Comment> commentList = new ArrayList<>();
 
     private String imageUrl = "";
-    @Builder.Default
+
     private Boolean isDeleted = false;
 
     private String theme;
