@@ -101,7 +101,7 @@ public class UserService {
         long totalCount = userQueryRepository.countUserComments(userId);
 
         return new UserPageResponse(
-                pageable.getPageNumber(),
+                pageable.getPageNumber() + 1,
                 pageable.getPageSize(),
                 totalCount,
                 (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
