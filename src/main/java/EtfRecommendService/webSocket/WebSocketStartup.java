@@ -27,10 +27,13 @@ public class WebSocketStartup implements ApplicationRunner {
         // 1) approval_key 발급
         String approvalKey = webSocketKeyService.getApprovalKey();
 
-        // 2) CSV에서 구독할 종목코드 (첫 페이지 50개)
-        List<String> pageCodes = csvLoader
-                .loadCodes("src/main/resources/etf_data_result.csv")
-                .subList(0, 50);
+//        // 2) CSV에서 구독할 종목코드 (첫 페이지 50개)
+//        List<String> pageCodes = csvLoader
+//                .loadCodes("src/main/resources/etf_data_result.csv")
+//                .subList(0, 5);
+
+        //테스트용
+        List<String> pageCodes = List.of("005930", "000660", "035720", "035420", "051910");
 
         // 3) WebSocket 연결 및 구독 시작
         webSocketConnectionService.connect(approvalKey, "H0STCNT0", pageCodes);
