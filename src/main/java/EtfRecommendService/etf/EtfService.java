@@ -6,6 +6,7 @@ import EtfRecommendService.etf.dto.*;
 import EtfRecommendService.user.User;
 import EtfRecommendService.user.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,18 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
+    @Cacheable(
+            cacheNames = "etfPages",
+            key = "T(java.lang.String).format(" +
+                    "'%d-%d-%s-%s-%s-%s', " +
+                    "#pageable.pageNumber, " +
+                    "#pageable.pageSize, " +
+                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
+                    "(#theme != null ? #theme.name() : ''), " +
+                    "#keyword, " +
+                    "#period" +
+                    ")"
+    )
     public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, String period) {
         long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
         int totalPage = (int) Math.ceil((double) totalCount / pageable.getPageSize());
@@ -82,10 +95,10 @@ public class EtfService {
                 etf.getId(),
                 subscribe.getStartTime(),
                 subscribe.getExpiredTime()
-                );
+        );
     }
 
-//    @Transactional(readOnly = true)
+    //    @Transactional(readOnly = true)
     public SubscribeListResponse subscribeReadAll(Pageable pageable, String memberLoginId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
