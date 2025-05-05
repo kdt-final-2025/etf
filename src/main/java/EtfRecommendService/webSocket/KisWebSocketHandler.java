@@ -46,21 +46,45 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
         if (payload.contains("|")) {
             String[] fields = payload.split("\\|");
             StockPriceData data = StockDataParseUtil.parseFromDelimitedFields(fields);
-            System.out.println(data);
+            System.out.println("[체결 데이터]"+data);
 
         }
-        else if (payload.startsWith("{")){
-            JsonNode json = objectMapper
-                    .readTree(payload)
-                    .path("body")
-                    .path("output");
+//        else if (payload.startsWith("{")){
+//            JsonNode json = objectMapper
+//                    .readTree(payload)
+//                    .path("body")
+//                    .path("output");
+//
+//            StockPriceData data = StockDataParseUtil.parseFromJson(json);
+//            System.out.println(data);
+//        }
 
-            StockPriceData data = StockDataParseUtil.parseFromJson(json);
-            System.out.println(data);
+        // JSON 형태 메시지 (구독 성공, 핑퐁 등)
+        else if (payload.startsWith("{")) {
+            try {
+                JsonNode root = objectMapper.readTree(payload);
+                String trId = root.path("header").path("tr_id").asText();
+
+                if ("PINGPONG".equals(trId)) {
+                    System.out.println("[PINGPONG] " + root.path("header").path("datetime").asText());
+                } else if ("H0STCNT0".equals(trId)) {
+                    String trKey = root.path("header").path("tr_key").asText();
+                    System.out.println("[SUBSCRIBE SUCCESS] " + trKey);
+                } else {
+                    JsonNode bodyOutput = root.path("body").path("output");
+                    StockPriceData data = StockDataParseUtil.parseFromJson(bodyOutput);
+                    System.out.println("[기타 JSON 데이터] " + data);
+                }
+
+            } catch (Exception e) {
+                System.err.println("[JSON 파싱 오류] " + e.getMessage());
+                System.err.println("[원본 메시지] " + payload);
+            }
         }
+
         else {
             // 구독 성공 or 기타 메시지 로깅
-            System.out.println("[MSG] " + payload);
+            System.out.println("[기타 메세지] " + payload);
         }
     }
 }
