@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class EtfData {
+public class EtfDailyPrice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,16 +26,12 @@ public class EtfData {
     @Column(nullable = false)
     private int startPrice;
 
-    @Column(nullable = false)
     private int highPrice;
 
-    @Column(nullable = false)
     private int lowerPrice;
 
     @Column(nullable = false)
     private int lastPrice;
-
-    private double returnRate;
 
     @ManyToOne
     private Etf etf;

@@ -1,8 +1,6 @@
 package EtfRecommendService.etf;
 
-import EtfRecommendService.etf.domain.QEtf;
-import EtfRecommendService.etf.domain.QEtfData;
-import EtfRecommendService.etf.domain.QEtfReadData;
+import EtfRecommendService.etf.domain.QEtfReadProjection;
 import EtfRecommendService.etf.dto.MonthlyEtfDto;
 import EtfRecommendService.etf.dto.WeeklyEtfDto;
 import com.querydsl.core.types.Projections;
@@ -18,7 +16,7 @@ import java.util.List;
 @Repository
 public class EtfQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
-    private final QEtfReadData etfReadData = QEtfReadData.etfReadData;
+    private final QEtfReadProjection etfReadData = QEtfReadProjection.etfReadProjection;
 
     public List<WeeklyEtfDto> findWeeklyEtfs(
             Theme theme,
