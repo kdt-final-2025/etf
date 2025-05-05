@@ -1,7 +1,7 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.TestConfig;
-import EtfRecommendService.etf.domain.EtfReadData;
+import EtfRecommendService.etf.domain.EtfReadProjection;
 import EtfRecommendService.etf.dto.MonthlyEtfDto;
 import EtfRecommendService.etf.dto.WeeklyEtfDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -65,10 +65,10 @@ public class EtfQueryRepositoryTest {
                             double weekly,
                             double monthly) {
         try {
-            Constructor<EtfReadData> ctor = EtfReadData.class.getDeclaredConstructor();
+            Constructor<EtfReadProjection> ctor = EtfReadProjection.class.getDeclaredConstructor();
             ctor.setAccessible(true);
 
-            EtfReadData etf = ctor.newInstance();
+            EtfReadProjection etf = ctor.newInstance();
 
             ReflectionTestUtils.setField(etf, "etfName",name);
             ReflectionTestUtils.setField(etf, "etfCode",code);
@@ -79,7 +79,7 @@ public class EtfQueryRepositoryTest {
             em.persist(etf);
 
         } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("테스트용 EtfReadData 생성 실패", ex);
+            throw new RuntimeException("테스트용 EtfReadProjection 생성 실패", ex);
         }
     }
 
