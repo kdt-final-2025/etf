@@ -2,10 +2,10 @@ package EtfRecommendService.etf.dto;
 
 import EtfRecommendService.etf.Theme;
 
-public record MonthlyEtfDto(
+public record EtfReturnDto(
         String etfName,
         String etfCode,
         Theme theme,
-        double monthlyReturn
+        double returnRate
 ) {
 }

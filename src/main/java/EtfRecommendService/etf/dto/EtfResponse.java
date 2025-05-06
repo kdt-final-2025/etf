@@ -2,11 +2,11 @@ package EtfRecommendService.etf.dto;
 
 import java.util.List;
 
-public record EtfResponse<T>(
+public record EtfResponse(
         int totalPage,
         Long totalCount,
         int currentPage,
         int pageSize,
-        List<T> etfReadResponseList
+        List<EtfReturnDto> etfReadResponseList
 ) {
 }

@@ -47,13 +47,18 @@ public class EtfService {
         int currentPage = pageable.getPageNumber() + 1;
         int pageSize = pageable.getPageSize();
 
-        if ("monthly".equalsIgnoreCase(period)) {
-            List<MonthlyEtfDto> monthlyList = etfQueryRepository.findMonthlyEtfs(theme, keyword, pageable);
-            return new EtfResponse<>(totalPage, totalCount, currentPage, pageSize, monthlyList);
-        } else {
-            List<WeeklyEtfDto> weeklyList = etfQueryRepository.findWeeklyEtfs(theme, keyword, pageable);
-            return new EtfResponse<>(totalPage, totalCount, currentPage, pageSize, weeklyList);
-        }
+        List<EtfReturnDto> etfReturnDtos = etfQueryRepository
+                .findEtfsByPeriod(theme, keyword, pageable, period)
+                .stream()
+                .map(dto -> new EtfReturnDto(
+                        dto.etfName(),
+                        dto.etfCode(),
+                        dto.theme(),
+                        dto.returnRate()
+                ))
+                .toList();
+
+        return new EtfResponse(totalPage, totalCount, currentPage, pageSize, etfReturnDtos);
     }
 
     public EtfDetailResponse findById(Long etfId) {
