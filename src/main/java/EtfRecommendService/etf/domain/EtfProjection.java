@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-public class EtfReadProjection {
+public class EtfProjection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
