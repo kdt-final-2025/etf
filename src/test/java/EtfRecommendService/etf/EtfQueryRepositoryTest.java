@@ -1,9 +1,8 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.TestConfig;
-import EtfRecommendService.etf.domain.EtfReadProjection;
-import EtfRecommendService.etf.dto.MonthlyEtfDto;
-import EtfRecommendService.etf.dto.WeeklyEtfDto;
+import EtfRecommendService.etf.domain.EtfProjection;
+import EtfRecommendService.etf.dto.EtfReturnDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,10 +64,10 @@ public class EtfQueryRepositoryTest {
                             double weekly,
                             double monthly) {
         try {
-            Constructor<EtfReadProjection> ctor = EtfReadProjection.class.getDeclaredConstructor();
+            Constructor<EtfProjection> ctor = EtfProjection.class.getDeclaredConstructor();
             ctor.setAccessible(true);
 
-            EtfReadProjection etf = ctor.newInstance();
+            EtfProjection etf = ctor.newInstance();
 
             ReflectionTestUtils.setField(etf, "etfName",name);
             ReflectionTestUtils.setField(etf, "etfCode",code);
@@ -87,7 +86,7 @@ public class EtfQueryRepositoryTest {
     @DisplayName("조건 없이 모든 주간 ETF 조회")
     void findAllWeeklyWithoutFilter() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<WeeklyEtfDto> list = repository.findWeeklyEtfs(null, null, pageable);
+        List<EtfReturnDto> list = repository.findEtfsByPeriod(null, null, pageable, "weekly");
 
         assertThat(list).hasSize(5)
                 .extracting("etfName")
@@ -104,7 +103,7 @@ public class EtfQueryRepositoryTest {
     @DisplayName("조건 없이 모든 월간 ETF 조회")
     void findAllMonthlyWithoutFilter() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<MonthlyEtfDto> list = repository.findMonthlyEtfs(null, null, pageable);
+        List<EtfReturnDto> list = repository.findEtfsByPeriod(null, null, pageable, "monthly");
 
         assertThat(list).hasSize(5)
                 .extracting("etfCode")
@@ -118,8 +117,8 @@ public class EtfQueryRepositoryTest {
     void findWeeklyEtfsByTheme() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        List<WeeklyEtfDto> itList =
-                repository.findWeeklyEtfs(Theme.AI_DATA, null, pageable);
+        List<EtfReturnDto> itList =
+                repository.findEtfsByPeriod(Theme.AI_DATA, null, pageable,"monthly");
 
         assertThat(itList).hasSize(2)
                 .extracting("theme").containsOnly(Theme.AI_DATA);
@@ -132,8 +131,8 @@ public class EtfQueryRepositoryTest {
     void findMonthlyEtfsByKeyword() {
         Pageable pageable = PageRequest.of(0, 10);
 
-        List<MonthlyEtfDto> result =
-                repository.findMonthlyEtfs(null, "기아", pageable);
+        List<EtfReturnDto> result =
+                repository.findEtfsByPeriod(null, "기아", pageable, "monthly");
 
         assertThat(result).hasSize(1)
                 .extracting("etfCode").containsOnly("000270");
@@ -157,8 +156,8 @@ public class EtfQueryRepositoryTest {
         Pageable p1 = PageRequest.of(0, 2);
         Pageable p2 = PageRequest.of(1, 2);
 
-        List<WeeklyEtfDto> first  = repository.findWeeklyEtfs(null, null, p1);
-        List<WeeklyEtfDto> second = repository.findWeeklyEtfs(null, null, p2);
+        List<EtfReturnDto> first  = repository.findEtfsByPeriod(null, null, p1,"monthly");
+        List<EtfReturnDto> second = repository.findEtfsByPeriod(null, null, p2, "monthly");
 
         assertThat(first).hasSize(2);
         assertThat(second).hasSize(2);
@@ -166,7 +165,7 @@ public class EtfQueryRepositoryTest {
         assertThat(first).extracting("etfCode")
                 .doesNotContainAnyElementsOf(
                         second.stream()
-                                .map(WeeklyEtfDto::etfCode)
+                                .map(EtfReturnDto::etfCode)
                                 .toList()
                 );
     }
@@ -175,7 +174,7 @@ public class EtfQueryRepositoryTest {
     @DisplayName("키워드로 주간 ETF 검색")
     void testFindWeeklyByKeyword() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<WeeklyEtfDto> result = repository.findWeeklyEtfs(null, "현대차", pageable);
+        List<EtfReturnDto> result = repository.findEtfsByPeriod(null, "현대차", pageable,"weekly");
 
         assertThat(result).hasSize(1)
                 .extracting("etfCode").containsOnly("005380");
@@ -185,7 +184,7 @@ public class EtfQueryRepositoryTest {
     @DisplayName("테마별 월간 ETF 검색")
     void testFindMonthlyByTheme() {
         Pageable pageable = PageRequest.of(0, 10);
-        List<MonthlyEtfDto> result = repository.findMonthlyEtfs(Theme.GOLD, null, pageable);
+        List<EtfReturnDto> result = repository.findEtfsByPeriod(Theme.GOLD, null, pageable, "monthly");
 
         assertThat(result).hasSize(2)
                 .extracting("etfName")

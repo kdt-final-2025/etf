@@ -1,10 +1,10 @@
 package EtfRecommendService.etf;
 
-import EtfRecommendService.etf.domain.QEtfReadProjection;
-import EtfRecommendService.etf.dto.MonthlyEtfDto;
-import EtfRecommendService.etf.dto.WeeklyEtfDto;
+import EtfRecommendService.etf.domain.QEtfProjection;
+import EtfRecommendService.etf.dto.EtfReturnDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -16,36 +16,26 @@ import java.util.List;
 @Repository
 public class EtfQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
-    private final QEtfReadProjection etfReadData = QEtfReadProjection.etfReadProjection;
+    private final QEtfProjection etfProjection = QEtfProjection.etfProjection;
 
-    public List<WeeklyEtfDto> findWeeklyEtfs(
+    public List<EtfReturnDto> findEtfsByPeriod(
             Theme theme,
             String keyword,
-            Pageable pageable){
-        return jpaQueryFactory
-                .select(Projections.constructor(
-                        WeeklyEtfDto.class,
-                        etfReadData.etfName,
-                        etfReadData.etfCode,
-                        etfReadData.theme,
-                        etfReadData.weeklyReturn))
-                .from(etfReadData)
-                .where(themeEq(theme),
-                        keywordContains(keyword))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-    }
+            Pageable pageable,
+            String period
+    ) {
+        NumberExpression<Double> returnRate =
+                "monthly".equalsIgnoreCase(period) ? etfProjection.monthlyReturn : etfProjection.weeklyReturn;
 
-    public List<MonthlyEtfDto> findMonthlyEtfs(Theme theme, String keyword, Pageable pageable) {
         return jpaQueryFactory
                 .select(Projections.constructor(
-                        MonthlyEtfDto.class,
-                        etfReadData.etfName,
-                        etfReadData.etfCode,
-                        etfReadData.theme,
-                        etfReadData.monthlyReturn))
-                .from(etfReadData)
+                        EtfReturnDto.class,
+                        etfProjection.etfName,
+                        etfProjection.etfCode,
+                        etfProjection.theme,
+                        returnRate
+                ))
+                .from(etfProjection)
                 .where(themeEq(theme), keywordContains(keyword))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -54,8 +44,8 @@ public class EtfQueryRepository {
 
     public Long fetchTotalCount(Theme theme, String keyword){
         Long count = jpaQueryFactory
-                .select(etfReadData.count())
-                .from(etfReadData)
+                .select(etfProjection.count())
+                .from(etfProjection)
                 .where(themeEq(theme),
                         keywordContains(keyword))
                 .fetchOne();
@@ -68,7 +58,7 @@ public class EtfQueryRepository {
         if (theme == null) {
             return null;  // dsl은 null값 무시 -> 전체 조회
         }
-        return etfReadData.theme.eq(theme);
+        return etfProjection.theme.eq(theme);
     }
 
     //검색어 기능 - 종목명, 종목코드
@@ -76,8 +66,8 @@ public class EtfQueryRepository {
         if (keyword == null || keyword.trim().isEmpty()) {
             return null;
         }
-        return etfReadData.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
-                .or(etfReadData.etfCode.containsIgnoreCase(keyword));
+        return etfProjection.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
+                .or(etfProjection.etfCode.containsIgnoreCase(keyword));
     }
 }
 
