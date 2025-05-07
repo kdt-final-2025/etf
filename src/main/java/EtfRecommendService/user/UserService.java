@@ -98,7 +98,7 @@ public class UserService {
 
         List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
 
-        long totalCount = userQueryRepository.countUserComments(userId);
+        long totalCount = userQueryRepository.totalCount(userId);
 
         return new UserPageResponse(
                 pageable.getPageNumber() + 1,
