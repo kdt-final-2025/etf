@@ -148,4 +148,18 @@ public class UserService {
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }
 
+    public UserDetailResponse findByUser(String loginId, Long userId) {
+        getByLoginId(loginId);
+
+        User user = userRepository.findById(userId).orElseThrow( () ->
+                new RuntimeException("존재하지 않는 유저 id : " + userId));
+
+        return new UserDetailResponse(
+                user.getId(),
+                user.getLoginId(),
+                user.getNickName(),
+                user.getImageUrl(),
+                user.getIsLikePrivate());
+    }
+
 }
