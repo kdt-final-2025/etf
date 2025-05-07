@@ -29,8 +29,7 @@ public class NewsService {
 
     private final NewsRepository newsRepository;
 
-    //@Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
-    //@Scheduled(cron = "0 * * * * ?") // 매 0초 마다 실행
+    @Scheduled(cron = "0 0 6 * * ?") // 매일 오전 6시에 실행
     public void executePythonScript() {
         log.info("뉴스 크롤링 스케줄러 실행 시작");
         try {
