@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-
+import React, {useEffect} from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -21,6 +20,12 @@ import {
 } from "@/components/ui/dialog"
 import { Camera, Pencil } from "lucide-react"
 
+const getCookie = (name: string) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+};
 export default function ProfilePage() {
   // 상태 관리
   const [nickname, setNickname] = useState("홍길동")
@@ -32,7 +37,59 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [userData, setUserData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+
+  useEffect(() => {
+    const getUserProfile = async () => {
+      try {
+        const data = await fetchUserProfile();
+        setUserData(data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("프로필 가져오기 실패:", error);
+        setIsLoading(false);
+      }
+    };
+
+    getUserProfile();
+  }, []);
+
+  // 쿠키에서 JWT 토큰을 가져와서 사용자 프로필을 요청하는 함수
+  const fetchUserProfile = async () => {
+    try {
+      // document.cookie에서 JWT 토큰 가져오기
+      const token = getCookie("accessToken");  // 쿠키 이름을 "jwt-token"으로 가정
+
+      if (!token) {
+        throw new Error("로그인 세션이 만료되었습니다.");
+      }
+
+      const res = await fetch("http://localhost:8080/api/v1/users/", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,  // Authorization 헤더에 JWT 토큰 포함
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const userData = await res.json();
+        return userData;
+      } else {
+        throw new Error("프로필 데이터 가져오기 실패");
+      }
+    } catch (error) {
+      console.error("프로필 데이터 가져오기 에러:", error);
+      throw error;
+    }
+  };
+
+  // 로딩 중인 경우 로딩 메시지 표시
+  if (isLoading) {
+    return <div>로딩 중...</div>;
+  }
 
   // 프로필 사진 변경 처리
   const handleAvatarClick = () => {
@@ -112,6 +169,8 @@ export default function ProfilePage() {
     setNewPassword("")
     setConfirmPassword("")
   }
+
+
 
   return (
       <div className="container mx-auto py-8 px-4">

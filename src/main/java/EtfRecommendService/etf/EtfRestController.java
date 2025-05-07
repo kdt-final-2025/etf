@@ -18,11 +18,12 @@ public class EtfRestController {
 
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "20") int size,
-                                           @RequestParam(required = false) Theme theme,
-                                           @RequestParam(defaultValue = "") SortOrder sortOrder) {
+                                            @RequestParam(defaultValue = "20") int size,
+                                            @RequestParam(required = false) Theme theme,
+                                            @RequestParam(required = false, defaultValue = "") String keyword,
+                                            @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme, sortOrder);
+        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
