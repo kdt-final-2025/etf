@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
 @RequiredArgsConstructor
 @Service
 public class ReportService {
