@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import CryptoJS from "crypto-js"
+import {cookies} from "next/headers";
 
 export default function LoginPage() {
   const [loginId, setLoginId] = useState("")
@@ -15,27 +15,23 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      // 비밀번호를 SHA-256으로 암호화 (백엔드에 맞춤)
-      const encryptedPassword = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
 
       const res = await fetch("http://localhost:8080/api/v1/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           loginId: loginId,
-          password: {
-            password: encryptedPassword
-          }
+          password: password
         }),
       })
 
       if (res.ok) {
         const data = await res.json()
         alert("로그인 성공!")
-        // 토큰을 localStorage에 저장 (또는 쿠키 등)
-        localStorage.setItem("accessToken", data.token)
+        document.cookie = `accessToken=${data.token}; path=/; secure; samesite=strict`;
         router.push("/") // 로그인 성공 후 메인으로 이동
       } else {
         const error = await res.text()
