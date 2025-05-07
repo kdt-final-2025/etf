@@ -96,6 +96,13 @@ public class User extends BaseEntity {
         }
     }
 
+    public Boolean isSelfProfile(Long userId) {
+        if (this.id.equals(userId)) {
+            return true;
+        }
+        return false;
+    }
+
     public void updateProfileImg(String imgUrl) {
         this.imageUrl = imgUrl;
     }

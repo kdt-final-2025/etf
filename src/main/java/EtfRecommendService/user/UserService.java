@@ -1,7 +1,11 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
+import EtfRecommendService.comment.domain.Comment;
+import EtfRecommendService.comment.repository.CommentRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.reply.domain.Reply;
+import EtfRecommendService.reply.repository.ReplyRepository;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
@@ -11,8 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
 import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
 
 
@@ -24,6 +31,8 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final UserQueryRepository userQueryRepository;
+    private final CommentRepository commentRepository;
+    private final ReplyRepository replyRepository;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
@@ -91,12 +100,25 @@ public class UserService {
     }
 
     public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
-        getByLoginId(loginId);
-
-        userRepository.findById(userId).orElseThrow(
+        User findUser = userRepository.findById(userId).orElseThrow(
                 () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
-        List<UserCommentResponse> list = userQueryRepository.findUserComment(userId, pageable);
+        User loginUser = getByLoginId(loginId);
+
+        Boolean selfProfile = loginUser.isSelfProfile(userId);
+
+        // 만약 찾는유저의 정보가 비공개 설정이고 로그인한 유저의 조회가 아니라면
+        if (findUser.getIsLikePrivate() && !selfProfile) {
+            return new UserPageResponse(
+                    pageable.getPageNumber() + 1,
+                    pageable.getPageSize(),
+                    0,
+                    0,
+                    null
+            );
+        }
+
+        List<UserCommentResponse> userCommentResponses = userQueryRepository.commentResponses(userId, pageable);
 
         long totalCount = userQueryRepository.totalCount(userId);
 
@@ -105,7 +127,8 @@ public class UserService {
                 pageable.getPageSize(),
                 totalCount,
                 (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
-                list);
+                userCommentResponses
+        );
     }
 
     @Transactional
