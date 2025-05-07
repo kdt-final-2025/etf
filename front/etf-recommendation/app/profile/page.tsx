@@ -53,9 +53,41 @@ export default function ProfilePage() {
   }
 
   // 정보 수정 처리
-  const handleProfileUpdate = () => {
-    alert("프로필 정보가 업데이트되었습니다.")
-  }
+  const handleProfileUpdate = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      const res = await fetch("http://localhost:8080/api/v1/users", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nickName: nickname,
+          isLikePrivate: !isPublicPortfolio, // 백엔드는 '비공개 여부'로 받음
+        }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        alert("프로필 정보가 업데이트되었습니다.");
+        setNickname(updated.nickName);
+        setIsPublicPortfolio(!updated.isLikePrivate); // isLikePrivate = false → 공개
+      } else {
+        const error = await res.text();
+        alert("업데이트 실패: " + error);
+      }
+    } catch (err) {
+      console.error("업데이트 오류:", err);
+      alert("서버 오류 발생");
+    }
+  };
+
 
   // 비밀번호 변경 처리
   const handlePasswordChange = () => {
