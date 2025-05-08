@@ -164,9 +164,9 @@ export default function ProfilePage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          // Authorization 헤더 생략 (쿠키 자동 전송)
+          Authorization: `Bearer ${getCookie("accessToken")}`,
         },
-        credentials: "include", // <- 쿠키를 자동으로 포함
+        credentials: "include", // 쿠키 포함
         body: JSON.stringify({
           nickName: nickname,
           isLikePrivate: !isPublicPortfolio,
@@ -174,10 +174,14 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
-        const updated = await res.json();
         alert("프로필 정보가 업데이트되었습니다.");
-        setNickname(updated.nickName);
-        setIsPublicPortfolio(!updated.isLikePrivate);
+
+        // ✅ 다시 DB에서 최신 정보 가져오기
+        const updatedData = await fetchUserProfile();
+        setUserData(updatedData);
+        setNickname(updatedData.nickName);
+        setIsPublicPortfolio(!updatedData.isLikePrivate);
+
       } else {
         const error = await res.text();
         alert("업데이트 실패: " + error);
@@ -186,8 +190,8 @@ export default function ProfilePage() {
       console.error("업데이트 오류:", err);
       alert("서버 오류 발생");
     }
-
   };
+
 
 
   // 비밀번호 변경 처리
