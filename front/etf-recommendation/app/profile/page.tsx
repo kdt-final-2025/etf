@@ -46,30 +46,57 @@ export default function ProfilePage() {
       try {
         const data = await fetchUserProfile();
         setUserData(data);
+        setNickname(data.nickName);
+        setUserId(data.loginId || data.userId); // 백엔드에 따라 키 이름 확인 필요
+        setIsPublicPortfolio(!data.isLikePrivate);
+        setAvatarSrc(data.imageUrl || "/placeholder.svg");
         setIsLoading(false);
       } catch (error) {
         console.error("프로필 가져오기 실패:", error);
         setIsLoading(false);
+
       }
     };
 
     getUserProfile();
   }, []);
 
-  // 쿠키에서 JWT 토큰을 가져와서 사용자 프로필을 요청하는 함수
+  const parseJwt = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+          atob(base64).split('').map((c) =>
+              '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+          ).join('')
+      );
+
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error("토큰 파싱 실패", e);
+      return null;
+    }
+  };
+
   const fetchUserProfile = async () => {
     try {
-      // document.cookie에서 JWT 토큰 가져오기
-      const token = getCookie("accessToken");  // 쿠키 이름을 "jwt-token"으로 가정
+      const token = getCookie("accessToken");
 
       if (!token) {
         throw new Error("로그인 세션이 만료되었습니다.");
       }
 
-      const res = await fetch("http://localhost:8080/api/v1/users/", {
+      const payload = parseJwt(token);
+      const loginId = payload?.loginId || payload?.sub;
+
+      if (!loginId) {
+        throw new Error("토큰에서 loginId를 찾을 수 없습니다.");
+      }
+
+      const res = await fetch(`http://localhost:8080/api/v1/users/${loginId}`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,  // Authorization 헤더에 JWT 토큰 포함
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -86,6 +113,7 @@ export default function ProfilePage() {
     }
   };
 
+
   // 로딩 중인 경우 로딩 메시지 표시
   if (isLoading) {
     return <div>로딩 중...</div>;
@@ -96,19 +124,38 @@ export default function ProfilePage() {
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setAvatarSrc(event.target.result.toString())
-          alert("프로필 사진이 업데이트되었습니다.")
-        }
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("images", file);
+
+    try {
+      const res = await fetch("http://localhost:8080/api/v1/users/image", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${getCookie("accessToken")}`,
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setAvatarSrc(data.imageUrl); // 백엔드에서 리턴하는 imageUrl 사용
+        alert("프로필 사진이 성공적으로 업데이트되었습니다.");
+      } else {
+        const error = await res.text();
+        console.error("업로드 실패:", error);
+        alert("프로필 사진 업로드에 실패했습니다.");
       }
-      reader.readAsDataURL(file)
+    } catch (err) {
+      console.error("프로필 사진 업로드 오류:", err);
+      alert("서버 오류 발생");
     }
-  }
+  };
+
+
 
   // 정보 수정 처리
   const handleProfileUpdate = async () => {
@@ -190,6 +237,7 @@ export default function ProfilePage() {
                       onClick={handleAvatarClick}
                   >
                     <AvatarImage src={avatarSrc || "/placeholder.svg"} alt="프로필 이미지" />
+
                     <AvatarFallback>사용자</AvatarFallback>
                   </Avatar>
                   <div
