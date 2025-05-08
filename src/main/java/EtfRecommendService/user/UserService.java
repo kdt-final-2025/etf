@@ -110,7 +110,7 @@ public class UserService {
             );
         }
 
-        List<getUserCommentsAndReplies> getUserCommentRespons = userQueryRepository.commentResponses(userId, pageable);
+        List<getUserCommentsAndReplies> getUserCommentRespons = userQueryRepository.getUserCommentsAndReplies(userId, pageable);
 
         long totalCount = userQueryRepository.totalCount(userId);
 
