@@ -55,7 +55,7 @@ public class User extends BaseEntity {
 
     private String imageUrl = "";
 
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
     private String theme;
 
@@ -69,7 +69,7 @@ public class User extends BaseEntity {
     private int suspensionCount;
 
     // 댓글, 구독목록 공개여부
-    private Boolean isLikePrivate = false;
+    private boolean isLikePrivate = false;
 
 
     public User(String loginId,
@@ -96,7 +96,7 @@ public class User extends BaseEntity {
         }
     }
 
-    public Boolean isSelfProfile(Long userId) {
+    public boolean isSelfProfile(Long userId) {
         if (this.id.equals(userId)) {
             return true;
         }

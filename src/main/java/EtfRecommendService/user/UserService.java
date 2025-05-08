@@ -31,8 +31,6 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final UserQueryRepository userQueryRepository;
-    private final CommentRepository commentRepository;
-    private final ReplyRepository replyRepository;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
@@ -78,7 +76,7 @@ public class UserService {
                 user.getId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.getIsLikePrivate());
+                user.isLikePrivate());
     }
 
     @Transactional
@@ -105,10 +103,10 @@ public class UserService {
 
         User loginUser = getByLoginId(loginId);
 
-        Boolean selfProfile = loginUser.isSelfProfile(userId);
+        boolean selfProfile = loginUser.isSelfProfile(userId);
 
         // 만약 찾는유저의 정보가 비공개 설정이고 로그인한 유저의 조회가 아니라면
-        if (findUser.getIsLikePrivate() && !selfProfile) {
+        if (findUser.isLikePrivate() && !selfProfile) {
             return new UserPageResponse(
                     pageable.getPageNumber() + 1,
                     pageable.getPageSize(),
@@ -159,7 +157,7 @@ public class UserService {
                 user.getLoginId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.getIsLikePrivate());
+                user.isLikePrivate());
     }
 
 }
