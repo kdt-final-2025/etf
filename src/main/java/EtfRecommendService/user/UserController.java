@@ -74,8 +74,8 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDetailResponse> findByUser(@LoginMember String auth, @PathVariable Long userId) {
-        UserDetailResponse userDetailResponse = userService.findByUser(auth, userId);
+    public ResponseEntity<UserDetailResponse> findByUserId(@LoginMember String auth, @PathVariable Long userId) {
+        UserDetailResponse userDetailResponse = userService.findByUserId(auth, userId);
         return ResponseEntity.ok(userDetailResponse);
     }
 

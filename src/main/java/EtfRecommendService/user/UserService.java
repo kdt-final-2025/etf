@@ -1,11 +1,7 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
-import EtfRecommendService.comment.domain.Comment;
-import EtfRecommendService.comment.repository.CommentRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
-import EtfRecommendService.reply.domain.Reply;
-import EtfRecommendService.reply.repository.ReplyRepository;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
@@ -15,10 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
 
@@ -146,7 +140,7 @@ public class UserService {
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }
 
-    public UserDetailResponse findByUser(String loginId, Long userId) {
+    public UserDetailResponse findByUserId(String loginId, Long userId) {
         getByLoginId(loginId);
 
         User user = userRepository.findById(userId).orElseThrow( () ->
