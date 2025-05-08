@@ -56,13 +56,13 @@ public class UserController {
     }
 
     @GetMapping("/comment/{userId}")
-    public ResponseEntity<UserPageResponse> findByUserComments(
+    public ResponseEntity<UserPageResponse> findUserComments(
             @LoginMember String auth,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        UserPageResponse userPageResponse = userService.findByUser(auth, userId, pageable);
+        UserPageResponse userPageResponse = userService.findUserComments(auth, userId, pageable);
         return ResponseEntity.ok(userPageResponse);
     }
 

@@ -91,7 +91,7 @@ public class UserService {
         return new UserPasswordResponse(user.getId());
     }
 
-    public UserPageResponse findByUser(String loginId, Long userId, Pageable pageable) {
+    public UserPageResponse findUserComments(String loginId, Long userId, Pageable pageable) {
         User findUser = userRepository.findById(userId).orElseThrow(
                 () -> new NoSuchElementException("존재하지 않는 회원입니다."));
 
