@@ -4,9 +4,8 @@ package EtfRecommendService.user;
 import EtfRecommendService.comment.domain.QComment;
 import EtfRecommendService.etf.domain.QEtf;
 import EtfRecommendService.reply.domain.QReply;
-import EtfRecommendService.user.dto.UserCommentResponse;
+import EtfRecommendService.user.dto.getUserCommentsAndReplies;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Repository
@@ -30,9 +28,9 @@ public class UserQueryRepository {
         this.jpaQueryFactory = jpaQueryFactory;
     }
 
-    public List<UserCommentResponse> commentResponses(Long userId,Pageable pageable) {
-        List<UserCommentResponse> comments = jpaQueryFactory
-                .select(Projections.constructor(UserCommentResponse.class,
+    public List<getUserCommentsAndReplies> commentResponses(Long userId, Pageable pageable) {
+        List<getUserCommentsAndReplies> comments = jpaQueryFactory
+                .select(Projections.constructor(getUserCommentsAndReplies.class,
                         comment.id,
                         comment.etf.id,
                         comment.user.id,
@@ -47,8 +45,8 @@ public class UserQueryRepository {
                         .and(comment.isDeleted.eq(false)))
                 .fetch();
 
-        List<UserCommentResponse> replies = jpaQueryFactory
-                .select(Projections.constructor(UserCommentResponse.class,
+        List<getUserCommentsAndReplies> replies = jpaQueryFactory
+                .select(Projections.constructor(getUserCommentsAndReplies.class,
                         reply.id,
                         reply.comment.etf.id,
                         reply.user.id,
@@ -63,10 +61,10 @@ public class UserQueryRepository {
                         .and(reply.isDeleted.eq(false)))
                 .fetch();
 
-        List<UserCommentResponse> mergedList = Stream.concat(
+        List<getUserCommentsAndReplies> mergedList = Stream.concat(
                         comments.stream(),
                         replies.stream())
-                .sorted(Comparator.comparing(UserCommentResponse::createdAt).reversed())
+                .sorted(Comparator.comparing(getUserCommentsAndReplies::createdAt).reversed())
                 .toList();
 
         int start = (int) pageable.getOffset();

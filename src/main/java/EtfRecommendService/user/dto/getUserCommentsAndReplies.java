@@ -3,7 +3,7 @@ package EtfRecommendService.user.dto;
 
 import java.time.LocalDateTime;
 
-public record UserCommentResponse(
+public record getUserCommentsAndReplies(
         Long commentId,
         Long etfId,
         Long userId,
