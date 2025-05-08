@@ -8,6 +8,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.List;
 
+//종목 구독 및 성공, 연결 json 메세지
 //메세지 핸들러 - 서비스 클래스에서 사용
 //메세지 수신 및 처리 흐름 제어
 public class KisWebSocketHandler extends TextWebSocketHandler {
