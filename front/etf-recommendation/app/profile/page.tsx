@@ -195,32 +195,52 @@ export default function ProfilePage() {
 
 
   // 비밀번호 변경 처리
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (currentPassword === "") {
-      alert("현재 비밀번호를 입력해주세요.")
-      return
+      alert("현재 비밀번호를 입력해주세요.");
+      return;
     }
 
     if (newPassword === "") {
-      alert("새 비밀번호를 입력해주세요.")
-      return
+      alert("새 비밀번호를 입력해주세요.");
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.")
-      return
+      alert("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+      return;
     }
+    console.log(currentPassword)
+    try {
+      const res = await fetch("http://localhost:8080/api/v1/users/me/password", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getCookie("accessToken")}`,
+        },
+        credentials: "include", // 쿠키로 로그인 정보 전달
+        body: JSON.stringify({
+          existingPassword: currentPassword ,
+          newPassword: newPassword ,
+          confirmNewPassword:confirmPassword,
+        }),
+      });
 
-    // 여기서 실제 비밀번호 변경 API 호출
-    alert("비밀번호가 변경되었습니다.")
-
-    // 다이얼로그 닫기 및 상태 초기화
-    setIsPasswordDialogOpen(false)
-    setCurrentPassword("")
-    setNewPassword("")
-    setConfirmPassword("")
-  }
-
+      if (res.ok) {
+        alert("비밀번호가 성공적으로 변경되었습니다.");
+        setIsPasswordDialogOpen(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        const errorText = await res.text();
+        alert("비밀번호 변경 실패: " + errorText);
+      }
+    } catch (error) {
+      console.error("비밀번호 변경 오류:", error);
+      alert("서버 오류가 발생했습니다.");
+    }
+  };
 
 
   return (
