@@ -51,10 +51,15 @@ dependencies {
 
 	//websocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
 	// 이미 있는 spring-boot-starter-websocket 은 서버용이므로, JSR-356 클라이언트를 위해선 아래 두 개가 필요
 	implementation 'jakarta.websocket:jakarta.websocket-api:2.1.0'
 	implementation 'org.glassfish.tyrus.bundles:tyrus-standalone-client:1.18'
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+  
+  //redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 
 tasks.named('test') {
