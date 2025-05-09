@@ -1,3 +1,4 @@
+"use client"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -7,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft, Star, Share2, Bell } from "lucide-react"
 import { ETFChart } from "@/components/etf-chart"
 import { notFound } from "next/navigation"
+import { useParams } from "next/navigation"
+import tradingViewWidget from "@/components/tradingViewWidget"
+
 
 // 샘플 ETF 데이터 객체에 누락된 ETF 데이터를 추가합니다.
 // "266370" (KINDEX 필수소비재) 데이터를 추가합니다.
@@ -822,8 +826,9 @@ const relatedEtfsMap = {
 }
 
 export default function ETFDetailPage({ params }: { params: { ticker: string } }) {
-  const { ticker } = params
+  const { ticker } = useParams();
   const etf = etfData[ticker as keyof typeof etfData]
+  const tradingViewSymbol = `KRX:${ticker?.toUpperCase()}`
 
   if (!etf) {
     notFound()
