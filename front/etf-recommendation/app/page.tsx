@@ -1,3 +1,5 @@
+"use client"
+import { useEffect, useState } from 'react'
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,97 +11,17 @@ import { Search, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Filter } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // 샘플 ETF 데이터
-const etfData = [
-  {
-    id: 1,
-    name: "KODEX 삼성전자",
-    ticker: "005930",
-    theme: "기술",
-    returnRate: 28.5,
-    price: 82500,
-    change: 2.1,
-    volume: 1250000,
-    marketCap: 4120000000000,
-  },
-  {
-    id: 2,
-    name: "TIGER 2차전지",
-    ticker: "305720",
-    theme: "에너지",
-    returnRate: 25.7,
-    price: 42300,
-    change: 1.8,
-    volume: 980000,
-    marketCap: 2150000000000,
-  },
-  {
-    id: 3,
-    name: "KODEX 바이오",
-    ticker: "244580",
-    theme: "헬스케어",
-    returnRate: 22.3,
-    price: 15600,
-    change: 0.9,
-    volume: 750000,
-    marketCap: 1850000000000,
-  },
-  {
-    id: 4,
-    name: "ARIRANG 글로벌4차산업",
-    ticker: "289480",
-    theme: "기술",
-    returnRate: 21.2,
-    price: 9850,
-    change: 1.2,
-    volume: 680000,
-    marketCap: 1650000000000,
-  },
-  {
-    id: 5,
-    name: "TIGER 미국나스닥100",
-    ticker: "133690",
-    theme: "글로벌",
-    returnRate: 20.8,
-    price: 21500,
-    change: 0.5,
-    volume: 920000,
-    marketCap: 3250000000000,
-  },
-  {
-    id: 6,
-    name: "KODEX 은행",
-    ticker: "091170",
-    theme: "금융",
-    returnRate: 18.9,
-    price: 11200,
-    change: -0.3,
-    volume: 520000,
-    marketCap: 1420000000000,
-  },
-  {
-    id: 7,
-    name: "TIGER 차이나전기차",
-    ticker: "371460",
-    theme: "에너지",
-    returnRate: 17.5,
-    price: 8750,
-    change: -0.8,
-    volume: 480000,
-    marketCap: 980000000000,
-  },
-  {
-    id: 8,
-    name: "KINDEX 필수소비재",
-    ticker: "266370",
-    theme: "소비재",
-    returnRate: 15.2,
-    price: 13400,
-    change: 0.2,
-    volume: 350000,
-    marketCap: 1120000000000,
-  },
-]
 
+type ETF = {
+  id: number
+  name: string
+  ticker: string
+  theme: string
+  price: number
+  change: number
+  volume: number
+  returnRate: number
+}
 // 시장 요약 데이터
 const marketSummary = {
   kospi: { value: 2850.12, change: 1.2 },
@@ -116,8 +38,26 @@ const popularThemes = [
   { id: "global", name: "글로벌", returnRate: 16.5, etfCount: 15 },
 ]
 
+
 export default function Home() {
-  // 수익률 기준으로 정렬
+
+
+  const [etfData, setEtfData] = useState<ETF[]>([])
+  useEffect(() => {
+    const fetchEtfs = async () => {
+      try {
+        const response = await fetch('/api/v1/user/etfs?page=1&size=20&period=weekly')
+        if (!response.ok) throw new Error('데이터 로드 실패')
+        const data = await response.json()
+        setEtfData(data.etfList) // EtfResponse의 내부 필드 이름에 따라 다를 수 있음
+      } catch (error) {
+        console.error('ETF 데이터 로딩 에러:', error)
+      }
+    }
+
+    fetchEtfs()
+  }, [])
+  // 수익률 기준 정렬
   const sortedEtfs = [...etfData].sort((a, b) => b.returnRate - a.returnRate)
 
   // 상승률 상위 ETF
@@ -125,6 +65,8 @@ export default function Home() {
 
   // 하락률 상위 ETF
   const topLosers = [...etfData].sort((a, b) => a.change - b.change).slice(0, 3)
+
+
 
   return (
     <div className="container mx-auto py-6 px-4">
