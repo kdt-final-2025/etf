@@ -31,5 +31,6 @@ public class DataSeeder {
         User user1 = new User("pepero",new Password("password"),"빼빼로부자",false);
 
         em.persist(user1);
+
     }
 }

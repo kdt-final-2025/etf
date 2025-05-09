@@ -1,56 +1,105 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.4'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
-}
-
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
+}
+
+ext {
+    set('snippetsDir', file("build/generated-snippets"))
+}
+
+// asciidoctorExt라는 이름의 구성 선언
+configurations {
+    asciidoctorExt
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.h2database:h2'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	compileOnly("io.jsonwebtoken:jjwt-api:0.11.5")
-	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'io.rest-assured:rest-assured:5.4.0'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
-	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.h2database:h2'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	//websocket
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    compileOnly("io.jsonwebtoken:jjwt-api:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
 
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    //websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+
+    /*
+    * asciidoctorExt 구성에서 spring-restdocs-asciidoctor에 대한 종속성을 추가; asciidoctor 태스크에서만 사용할 의존성
+    * 다음과 같이 자동 구성됨: .adoc 파일에서 {snippets} -> build/generated-snippets
+    * 또한 operation block macro 사용 가능
+    * */
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
 }
+
 
 tasks.named('test') {
-	useJUnitPlatform()
+    outputs.dir snippetsDir
+    useJUnitPlatform()
 }
+
+/* ---------- Asciidoctor ---------- */
+asciidoctor {
+    configurations 'asciidoctorExt'
+    inputs.dir snippetsDir
+    dependsOn test
+    outputDir = file("$buildDir/generated-docs")
+}
+
+/* ---------- 문서 복사 ---------- */
+tasks.register('copyDocs', Copy) {
+    dependsOn asciidoctor
+    from("$buildDir/generated-docs")
+    into("$buildDir/resources/main/static/docs")
+    // processResources가 끝난 뒤에만 실행되어 충돌 방지
+    mustRunAfter tasks.named('processResources')
+}
+
+tasks.named('resolveMainClassName') {
+    dependsOn tasks.named('copyDocs')
+}
+
+/* ---------- 패키징 / 실행 ---------- */
+tasks.named('bootJar') { dependsOn tasks.named('copyDocs') }
+tasks.named('bootRun') { dependsOn tasks.named('copyDocs') }
+tasks.withType(Jar).configureEach {
+    dependsOn tasks.named('copyDocs')
+}
+tasks.named('build') { dependsOn tasks.named('copyDocs') }
+
+/* ❌ processResources ← asciidoctor 의존은 절대 넣지 마세요! */

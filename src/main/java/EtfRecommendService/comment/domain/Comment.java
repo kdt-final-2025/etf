@@ -49,7 +49,7 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "comment")
     @Builder.Default
     @ToString.Exclude
-    private List<CommentReport> ReportList = new ArrayList<>();
+    private List<CommentReport> reportList = new ArrayList<>();
     @OneToMany(mappedBy = "comment")
     @Builder.Default
     @ToString.Exclude
