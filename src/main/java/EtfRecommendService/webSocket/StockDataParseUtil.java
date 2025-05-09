@@ -1,9 +1,14 @@
 package EtfRecommendService.webSocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.stereotype.Component;
 
+@Component
 public class StockDataParseUtil {
-    public static StockPriceData parseFromDelimitedFields(String[] field){
+
+    //실시간 데이터 문자열 배열로 들어올 경우 stockpricedata 객체로 변환
+    //역직렬화 (문자열을 java 객체로)
+    public StockPriceData parseFromDelimitedFields(String[] field){
         if (field.length < 14){
             throw new IllegalArgumentException("필드 부족");
         }
@@ -17,8 +22,9 @@ public class StockDataParseUtil {
                 .build();
     }
 
-    //json 메세지 -> stockpricedata로 변환
-    public static StockPriceData parseFromJson(JsonNode json){
+
+    //json 형태 데이터를 stockpricedata로 변환
+    public StockPriceData parseFromJson(JsonNode json){
         return StockPriceData.builder()
                 .stockCode(json.path("stockCode").asText())
                 .currentPrice(json.path("currentPrice").asDouble())

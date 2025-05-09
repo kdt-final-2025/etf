@@ -2,6 +2,7 @@ package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
 import EtfRecommendService.loginUtils.LoginMember;
+import EtfRecommendService.webSocket.WebSocketConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class EtfRestController {
 
     private final EtfService etfService;
+    private final WebSocketConnectionService webSocketConnectionService;
 
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
@@ -53,6 +55,11 @@ public class EtfRestController {
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(memberLoginId, etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
+
+    //웹소켓
+    //전체 목록
+
+    //상세보기
 
 
 }

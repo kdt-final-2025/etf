@@ -11,14 +11,25 @@ import java.util.Arrays;
 import java.net.URI;
 import java.util.List;
 
-//웹소켓키+핸들러로 실제 연결, 메세지 송수신
+//한국투자 api에 클라이언트로 연결 + 메세지 받아오는 역할
+//ReactorNettyWebSocketClient를 이용해 한국투자에 클라이언트로 연결
+//받은 데이터를 내부 메모리에 저장
+// 웹소켓키, id, 종목코드 받아서 웹소켓 연결
 @Service
 public class WebSocketConnectionService {
 
     @Value("${kis.websocket-url}")
     private String apiUrl;
 
+    private final StockPriceData stockPriceData;
+    private final StockDataParseUtil stockDataParseUtil;
+
     private final ReactorNettyWebSocketClient client = new ReactorNettyWebSocketClient();
+
+    public WebSocketConnectionService(StockPriceData stockPriceData, StockDataParseUtil stockDataParseUtil) {
+        this.stockPriceData = stockPriceData;
+        this.stockDataParseUtil = stockDataParseUtil;
+    }
 
     //trId:실시간 TR ID ("H0STCNT0")
     // trKey:종목코드
@@ -33,7 +44,6 @@ public class WebSocketConnectionService {
                         URI.create(apiUrl + "?approval_key=" + approvalKey),
                         session -> {
                             Flux<WebSocketMessage> sendMessages = Flux.fromIterable(trKeys)
-//                                    .map(trKey -> session.textMessage(buildPayload(approvalKey, trId, trKey)));
                                     .map(trKey -> {
                                         String payload = buildPayload(approvalKey, trId, trKey);
                                         System.out.println("보낼 payload: " + payload); // 여기 핵심
@@ -62,21 +72,7 @@ public class WebSocketConnectionService {
         );
     }
 
-    //서버로 수신한 데이터 처리
-//    private void handleMessage(String txt) {
-//        if (txt.contains("|")) {
-//            String[] fields = txt.split("\\|");
-//            StockPriceData data = StockPriceData.parseFromFields(fields);
-//            System.out.println(data);
-//        } else {
-//            System.out.println("[info]" + txt);
-//        }
-//    }
-
-//    private void handleMessage(String txt) {
-//        System.out.println("[raw message] " + txt);
-//    }
-
+    //reactor netty 클라이언트로 받은 원시 데이터 처리
     private void handleMessage(String txt){
         if (txt.startsWith("{")){
             System.out.println("[json 메세지]"+txt);
@@ -88,7 +84,7 @@ public class WebSocketConnectionService {
                 String[] fields = parts[3].split("\\^");
 
                 try {
-                    StockPriceData data = StockPriceData.parseFromFields(fields);
+                    StockPriceData data = stockDataParseUtil.parseFromDelimitedFields(fields);
                     System.out.println("[시세 데이터]"+ data);
                 }catch (Exception e){
                     System.out.println("시세 데이터 파싱 오류:"+ Arrays.toString(fields));  //문자열로 바꿔주는 유틸
