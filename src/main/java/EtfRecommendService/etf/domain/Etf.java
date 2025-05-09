@@ -32,6 +32,7 @@ public class Etf extends BaseEntity {
     private LocalDateTime listingDate;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Theme theme;
 
     @OneToMany(mappedBy = "etf")
