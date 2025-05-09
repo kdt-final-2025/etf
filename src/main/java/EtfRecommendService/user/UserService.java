@@ -7,6 +7,9 @@ import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +28,7 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Service s3Service;
     private final UserQueryRepository userQueryRepository;
+    private final AuthenticationManager authenticationManager;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
@@ -49,6 +53,12 @@ public class UserService {
     }
 
     public UserLoginResponse login(UserLoginRequest loginRequest) {
+        UsernamePasswordAuthenticationToken token =
+                new UsernamePasswordAuthenticationToken(loginRequest.loginId(), loginRequest.password());
+
+        //0509 여기까지 구현, 패스워드 암호화 알고리즘 변경해야함.
+        Authentication authentication = authenticationManager.authenticate(token);
+
         User user = getByLoginId(loginRequest.loginId());
 
         if (!user.isSamePassword(loginRequest.password())) {
