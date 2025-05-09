@@ -9,12 +9,23 @@ import { useMobile } from "@/hooks/use-mobile"
 
 // 테마 카테고리 데이터
 const themeCategories = [
-  { id: "tech", name: "기술" },
-  { id: "finance", name: "금융" },
-  { id: "healthcare", name: "헬스케어" },
-  { id: "consumer", name: "소비재" },
-  { id: "energy", name: "에너지" },
-  { id: "global", name: "글로벌" },
+  { id: "AI_DATA", name: "AI 데이터" },
+  { id: "USA", name: "미국" },
+  { id: "KOREA", name: "한국" },
+  { id: "REITS", name: "리츠" },
+  { id: "MULTI_ASSET", name: "멀티에셋" },
+  { id: "COMMODITIES", name: "원자재" },
+  { id: "HIGH_RISK", name: "고위험" },
+  { id: "SECTOR", name: "섹터" },
+  { id: "DIVIDEND", name: "배당" },
+  { id: "ESG", name: "ESG" },
+  { id: "GOLD", name: "금" },
+  { id: "GOVERNMENT_BOND", name: "국채" },
+  { id: "CORPORATE_BOND", name: "회사채" },
+  { id: "DEFENSE", name: "방위산업" },
+  { id: "SEMICONDUCTOR", name: "반도체" },
+  { id: "BIO", name: "바이오" },
+  { id: "EMERGING_MARKETS", name: "신흥시장" }
 ]
 
 export default function Sidebar() {
