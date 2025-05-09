@@ -13,20 +13,24 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user/replies")
+@RequestMapping("/api/v1/replies")
 public class ReplyController {
     private final ReplyService replyService;
 
+    @Secured("USER")
     @PostMapping
     public ResponseEntity<String> createReply(@LoginMember String loginId, @RequestBody@Valid ReplyRequest rq){
         replyService.create(loginId, rq);
         return ResponseEntity.status(HttpStatus.CREATED).body("Reply Create Successfully");
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/{commentId}")
     public ResponseEntity<RepliesPageList> readAllReplies(@LoginMember String loginId,
                                                           @PathVariable Long commentId,
@@ -39,18 +43,21 @@ public class ReplyController {
         return ResponseEntity.ok(repliesPageList);
     }
 
+    @Secured("USER")
     @PutMapping("/{replyId}")
     public ResponseEntity<String> updateReply(@LoginMember String loginId, @PathVariable Long replyId, @RequestBody@Valid ReplyRequest rq){
         replyService.update(loginId, replyId, rq);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Reply update successfully");
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/{replyId}")
     public ResponseEntity<String> deleteReply(@LoginMember String loginId, @PathVariable Long replyId){
         replyService.delete(loginId, replyId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Reply delete successfully");
     }
 
+    @Secured("USER")
     @PostMapping("/{replyId}/likes")
     public void toggleLike(
             @LoginMember String loginId,
