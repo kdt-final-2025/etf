@@ -6,7 +6,19 @@
 :toclevels: 2
 :sectlinks:
 
-== 댓글 생성
-operation::comment-create[snippets='http-request,http-response,request-fields,response-fields'] // 테스트에서 생성된 http 요청/응답, 필드 정보를 포함
-=== curl 요청 예시 // Curl 요청 예시를 위한 서브 섹션
-include::{snippets}/comment-create/curl-request.adoc[] // 테스트에서 생성된 curl 요청 스니펫 포함
+=== 댓글 생성 API
+
+// 실제 API 동작을 설명하는 간단한 설명
+[NOTE]
+====
+테스트 실행 시 생성된 HTTP 요청/응답과 필드 정보가 포함됩니다.
+====
+
+operation::comment-create[snippets='http-request,http-response,request-fields,response-fields']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-create/curl-request.adoc[]
+----

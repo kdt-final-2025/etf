@@ -22,7 +22,6 @@ ext {
     set('snippetsDir', file("build/generated-snippets"))
 }
 
-// asciidoctorExt라는 이름의 구성 선언
 configurations {
     asciidoctorExt
 }
@@ -36,12 +35,10 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     compileOnly("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -49,22 +46,10 @@ dependencies {
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-
-    //websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-
-    /*
-    * asciidoctorExt 구성에서 spring-restdocs-asciidoctor에 대한 종속성을 추가; asciidoctor 태스크에서만 사용할 의존성
-    * 다음과 같이 자동 구성됨: .adoc 파일에서 {snippets} -> build/generated-snippets
-    * 또한 operation block macro 사용 가능
-    * */
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-
 }
 
 
@@ -74,12 +59,16 @@ tasks.named('test') {
 }
 
 /* ---------- Asciidoctor ---------- */
-asciidoctor {
+tasks.named('asciidoctor', org.asciidoctor.gradle.jvm.AsciidoctorTask) {
     configurations 'asciidoctorExt'
-    inputs.dir snippetsDir
     dependsOn test
-    outputDir = file("$buildDir/generated-docs")
+    inputs.dir snippetsDir
+    attributes 'snippets': snippetsDir
+    // 빌드 시 바로 src/main/resources/static/docs에 생성
+    outputDir = file("${projectDir}/src/main/resources/static/docs")
 }
+// copyDocs 없이 바로 포함되므로 bootRun/bootJar에 별도 의존 설정 불필요
+
 
 /* ---------- 문서 복사 ---------- */
 tasks.register('copyDocs', Copy) {
