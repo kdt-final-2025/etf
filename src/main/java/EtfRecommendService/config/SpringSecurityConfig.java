@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,6 +24,7 @@ import java.io.PrintWriter;
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity(securedEnabled = true)
 public class SpringSecurityConfig {
 
     private CorsConfigurationSource corsConfigurationSource;
@@ -40,10 +42,15 @@ public class SpringSecurityConfig {
                 )
                 .authorizeHttpRequests( authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers(PathRequest.toH2Console()).permitAll()
-                                .requestMatchers("/api/v1/user", "/api/v1/users").hasAnyRole(Role.USER.name(), Role.ADMIN.name())
-                                .requestMatchers("/api/v1/admin").hasRole(Role.ADMIN.name())
-                                .requestMatchers("/").permitAll()
+                                .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers("/api/v1/comments/**").authenticated()
+                                .requestMatchers("/api/v1/etfs/**").authenticated()
+                                .requestMatchers("/api/v1/news/**").permitAll()
+                                .requestMatchers("/api/v1/notifications/**").permitAll()
+                                .requestMatchers("/api/v1/replies/**").authenticated()
+                                .requestMatchers("/api/v1/reports/**").authenticated()
+                                .requestMatchers("/api/v1/users/**").authenticated()
+                                .requestMatchers("/**").permitAll()
                 )
                 .exceptionHandling((exceptionConfig) ->
                         exceptionConfig.authenticationEntryPoint(unauthorizedEntryPoint).accessDeniedHandler(accessDeniedHandler)
