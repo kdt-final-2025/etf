@@ -1,5 +1,6 @@
 package EtfRecommendService.config;
 
+import EtfRecommendService.loginUtils.Sha256HexPasswordEncoder;
 import EtfRecommendService.security.Role;
 import EtfRecommendService.security.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -80,4 +82,8 @@ public class SpringSecurityConfig {
                 writer.write(json);
                 writer.flush();
             };
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new Sha256HexPasswordEncoder();
+    }
 }
