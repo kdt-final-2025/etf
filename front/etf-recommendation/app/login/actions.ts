@@ -1,7 +1,6 @@
 "use server"
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import {cookies} from "next/headers";
 
 export async function login(loginId: string, password: string) {
     try {
@@ -30,8 +29,17 @@ export async function login(loginId: string, password: string) {
             // 로그인 성공 결과 반환
             return { success: true, message: "로그인 성공!" };
         } else {
-            const error = await res.text();
-            return { success: false, message: "로그인 실패: " + error };
+            // JSON 응답으로 파싱
+            let errorMessage = "로그인 실패";
+            try {
+                const errData = await res.json();
+                if (errData?.message) {
+                    errorMessage = errData.message;
+                }
+            } catch {
+                errorMessage = await res.text();
+            }
+            return { success: false, message: errorMessage };
         }
     } catch (err) {
         console.error(err);
