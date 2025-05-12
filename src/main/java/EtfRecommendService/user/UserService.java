@@ -2,8 +2,10 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.loginUtils.JwtTokens;
 import EtfRecommendService.security.RefreshTokenDetails;
 import EtfRecommendService.security.RefreshTokenRepository;
+import EtfRecommendService.security.TokenNotFoundException;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
@@ -66,24 +68,11 @@ public class UserService {
         Authentication authentication = authenticationManager.authenticate(token);
 
         UserDetails userDetail = (UserDetails) authentication.getPrincipal();
-        String accessToken = jwtProvider.createToken(userDetail);
-        String refreshToken = jwtProvider.createRefreshToken(userDetail);
 
-        User user = getByLoginId(userDetail.getUsername());
-        Date expirationDate = jwtProvider.getExpiration(refreshToken);
-        LocalDateTime expiryDate = expirationDate.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
+        //{accessToken, refreshToken}
+        String [] tokens = generateTokens(userDetail);
 
-        RefreshTokenDetails refreshTokenDetails = RefreshTokenDetails.builder()
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .expiryDate(expiryDate)
-                .build();
-
-        refreshTokenRepository.save(refreshTokenDetails);
-
-        return new UserLoginResponse(accessToken,refreshToken);
+        return new UserLoginResponse(tokens[0],tokens[1]);
     }
 
     @Transactional
@@ -182,7 +171,41 @@ public class UserService {
                 user.isLikePrivate());
     }
 
-    public void refresh(RefreshRequest request) {
+    public JwtTokens refresh(UserDetails userDetail, RefreshRequest request) {
+        String refreshToken = request.refreshToken();
+        if (jwtProvider.isValidToken(refreshToken)){
+            RefreshTokenDetails refreshTokenDetails =
+                    refreshTokenRepository.findByRefreshToken(refreshToken)
+                            .orElseThrow(
+                                    ()->new TokenNotFoundException("만료된 리프레시 토큰, 재로그인 바람")
+                            );
+            //{accessToken, refreshToken}
+            String[] tokens = generateTokens(userDetail);
+            return new JwtTokens(tokens[0], tokens[1]);
+        }
+        else {
+            throw new TokenNotFoundException("유효하지 않은 토큰");
+        }
+    }
 
+    private String[] generateTokens(UserDetails userDetail){
+        String accessToken = jwtProvider.createToken(userDetail);
+        String refreshToken = jwtProvider.createRefreshToken(userDetail);
+
+        User user = getByLoginId(userDetail.getUsername());
+        Date expirationDate = jwtProvider.getExpiration(refreshToken);
+        LocalDateTime expiryDate = expirationDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+
+        RefreshTokenDetails refreshTokenDetails = RefreshTokenDetails.builder()
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .expiryDate(expiryDate)
+                .build();
+
+        refreshTokenRepository.save(refreshTokenDetails);
+
+        return new String[]{accessToken, refreshToken};
     }
 }

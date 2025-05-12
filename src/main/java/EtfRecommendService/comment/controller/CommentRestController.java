@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,9 +27,9 @@ public class CommentRestController {
     @Secured("USER")
     @PostMapping
     public void createComment(
-            @LoginMember String loginId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody CommentCreateRequest commentCreateRequest) {
-        commentService.create(loginId, commentCreateRequest);
+        commentService.create(userDetails.getUsername(), commentCreateRequest);
     }
 
     //댓글 조회
@@ -35,7 +37,6 @@ public class CommentRestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<CommentsPageList> readAllComment(
-            @LoginMember String loginId,
             @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(name = "etf_id") Long etfId) {
         CommentsPageList commentsPageList = commentService.readAll(pageable, etfId);
@@ -46,10 +47,10 @@ public class CommentRestController {
     @Secured("USER")
     @PutMapping("/{commentId}")
     public void updateComment(
-            @LoginMember String loginId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long commentId,
             @RequestBody CommentUpdateRequest commentUpdateRequest) {
-        commentService.update(loginId, commentId, commentUpdateRequest);
+        commentService.update(userDetails.getUsername(), commentId, commentUpdateRequest);
     }
 
     //Comment Soft Delete
@@ -57,18 +58,18 @@ public class CommentRestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/{commentId}")
     public void deleteComment(
-            @LoginMember String loginId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long commentId) {
-        commentService.delete(loginId, commentId);
+        commentService.delete(userDetails.getUsername(), commentId);
     }
 
     //좋아요 토글
     @Secured("USER")
     @PostMapping("/{commentId}/likes")
     public ResponseEntity<ToggleLikeResponse> toggleLike(
-            @LoginMember String loginId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long commentId) {
-        ToggleLikeResponse response = commentService.toggleLike(loginId, commentId);
+        ToggleLikeResponse response = commentService.toggleLike(userDetails.getUsername(), commentId);
         return ResponseEntity.ok(response);
     }
 
@@ -77,7 +78,7 @@ public class CommentRestController {
     //관리자만 접근 가능
     @Secured("ADMIN")
     @GetMapping("/{commentId}")
-    public ResponseEntity<CommentResponse> readOneComment(@LoginMember String loginId, @PathVariable Long commentId){
-        return ResponseEntity.ok(commentService.readOneComment(loginId, commentId));
+    public ResponseEntity<CommentResponse> readOneComment(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long commentId){
+        return ResponseEntity.ok(commentService.readOneComment(userDetails.getUsername(), commentId));
     }
 }

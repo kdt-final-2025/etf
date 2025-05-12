@@ -1,8 +1,7 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
-import EtfRecommendService.loginUtils.JwtToken;
-import EtfRecommendService.loginUtils.LoginMember;
+import EtfRecommendService.loginUtils.JwtTokens;
 import EtfRecommendService.user.dto.*;
 
 import EtfRecommendService.user.exception.PasswordMismatchException;
@@ -12,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,59 +38,62 @@ public class UserController {
         return ResponseEntity.ok(login);
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/api/refresh")
-    public ResponseEntity<JwtToken> refresh(@RequestBody RefreshRequest request) {
-        userService.refresh(request);
+    public ResponseEntity<JwtTokens> refresh(@AuthenticationPrincipal UserDetails userDetails, @RequestBody RefreshRequest request) {
+        JwtTokens body = userService.refresh(userDetails, request);
+        return ResponseEntity.ok(body);
     }
 
     @Secured("USER")
     @PatchMapping("/users")
-    public ResponseEntity<UserUpdateResponse> updateProfile(@LoginMember String auth, @RequestBody UserUpdateRequest updateRequest) {
-        UserUpdateResponse userUpdateResponse = userService.UpdateProfile(auth, updateRequest);
+    public ResponseEntity<UserUpdateResponse> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserUpdateRequest updateRequest) {
+        UserUpdateResponse userUpdateResponse = userService.UpdateProfile(userDetails.getUsername(), updateRequest);
         return ResponseEntity.ok(userUpdateResponse);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @DeleteMapping("/users")
-    public ResponseEntity<Void> delete(@LoginMember String auth) {
-        userService.delete(auth);
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal UserDetails userDetails
+    ) {
+        userService.delete(userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
     @Secured("USER")
     @PatchMapping("/users/me/password")
-    public ResponseEntity<UserPasswordResponse> updatePassword(@LoginMember String auth, @RequestBody UserPasswordRequest passwordRequest) {
+    public ResponseEntity<UserPasswordResponse> updatePassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserPasswordRequest passwordRequest) {
         if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
             throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
-        UserPasswordResponse userPasswordResponse = userService.updatePassword(auth, passwordRequest);
+        UserPasswordResponse userPasswordResponse = userService.updatePassword(userDetails.getUsername(), passwordRequest);
         return ResponseEntity.ok(userPasswordResponse);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/users/comments/{userId}")
     public ResponseEntity<UserPageResponse> findUserComments(
-            @LoginMember String auth,
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        UserPageResponse userPageResponse = userService.findUserComments(auth, userId, pageable);
+        UserPageResponse userPageResponse = userService.findUserComments(userDetails.getUsername(), userId, pageable);
         return ResponseEntity.ok(userPageResponse);
     }
 
     @Secured("USER")
     @PatchMapping("/users/image")
-    public ResponseEntity<UserProfileResponse> imageUpdate(@LoginMember String auth,
+    public ResponseEntity<UserProfileResponse> imageUpdate(@AuthenticationPrincipal UserDetails userDetails,
                                            @RequestPart(value = "images") MultipartFile file) throws IOException {
-        UserProfileResponse userProfileResponse = userService.imageUpdate(auth, file);
+        UserProfileResponse userProfileResponse = userService.imageUpdate(userDetails.getUsername(), file);
         return ResponseEntity.ok(userProfileResponse);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/users/{userId}")
-    public ResponseEntity<UserDetailResponse> findByUserId(@LoginMember String auth, @PathVariable Long userId) {
-        UserDetailResponse userDetailResponse = userService.findByUserId(auth, userId);
+    public ResponseEntity<UserDetailResponse> findByUserId(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long userId) {
+        UserDetailResponse userDetailResponse = userService.findByUserId(userDetails.getUsername(), userId);
         return ResponseEntity.ok(userDetailResponse);
     }
 

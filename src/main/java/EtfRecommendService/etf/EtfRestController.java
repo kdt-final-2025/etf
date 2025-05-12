@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -39,25 +41,25 @@ public class EtfRestController {
 
     @Secured("USER")
     @PostMapping("/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeResponse> create(@LoginMember String memberLoginId, @PathVariable Long etfId){
-        SubscribeResponse subscribeResponse = etfService.subscribe(memberLoginId, etfId);
+    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+        SubscribeResponse subscribeResponse = etfService.subscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscribeResponse);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/subscribes")
-    public ResponseEntity<SubscribeListResponse> subscribeReadAll(@LoginMember String memberLoginId,
+    public ResponseEntity<SubscribeListResponse> subscribeReadAll(@AuthenticationPrincipal UserDetails userDetails,
                                                   @RequestParam(defaultValue = "1") int page,
                                                   @RequestParam(defaultValue = "20") int size){
         Pageable pageable = PageRequest.of(page - 1, size);
-        SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, memberLoginId);
+        SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
     }
 
     @Secured("USER")
     @DeleteMapping("/etf/{etfId}/subscription")
-    public ResponseEntity<SubscribeDeleteResponse> delete(@LoginMember String memberLoginId, @PathVariable Long etfId){
-        SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(memberLoginId, etfId);
+    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+        SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 
