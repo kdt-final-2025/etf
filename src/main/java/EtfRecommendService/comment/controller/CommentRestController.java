@@ -66,7 +66,8 @@ public class CommentRestController {
     //관리자가 신고된 댓글 조회할 때 사용할 API
     //유저별 신고목록 조회와 함께 사용
     @GetMapping("/admin/comments/{commentId}")
-    public ResponseEntity<CommentResponse> readOneComment(@LoginMember String loginId, @PathVariable Long commentId){
+    public ResponseEntity<CommentResponse> readOneComment(
+            @LoginMember String loginId, @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.readOneComment(loginId, commentId));
     }
 }

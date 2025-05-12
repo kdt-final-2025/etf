@@ -205,8 +205,8 @@ public class CommentService {
 
     public CommentResponse readOneComment(String loginId, Long commentId) {
         //이부분은 Spring Security 적용해서 권한 검증하는 방식으로 교체할것- 임시 권한 검증책
-        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()->new EntityNotFoundException("User is not Admin"));
-        Comment comment = commentRepository.findById(commentId).orElseThrow(()->new EntityNotFoundException("Not found Comment"));
+        Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(() -> new EntityNotFoundException("User is not Admin"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new EntityNotFoundException("Not found Comment"));
         return CommentResponse.toDto(comment);
     }
 }
