@@ -1,6 +1,5 @@
 package EtfRecommendService.config;
 
-import EtfRecommendService.loginUtils.Sha256HexPasswordEncoder;
 import EtfRecommendService.security.Role;
 import EtfRecommendService.security.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -48,6 +49,8 @@ public class SpringSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests( authorizeRequests ->
                         authorizeRequests
+                                // 회원가입은 인증 없이 허용
+                                .requestMatchers(HttpMethod.POST, "/api/v1/users/join").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
                                 .requestMatchers("/api/v1/comments/**").authenticated()
                                 .requestMatchers("/api/v1/etfs/**").authenticated()
@@ -58,6 +61,7 @@ public class SpringSecurityConfig {
                                 .requestMatchers("/api/v1/users/**").authenticated()
                                 .requestMatchers("/**").permitAll()
                 )
+
                 .exceptionHandling((exceptionConfig) ->
                         exceptionConfig.authenticationEntryPoint(unauthorizedEntryPoint).accessDeniedHandler(accessDeniedHandler)
                 );
@@ -88,7 +92,14 @@ public class SpringSecurityConfig {
             };
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new Sha256HexPasswordEncoder();
+        return new BCryptPasswordEncoder();
+    }
+
+    // UserService가 AuthenticationManager 타입의 빈을 필요로 하지만,
+    // 해당 빈이 정의되어 있지 않음.
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean

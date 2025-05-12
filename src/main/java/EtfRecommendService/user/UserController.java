@@ -63,7 +63,7 @@ public class UserController {
     @Secured("USER")
     @PatchMapping("/users/me/password")
     public ResponseEntity<UserPasswordResponse> updatePassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserPasswordRequest passwordRequest) {
-        if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
+        if (!passwordRequest.newPassword().equals(passwordRequest.confirmNewPassword())) {
             throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
         UserPasswordResponse userPasswordResponse = userService.updatePassword(userDetails.getUsername(), passwordRequest);

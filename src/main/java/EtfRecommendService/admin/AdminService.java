@@ -7,6 +7,7 @@ import EtfRecommendService.security.CustomUserDetailService;
 import EtfRecommendService.security.UserDetail;
 import EtfRecommendService.user.exception.UserMismatchException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
