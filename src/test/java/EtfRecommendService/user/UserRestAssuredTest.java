@@ -65,7 +65,7 @@ public class UserRestAssuredTest {
         UserLoginResponse loginResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1",password))
+                .body(new UserLoginRequest("user1",password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -93,7 +93,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", wrongPassword))
+                .body(new UserLoginRequest("user1", wrongPassword, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -121,7 +121,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -163,7 +163,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -202,7 +202,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -245,7 +245,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -286,7 +286,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -325,7 +325,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -364,7 +364,7 @@ public class UserRestAssuredTest {
         String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1", password))
+                .body(new UserLoginRequest("user1", password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -403,7 +403,7 @@ public class UserRestAssuredTest {
         UserLoginResponse loginResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
-                .body(new UserLoginRequest("user1",password))
+                .body(new UserLoginRequest("user1",password, "USER"))
                 .when()
                 .post("/api/v1/users/login")
                 .then().log().all()
@@ -411,7 +411,7 @@ public class UserRestAssuredTest {
                 .extract()
                 .as(UserLoginResponse.class);
 
-        String token = loginResponse.token();
+        String token = loginResponse.accessToken();
         Long userId = userResponse.id();
 
         UserDetailResponse detailResponse = RestAssured
