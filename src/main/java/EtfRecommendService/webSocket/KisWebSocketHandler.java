@@ -12,15 +12,19 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.util.Arrays;
 import java.util.List;
 
-//api 파싱용 핸들러 - websocketConnectionService에서 받은 원시 데이터 payload 파싱
+//내부 호출용
+//api 파싱 핸들러 - websocketConnectionService에서 받은 원시 데이터 파싱 및 가공 + webSocketBroadcaster로 전달
 @Component
-public class KisWebSocketHandler extends TextWebSocketHandler {
+public class KisWebSocketHandler{
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(KisWebSocketHandler.class); //sout 대신 logger 사용, 디버깅용
-    private final StockDataParseUtil stockDataParseUtil;
 
-    public KisWebSocketHandler(StockDataParseUtil stockDataParseUtil) {
+    private final StockDataParseUtil stockDataParseUtil;
+    private final WebSocketBroadcaster webSocketBroadcaster;
+
+    public KisWebSocketHandler(StockDataParseUtil stockDataParseUtil, WebSocketBroadcaster webSocketBroadcaster) {
         this.stockDataParseUtil = stockDataParseUtil;
+        this.webSocketBroadcaster = webSocketBroadcaster;
     }
 
     // WebSocketConnectionService 에서 호출됨
@@ -48,6 +52,8 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
                 JsonNode output = root.path("body").path("output");
                 StockPriceData data = stockDataParseUtil.parseFromJson(output);
                 logger.info("[기타 JSON 데이터] {}", data);
+
+                webSocketBroadcaster.broadcast(data);
             }
         } catch (Exception e) {
             logger.error("[JSON 파싱 오류] payload={}", json, e);
@@ -62,6 +68,10 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
             try {
                 StockPriceData data = stockDataParseUtil.parseFromDelimitedFields(fields);
                 logger.info("[시세 데이터] {}", data);
+
+                //전체 종목페이지 프론트로 데이터 전송
+                webSocketBroadcaster.broadcast(data);
+
             } catch (Exception e) {
                 logger.error("[PIPE 파싱 오류] fields={}", Arrays.toString(fields), e);
             }
@@ -132,6 +142,5 @@ public class KisWebSocketHandler extends TextWebSocketHandler {
 //            System.out.println("[기타 메세지] " + payload);
 //        }
 //    }
-
 
 }

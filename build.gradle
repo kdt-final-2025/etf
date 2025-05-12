@@ -51,6 +51,7 @@ dependencies {
 
 	//websocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	// 이미 있는 spring-boot-starter-websocket 은 서버용이므로, JSR-356 클라이언트를 위해선 아래 두 개가 필요
 	implementation 'jakarta.websocket:jakarta.websocket-api:2.1.0'
