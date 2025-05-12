@@ -29,7 +29,6 @@ public class User extends BaseEntity {
     private String loginId;
 
     @Embedded
-    @Column(nullable = false)
     private Password password;
 
     @Column(nullable = false)
@@ -107,17 +106,17 @@ public class User extends BaseEntity {
         this.imageUrl = imgUrl;
     }
 
-    public void updatePassword(Password existingPassword,Password newPassword) {
+    public void updatePassword(String existingPassword,String newPassword) {
         if (!this.isSamePassword(existingPassword)) {
             throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
         }
-        if (this.isSamePassword(newPassword)) {
+        if (existingPassword.equals(newPassword)) {
             throw new RuntimeException("변경할 비밀번호가 같습니다.");
         }
-        this.password = newPassword;
+        this.password = new Password(newPassword);
     }
 
-    public boolean isSamePassword(Password otherPassword) {
+    public boolean isSamePassword(String otherPassword) {
         if (this.getPassword().isSamePassword(otherPassword)) {
             return true;
         }

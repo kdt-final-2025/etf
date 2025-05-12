@@ -21,11 +21,10 @@ public class Admin extends BaseEntity {
     private String loginId;
 
     @Embedded
-    @Column(nullable = false)
     private Password password;
 
-    public boolean isSamePassword(Password inputPassword) {
-        return this.getPassword().isSamePassword(inputPassword);
+    public boolean isSamePassword(String inputPassword) {
+        return this.password.isSamePassword(inputPassword);
     }
 
 }

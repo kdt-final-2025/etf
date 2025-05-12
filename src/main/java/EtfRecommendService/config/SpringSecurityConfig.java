@@ -1,6 +1,5 @@
 package EtfRecommendService.config;
 
-import EtfRecommendService.loginUtils.Sha256HexPasswordEncoder;
 import EtfRecommendService.security.Role;
 import EtfRecommendService.security.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,12 +9,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -86,6 +88,13 @@ public class SpringSecurityConfig {
             };
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new Sha256HexPasswordEncoder();
+        return new BCryptPasswordEncoder();
+    }
+
+    // UserService가 AuthenticationManager 타입의 빈을 필요로 하지만,
+    // 해당 빈이 정의되어 있지 않음.
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 }
