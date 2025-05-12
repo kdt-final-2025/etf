@@ -29,6 +29,6 @@ public class CustomUserDetailService implements UserDetailsService {
         User user = userRepository.findByNickName(nickName).orElseThrow(()->
                 new UsernameNotFoundException("User Not Founded"));
 
-        return new UserDetail(user, types);
+        return new UserDetail(user.getLoginId(), user.getPassword().getPassword(), types);
     }
 }
