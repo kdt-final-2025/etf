@@ -1,6 +1,7 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
+import EtfRecommendService.loginUtils.JwtToken;
 import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.user.dto.*;
 
@@ -34,6 +35,11 @@ public class UserController {
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
         UserLoginResponse login = userService.login(loginRequest);
         return ResponseEntity.ok(login);
+    }
+
+    @PostMapping("/api/refresh")
+    public ResponseEntity<JwtToken> refresh(@RequestBody RefreshRequest request) {
+        userService.refresh(request);
     }
 
     @Secured("USER")

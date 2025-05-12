@@ -15,13 +15,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 @EnableWebSecurity
 @Configuration
@@ -30,6 +34,7 @@ import java.io.PrintWriter;
 public class SpringSecurityConfig {
 
     private CorsConfigurationSource corsConfigurationSource;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,10 +43,7 @@ public class SpringSecurityConfig {
                 .cors(cors-> cors.configurationSource(corsConfigurationSource))
                 .csrf(AbstractHttpConfigurer::disable
                 )
-                .headers(headers->
-                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable
-                        )
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests( authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
@@ -65,7 +67,7 @@ public class SpringSecurityConfig {
             (request, response, authException) -> {
                 ErrorResponse fail = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Spring security unauthorized...");
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                String json = new ObjectMapper().writeValueAsString(fail);
+                String json = objectMapper.writeValueAsString(fail);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 PrintWriter writer = response.getWriter();
                 writer.write(json);
@@ -76,7 +78,7 @@ public class SpringSecurityConfig {
             (request, response, accessDeniedException) -> {
                 ErrorResponse fail = new ErrorResponse(HttpStatus.FORBIDDEN, "Spring security forbidden...");
                 response.setStatus(HttpStatus.FORBIDDEN.value());
-                String json = new ObjectMapper().writeValueAsString(fail);
+                String json = objectMapper.writeValueAsString(fail);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 PrintWriter writer = response.getWriter();
                 writer.write(json);

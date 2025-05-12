@@ -2,6 +2,8 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
 import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.security.RefreshTokenDetails;
+import EtfRecommendService.security.RefreshTokenRepository;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
 import jakarta.transaction.Transactional;
@@ -10,10 +12,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,6 +35,7 @@ public class UserService {
     private final S3Service s3Service;
     private final UserQueryRepository userQueryRepository;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
@@ -56,16 +63,27 @@ public class UserService {
         UsernamePasswordAuthenticationToken token =
                 new UsernamePasswordAuthenticationToken(loginRequest.loginId(), loginRequest.password());
 
-        //0509 여기까지 구현, 패스워드 암호화 알고리즘 변경해야함.
         Authentication authentication = authenticationManager.authenticate(token);
 
-        User user = getByLoginId(loginRequest.loginId());
+        UserDetails userDetail = (UserDetails) authentication.getPrincipal();
+        String accessToken = jwtProvider.createToken(userDetail);
+        String refreshToken = jwtProvider.createRefreshToken(userDetail);
 
-        if (!user.isSamePassword(loginRequest.password())) {
-            throw new UserMismatchException(USER_MISMATCH);
-        }
+        User user = getByLoginId(userDetail.getUsername());
+        Date expirationDate = jwtProvider.getExpiration(refreshToken);
+        LocalDateTime expiryDate = expirationDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
 
-        return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
+        RefreshTokenDetails refreshTokenDetails = RefreshTokenDetails.builder()
+                .refreshToken(refreshToken)
+                .userId(user.getId())
+                .expiryDate(expiryDate)
+                .build();
+
+        refreshTokenRepository.save(refreshTokenDetails);
+
+        return new UserLoginResponse(accessToken,refreshToken);
     }
 
     @Transactional
@@ -164,4 +182,7 @@ public class UserService {
                 user.isLikePrivate());
     }
 
+    public void refresh(RefreshRequest request) {
+
+    }
 }

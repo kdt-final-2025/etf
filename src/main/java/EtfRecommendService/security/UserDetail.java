@@ -9,7 +9,8 @@ import java.util.Collection;
 
 @RequiredArgsConstructor
 public class UserDetail implements UserDetails {
-    private final User user;
+    private final String username;
+    private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override
@@ -19,11 +20,11 @@ public class UserDetail implements UserDetails {
 
     @Override
     public String getPassword(){
-        return this.user.getPassword().getPassword();
+        return this.password;
     }
 
     @Override
     public String getUsername(){
-        return this.user.getNickName();
+        return this.username;
     }
 }

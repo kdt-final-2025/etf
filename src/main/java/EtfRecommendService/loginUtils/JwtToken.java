@@ -1,4 +1,4 @@
 package EtfRecommendService.loginUtils;
 
-public record AccessToken(String token) {
+public record JwtToken(String token) {
 }

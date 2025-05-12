@@ -1,5 +1,8 @@
 package EtfRecommendService.loginUtils;
 
+import EtfRecommendService.security.CustomUserDetailService;
+import EtfRecommendService.security.UserDetail;
+import EtfRecommendService.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -7,10 +10,18 @@ import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtProvider {
@@ -24,28 +35,56 @@ public class JwtProvider {
     // 토큰 만료 시간을 저장할 변수
     private final Long expirationInMilliseconds;
 
+    private final SecretKey refreshSecret;
+
+    private final Long refreshExpirationInMilliseconds;
+
     // 생성자 함수
     public JwtProvider(
             @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.expiration-time}") Long expirationInMilliseconds) {
+            @Value("${jwt.expiration-time}") Long expirationInMilliseconds,
+            @Value("${jwt.refresh.secret}") String refreshSecret,
+            @Value("${jwt.refresh.expiration-time}") Long refreshExpirationInMilliseconds
+    ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.expirationInMilliseconds = expirationInMilliseconds;
+        keyBytes = Decoders.BASE64.decode(refreshSecret);
+        this.refreshSecret = Keys.hmacShaKeyFor(keyBytes);
+        this.refreshExpirationInMilliseconds = refreshExpirationInMilliseconds;
     }
 
     // 토큰을 만들어 내는 함수
-    public String createToken(String payload) {
+    public String createToken(UserDetails userDetail) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + this.expirationInMilliseconds);
         Claims claims = Jwts.claims()
-                .setSubject(payload)       // "sub": "abc@gmail.com"
+                .setSubject(userDetail.getUsername())       // "sub": "abc@gmail.com"
                 .setIssuedAt(now)          // "iat": 1516239022
                 .setExpiration(expiration);// "exp": 1516249022
+        List<String> roles = userDetail.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+        claims.put("roles",roles);
         return Jwts.builder()
                 .setClaims(claims)
                 .signWith(secretKey)
                 .compact();
     }
+
+    public String createRefreshToken(UserDetails userDetail) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + this.refreshExpirationInMilliseconds);
+        Claims claims = Jwts.claims()
+                .setSubject(userDetail.getUsername())       // "sub": "abc@gmail.com"
+                .setIssuedAt(now)          // "iat": 1516239022
+                .setExpiration(expiration);// "exp": 1516249022
+        return Jwts.builder()
+                .setClaims(claims)
+                .signWith(refreshSecret)
+                .compact();
+    }
+
 
     // 유효한 토큰인지 검증하는 함수
     public Boolean isValidToken(String token) {
@@ -72,6 +111,12 @@ public class JwtProvider {
                 .getSubject();
     }
 
+    // 토큰에서 로그인한 사용자의 토큰 만료기간을 추출하는 함수
+    public Date getExpiration(String token) {
+        return parseToken(token)
+                .getExpiration();
+    }
+
     // 유효한 토큰의 데이터를 읽는 함수
     private Claims parseToken(String token) {
         return Jwts.parserBuilder()
@@ -79,5 +124,17 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = parseToken(token);
+        String username = getSubject(token);
+        String authorityClaim = claims.get("roles", String.class);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(authorityClaim.split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
+        UserDetails userDetails = new UserDetail(username, null, authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 }
