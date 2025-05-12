@@ -3,6 +3,7 @@ package EtfRecommendService.APIDocs;
 import EtfRecommendService.DatabaseCleanup;
 import EtfRecommendService.etf.Theme;
 import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.dto.EtfReturnDto;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.user.Password;
@@ -42,8 +43,10 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @ExtendWith(RestDocumentationExtension.class)
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(outputDir = "build/generated-snippets")
@@ -82,6 +85,7 @@ public class EtfApiDocumentationTest {
     private Long etfId2;
 
     @BeforeEach
+    @Transactional
     public void setUp() {
         // DB 초기화
         databaseCleanup.execute();
@@ -94,9 +98,13 @@ public class EtfApiDocumentationTest {
         this.userId = saved.getId();
         this.token = jwtProvider.createToken(saved.getLoginId());
 
+        loadTestData();          // etfName = "삼성전자 ETF", "SK하이닉스 ETF"
+        this.keyword = "삼성전자";
+
+
         pageable = PageRequest.of(0, 20);
         theme = Theme.AI_DATA;
-        keyword = "SAMSUNG";
+
 
         weeklyEtfDtos = Arrays.asList(
                 new EtfReturnDto("Samsung Electronics ETF", "005930", Theme.AI_DATA, 1.5),
@@ -112,7 +120,7 @@ public class EtfApiDocumentationTest {
 
     }
 
-    @Transactional
+
     void loadTestData() {
         // 예: 테스트 시점의 정확한 타임스탬프
         LocalDateTime now = LocalDateTime.now();
@@ -134,6 +142,28 @@ public class EtfApiDocumentationTest {
                 .build();
 
 
+        // 2) Projection 엔티티 저장 (builder 없이 all-args 생성자 사용)
+        //    첫 번째 파라미터(id)는 DB에서 자동 생성되므로 null로 둡니다.
+        EtfProjection p1 = new EtfProjection(
+                null,
+                e1.getEtfName(),
+                e1.getEtfCode(),
+                e1.getTheme(),
+                1.5,    // weeklyReturn
+                5.2     // monthlyReturn
+        );
+        em.persist(p1);
+
+        EtfProjection p2 = new EtfProjection(
+                null,
+                e2.getEtfName(),
+                e2.getEtfCode(),
+                e2.getTheme(),
+                2.3,
+                7.8
+        );
+        em.persist(p2);
+
         em.persist(e1);
         em.persist(e2);
         em.flush();
@@ -150,27 +180,35 @@ public class EtfApiDocumentationTest {
     void etfList() throws Exception {
         mockMvc.perform(get("/api/v1/etfs")
                         .param("theme", theme.name())
-                        .param("keyword", keyword)
-                        // 테스트에서는 1-based 인덱스: 0 → 1
-                        .param("page", String.valueOf(pageable.getPageNumber() + 1))
+                        .param("keyword", "")
+                        .param("page", String.valueOf(pageable.getPageNumber() + 1)) // 1‑base
                         .param("size", String.valueOf(pageable.getPageSize()))
-                        .header("Authorization", "Bearer " + token)
-                )
+                        .header("Authorization", "Bearer " + token))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andDo(document("etf-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+
+                        // ---- 1) 쿼리 파라미터 문서 ----
                         queryParameters(
                                 parameterWithName("theme").description("ETF 테마"),
-                                parameterWithName("keyword").description("검색 키워드"),
-                                parameterWithName("page").description("페이지 번호"),
+                                parameterWithName("keyword").description("검색 키워드").optional(),
+                                parameterWithName("page").description("페이지 번호 (1‑base)"),
                                 parameterWithName("size").description("페이지 크기")
                         ),
+
                         responseFields(
-                                fieldWithPath("[].etfName").description("ETF 이름"),
-                                fieldWithPath("[].etfCode").description("ETF 코드"),
-                                fieldWithPath("[].theme").description("ETF 테마"),
-                                fieldWithPath("[].returnRate").description("수익률")
+                                fieldWithPath("totalPage").description("총 페이지 수"),
+                                fieldWithPath("totalCount").description("전체 건수"),
+                                fieldWithPath("currentPage").description("현재 페이지"),
+                                fieldWithPath("pageSize").description("페이지 크기"),
+
+                                fieldWithPath("etfReadResponseList").description("ETF 목록 배열"),
+                                fieldWithPath("etfReadResponseList[].etfName").description("ETF 이름"),
+                                fieldWithPath("etfReadResponseList[].etfCode").description("ETF 코드"),
+                                fieldWithPath("etfReadResponseList[].theme").description("ETF 테마"),
+                                fieldWithPath("etfReadResponseList[].returnRate").description("수익률(%)")
                         )
                 ));
     }
