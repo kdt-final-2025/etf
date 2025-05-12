@@ -1,0 +1,97 @@
+= 댓글 API
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+=== 댓글 생성 API
+
+====
+테스트 실행 시 생성된 HTTP 요청/응답과 필드 정보가 포함됩니다.
+====
+
+operation::comment-create[snippets='http-request,http-response,request-fields,response-fields']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-create/curl-request.adoc[]
+----
+
+=== 댓글 삭제 API
+
+====
+테스트 실행 시 생성된 HTTP 요청/응답과 경로 파라미터 정보가 포함됩니다.
+====
+
+operation::comment-delete[snippets='http-request,http-response,path-parameters']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-delete/curl-request.adoc[]
+----
+
+=== 댓글 수정 API
+
+====
+테스트 실행 시 생성된 HTTP 요청/응답, 경로 파라미터 및 요청 필드 정보가 포함됩니다.
+====
+
+operation::comment-update[snippets='http-request,http-response,path-parameters,request-fields,response-fields']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-update/curl-request.adoc[]
+----
+
+=== 댓글 좋아요 API
+
+====
+테스트 실행 시 생성된 HTTP 요청/응답과 경로 파라미터 정보가 포함됩니다.
+====
+
+operation::comment-like[snippets='http-request,http-response,path-parameters']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-like/curl-request.adoc[]
+----
+
+=== 댓글 좋아요 취소 API
+
+====
+테스트 실행 시 생성된 HTTP 요청/응답과 경로 파라미터 정보가 포함됩니다.
+====
+
+operation::comment-unlike[snippets='http-request,http-response,path-parameters']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-unlike/curl-request.adoc[]
+----
+
+=== 댓글 목록 조회 API
+
+====
+테스트 실행 시 생성된 HTTP 요청/응답 및 쿼리 파라미터 정보가 포함됩니다.
+====
+
+operation::comment-list[snippets='http-request,http-response,request-parameters']
+
+==== Curl 요청 예시
+
+[source,shell]
+----
+include::{snippets}/comment-list/curl-request.adoc[]
+----
