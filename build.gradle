@@ -14,6 +14,13 @@ ext {
     docsCopyDir = file("$buildDir/generated-resources")
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir docsCopyDir
+        }
+    }
+}
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
@@ -84,13 +91,10 @@ tasks.asciidoctor {
 /* ───── HTML 복사 ───── */
 tasks.register('copyDocs', Copy) {
     dependsOn tasks.asciidoctor
+
     from(asciidocOutDir) {
-        include '**/*.html'           // ④ 모든 .html 복사
+        include '**/*.html'
         into 'static/docs'
-        rename { String fileName ->
-            // comment-api.html → etf-api.html 로 통일하고 싶다면 아래와 같이 변경
-            fileName.replaceFirst(/^(.+)\.html$/, 'etf-$1.html')
-        }
     }
     into docsCopyDir
 }
