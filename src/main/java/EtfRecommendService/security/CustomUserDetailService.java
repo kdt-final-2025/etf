@@ -24,9 +24,9 @@ public class CustomUserDetailService implements UserDetailsService {
         String[] identifiers = identifier.split(":");
         Collection<? extends GrantedAuthority> types =
                 List.of(new SimpleGrantedAuthority("Role_"+identifiers[0]));
-        String nickName = identifiers[1];
+        String loginId = identifiers[1];
 
-        User user = userRepository.findByNickName(nickName).orElseThrow(()->
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->
                 new UsernameNotFoundException("User Not Founded"));
 
         return new UserDetail(user.getLoginId(), user.getPassword().getPassword(), types);

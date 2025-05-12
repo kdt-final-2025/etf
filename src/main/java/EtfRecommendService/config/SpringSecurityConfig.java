@@ -67,7 +67,7 @@ public class SpringSecurityConfig {
             (request, response, authException) -> {
                 ErrorResponse fail = new ErrorResponse(HttpStatus.UNAUTHORIZED, "Spring security unauthorized...");
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                String json = objectMapper.writeValueAsString(fail);
+                String json = new ObjectMapper().writeValueAsString(fail);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 PrintWriter writer = response.getWriter();
                 writer.write(json);
@@ -78,7 +78,7 @@ public class SpringSecurityConfig {
             (request, response, accessDeniedException) -> {
                 ErrorResponse fail = new ErrorResponse(HttpStatus.FORBIDDEN, "Spring security forbidden...");
                 response.setStatus(HttpStatus.FORBIDDEN.value());
-                String json = objectMapper.writeValueAsString(fail);
+                String json = new ObjectMapper().writeValueAsString(fail);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 PrintWriter writer = response.getWriter();
                 writer.write(json);
