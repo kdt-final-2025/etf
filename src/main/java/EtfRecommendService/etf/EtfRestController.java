@@ -39,7 +39,7 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(etfDetailResponse);
     }
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PostMapping("/etfs/{etfId}/subscription")
     public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
         SubscribeResponse subscribeResponse = etfService.subscribe(userDetails.getUsername(), etfId);
@@ -56,7 +56,7 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
     }
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @DeleteMapping("/etf/{etfId}/subscription")
     public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);

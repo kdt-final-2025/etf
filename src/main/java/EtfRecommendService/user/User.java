@@ -10,6 +10,8 @@ import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

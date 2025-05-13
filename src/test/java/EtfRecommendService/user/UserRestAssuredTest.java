@@ -199,13 +199,13 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .jsonPath()
-                .getString("token");
+                .getString("accessToken");
 
         UserPasswordResponse response = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(password.getHash(),newPassword.getHash(),newPassword.getHash()))
+                .body(new UserPasswordRequest("123","321","321"))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
@@ -322,13 +322,13 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .jsonPath()
-                .getString("token");
+                .getString("accessToken");
 
         RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
-                .body(new UserPasswordRequest(password.getHash(),password.getHash(),password.getHash()))
+                .body(new UserPasswordRequest("123","123","123"))
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
@@ -361,7 +361,7 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .jsonPath()
-                .getString("token");
+                .getString("accessToken");
 
         RestAssured
                 .given().log().all()

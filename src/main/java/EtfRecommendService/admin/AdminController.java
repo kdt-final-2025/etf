@@ -18,6 +18,4 @@ public class AdminController {
         AdminLoginResponse login = adminService.login(loginRequest);
         return ResponseEntity.ok(login);
     }
-
-
 }
