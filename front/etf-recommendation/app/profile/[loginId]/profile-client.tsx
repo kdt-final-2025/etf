@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import {updateProfile, fetchUserProfile, updateProfileImage, changePassword} from "./actions";
+import {updateProfile,updateProfileImage, changePassword} from "./actions";
 import {Card, CardContent, CardHeader} from "@/components/ui/card"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"

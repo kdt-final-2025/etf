@@ -31,7 +31,7 @@ public class Etf extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime listingDate;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "theme")
     @Enumerated(EnumType.STRING)
     private Theme theme;
 
