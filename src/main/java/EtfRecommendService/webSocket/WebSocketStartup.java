@@ -10,10 +10,10 @@ import java.util.List;
 public class WebSocketStartup implements ApplicationRunner {
 
     private final CsvLoader csvLoader;
-    private final WebSocketKeyService webSocketKeyService;
+    private final WebSocketKey webSocketKeyService;
     private final WebSocketConnectionService webSocketConnectionService;
 
-    public WebSocketStartup(CsvLoader csvLoader, WebSocketKeyService webSocketKeyService, WebSocketConnectionService webSocketConnectionService) {
+    public WebSocketStartup(CsvLoader csvLoader, WebSocketKey webSocketKeyService, WebSocketConnectionService webSocketConnectionService) {
         this.csvLoader = csvLoader;
         this.webSocketKeyService = webSocketKeyService;
         this.webSocketConnectionService = webSocketConnectionService;
@@ -24,18 +24,17 @@ public class WebSocketStartup implements ApplicationRunner {
         // 1) approval_key 발급
         String approvalKey = webSocketKeyService.getApprovalKey();
 
-//        // 2) CSV에서 구독할 종목코드 (첫 페이지 50개)
-//        List<String> 종목코드 = csvLoader
-//                .loadCodes("src/main/resources/etf_data_result.csv")
-//                .subList(0, 5);
+        // 2) CSV에서 구독할 종목코드 (첫 페이지 50개)
+        List<String> 종목코드 = csvLoader
+                .loadCodes("src/main/resources/etf_data_result.csv")
+                .subList(0, 5);
 
-        //테스트용
-        List<String> 종목코드 = List.of("005930");
+//        //테스트용
+//        List<String> 종목코드 = List.of("005930");
 
         // 3) WebSocket 연결 및 구독 시작
         webSocketConnectionService.connect(approvalKey, "H0STCNT0", 종목코드);
 
         System.out.println("발급된 approvalKey = " + approvalKey);
-
     }
 }
