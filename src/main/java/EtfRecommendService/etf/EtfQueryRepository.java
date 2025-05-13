@@ -32,6 +32,7 @@ public class EtfQueryRepository {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         EtfReturnDto.class,
+                        etf.id,
                         etf.etfName,
                         etf.etfCode,
                         etf.theme,

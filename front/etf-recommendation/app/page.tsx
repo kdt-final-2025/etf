@@ -246,8 +246,8 @@ export default function Home() {
           <CardContent>
             <div className="space-y-4">
               {topGainers.map((etf) => (
-                    <Link href={`/etf/${etf.id}`} >
-                      <div key={etf.id} className="flex justify-between items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <Link href={`/etf/${etf.id}`} key={etf.id} >
+                      <div  className="flex justify-between items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
                     <div>
                       <div className="font-medium">{etf.name}</div>
                       <div className="text-sm text-slate-500">

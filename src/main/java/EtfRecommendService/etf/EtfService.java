@@ -51,6 +51,7 @@ public class EtfService {
                 .findEtfsByPeriod(theme, keyword, pageable, period)
                 .stream()
                 .map(dto -> new EtfReturnDto(
+                        dto.etfId(),
                         dto.etfName(),
                         dto.etfCode(),
                         dto.theme(),

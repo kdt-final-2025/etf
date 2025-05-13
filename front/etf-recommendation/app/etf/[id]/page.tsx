@@ -177,19 +177,24 @@ export default function ETFDetailPage() {
               </TabsList>
             </div>
 
-            {/* 차트 부분 */}
-            {/*<TabsContent value="daily">*/}
-            {/*  <ETFChart data={etf.chartData.daily} title="일간 차트" />*/}
-            {/*</TabsContent>*/}
-            {/*<TabsContent value="weekly">*/}
-            {/*  <ETFChart data={etf.chartData.weekly} title="주간 차트" />*/}
-            {/*</TabsContent>*/}
-            {/*<TabsContent value="monthly">*/}
-            {/*  <ETFChart data={etf.chartData.monthly} title="월간 차트" />*/}
-            {/*</TabsContent>*/}
-            {/*<TabsContent value="yearly">*/}
-            {/*  <ETFChart data={etf.chartData.yearly} title="연간 차트" color={etf.change >= 0 ? "#22c55e" : "#ef4444"} />*/}
-            {/*</TabsContent>*/}
+
+            <div className="w-full h-[500px]">
+              <TradingViewWidget />
+            </div>
+            차트 부분
+
+            <TabsContent value="daily">
+              {/*<ETFChart data={etf.chartData.daily} title="일간 차트" />*/}
+            </TabsContent>
+            <TabsContent value="weekly">
+              {/*<ETFChart data={etf.chartData.weekly} title="주간 차트" />*/}
+            </TabsContent>
+            <TabsContent value="monthly">
+              {/*<ETFChart data={etf.chartData.monthly} title="월간 차트" />*/}
+            </TabsContent>
+            <TabsContent value="yearly">
+              {/*<ETFChart data={etf.chartData.yearly} title="연간 차트" color={etf.change >= 0 ? "#22c55e" : "#ef4444"} />*/}
+            </TabsContent>
           </Tabs>
         </div>
 
