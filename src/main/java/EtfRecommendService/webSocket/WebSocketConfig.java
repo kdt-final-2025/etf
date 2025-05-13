@@ -1,10 +1,13 @@
 package EtfRecommendService.webSocket;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.*;
+        import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
-
+@Configuration
+@EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
     private final FrontendWebSocketHandler frontendWebSocketHandler;
 
@@ -12,27 +15,18 @@ public class WebSocketConfig implements WebSocketConfigurer {
         this.frontendWebSocketHandler = frontendWebSocketHandler;
     }
 
-//    //클라이언트가 구독할 경로
-//    @Override
-//    public void configureMessageBroker(MessageBrokerRegistry config){
-//        config.enableSimpleBroker("/topic"); //브로커가 메세지 전달
-//        config.setApplicationDestinationPrefixes("/app"); //클라이언트가 보낼 prefix
-//    }
-//
-//    //클라이언트가 연결할 엔드포인트
-//    @Override
-//    public void registerStompEndpoints(StompEndpointRegistry registry){
-//        registry
-//                .addEndpoint("/ws-stock")  //ws://host/ws-stock
-//                .setAllowedOriginPatterns("*")
-//                .withSockJS();  //sockJS fallback 지원
-//    }
+    @Value("${websocket.endpoints.stocks}")
+    private String websocketEndpoint;
+
+    @Value("${websocket.allowed-origins}")
+    private String allowedOrigns;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
-                .addHandler(frontendWebSocketHandler, "/ws/stocks")  //ws://localhost:8080/ws/stocks
-                .setAllowedOrigins("*")
+                .addHandler(frontendWebSocketHandler, websocketEndpoint)  //ws://localhost:8080/ws/stocks
+                .addInterceptors(new HttpSessionHandshakeInterceptor()) //기존 http 세션 id
+                .setAllowedOrigins(allowedOrigns)  //http://localhost:3000/ 특정 도메인에서만 들어올 수 있도록 설정 바꾸기
                 .withSockJS();
     }
 }
