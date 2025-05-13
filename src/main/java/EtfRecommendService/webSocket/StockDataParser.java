@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StockDataParseUtil {
+public class StockDataParser {
 
     //실시간 데이터 문자열 배열로 들어올 경우 stockpricedata 객체로 변환
     //역직렬화 (문자열을 java 객체로)
