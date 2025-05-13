@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Builder
-//record로 바꾸기
 public record StockPriceData(
         String stockCode, //종목코드 0
         double currentPrice, //현재가 2
