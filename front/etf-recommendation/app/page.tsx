@@ -43,20 +43,20 @@ export default function Home() {
 
 
   const [etfData, setEtfData] = useState<ETF[]>([])
-  useEffect(() => {
-    const fetchEtfs = async () => {
-      try {
-        const response = await fetch('/api/v1/user/etfs?page=1&size=20&period=weekly')
-        if (!response.ok) throw new Error('데이터 로드 실패')
-        const data = await response.json()
-        setEtfData(data.etfList) // EtfResponse의 내부 필드 이름에 따라 다를 수 있음
-      } catch (error) {
-        console.error('ETF 데이터 로딩 에러:', error)
-      }
-    }
-
-    fetchEtfs()
-  }, [])
+  // useEffect(() => {
+  //   const fetchEtfs = async () => {
+  //     try {
+  //       const response = await fetch('/api/v1/user/etfs?page=1&size=20&period=weekly')
+  //       if (!response.ok) throw new Error('데이터 로드 실패')
+  //       const data = await response.json()
+  //       setEtfData(data.etfList) // EtfResponse의 내부 필드 이름에 따라 다를 수 있음
+  //     } catch (error) {
+  //       console.error('ETF 데이터 로딩 에러:', error)
+  //     }
+  //   }
+  //
+  //   fetchEtfs()
+  // }, [])
   // 수익률 기준 정렬
   const sortedEtfs = [...etfData].sort((a, b) => b.returnRate - a.returnRate)
 
