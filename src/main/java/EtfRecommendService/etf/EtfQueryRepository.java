@@ -1,5 +1,6 @@
 package EtfRecommendService.etf;
 
+import EtfRecommendService.etf.domain.QEtf;
 import EtfRecommendService.etf.domain.QEtfProjection;
 import EtfRecommendService.etf.dto.EtfReturnDto;
 import com.querydsl.core.types.Projections;
@@ -17,6 +18,7 @@ import java.util.List;
 public class EtfQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
     private final QEtfProjection etfProjection = QEtfProjection.etfProjection;
+    private final QEtf etf = QEtf.etf;
 
     public List<EtfReturnDto> findEtfsByPeriod(
             Theme theme,
@@ -30,12 +32,13 @@ public class EtfQueryRepository {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         EtfReturnDto.class,
-                        etfProjection.etfName,
-                        etfProjection.etfCode,
-                        etfProjection.theme,
+                        etf.etfName,
+                        etf.etfCode,
+                        etf.theme,
                         returnRate
                 ))
-                .from(etfProjection)
+                .from(etf)
+                .leftJoin(etfProjection).on(etf.etfCode.eq(etfProjection.etfCode))
                 .where(themeEq(theme), keywordContains(keyword))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -44,13 +47,13 @@ public class EtfQueryRepository {
 
     public Long fetchTotalCount(Theme theme, String keyword){
         Long count = jpaQueryFactory
-                .select(etfProjection.count())
-                .from(etfProjection)
+                .select(etf.count())
+                .from(etf)
+                .leftJoin(etfProjection).on(etf.etfCode.eq(etfProjection.etfCode))
                 .where(themeEq(theme),
                         keywordContains(keyword))
                 .fetchOne();
 
-        //null 체크, 조회된거 없으면 0L로 처리
         return count == null ? 0L : count;
     }
 
@@ -58,7 +61,7 @@ public class EtfQueryRepository {
         if (theme == null) {
             return null;  // dsl은 null값 무시 -> 전체 조회
         }
-        return etfProjection.theme.eq(theme);
+        return etf.theme.eq(theme);
     }
 
     //검색어 기능 - 종목명, 종목코드
@@ -66,8 +69,8 @@ public class EtfQueryRepository {
         if (keyword == null || keyword.trim().isEmpty()) {
             return null;
         }
-        return etfProjection.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
-                .or(etfProjection.etfCode.containsIgnoreCase(keyword));
+        return etf.etfName.containsIgnoreCase(keyword)
+                .or(etf.etfCode.containsIgnoreCase(keyword));
     }
 }
 

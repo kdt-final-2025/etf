@@ -1,217 +1,234 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { notFound } from "next/navigation"
-import Link from "next/link"
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import EtfFilters from './EtfFilters'
 
-// 샘플 ETF 데이터
-const etfData = {
-  tech: [
-    {
-      id: 1,
-      name: "KODEX 삼성전자",
-      ticker: "005930",
-      theme: "기술",
-      returnRate: 28.5,
-      price: 82500,
-      change: 2.1,
-    },
-    {
-      id: 4,
-      name: "ARIRANG 글로벌4차산업",
-      ticker: "289480",
-      theme: "기술",
-      returnRate: 21.2,
-      price: 9850,
-      change: 1.2,
-    },
-    {
-      id: 9,
-      name: "TIGER IT테크",
-      ticker: "365040",
-      theme: "기술",
-      returnRate: 14.8,
-      price: 12700,
-      change: 0.7,
-    },
-  ],
-  finance: [
-    {
-      id: 6,
-      name: "KODEX 은행",
-      ticker: "091170",
-      theme: "금융",
-      returnRate: 18.9,
-      price: 11200,
-      change: -0.3,
-    },
-    {
-      id: 10,
-      name: "KINDEX 금융",
-      ticker: "272560",
-      theme: "금융",
-      returnRate: 12.5,
-      price: 9800,
-      change: -0.5,
-    },
-  ],
-  healthcare: [
-    {
-      id: 3,
-      name: "KODEX 바이오",
-      ticker: "244580",
-      theme: "헬스케어",
-      returnRate: 22.3,
-      price: 15600,
-      change: 0.9,
-    },
-    {
-      id: 11,
-      name: "TIGER 헬스케어",
-      ticker: "227540",
-      theme: "헬스케어",
-      returnRate: 11.2,
-      price: 13400,
-      change: 0.3,
-    },
-  ],
-  consumer: [
-    {
-      id: 8,
-      name: "KINDEX 필수소비재",
-      ticker: "266370",
-      theme: "소비재",
-      returnRate: 15.2,
-      price: 13400,
-      change: 0.2,
-    },
-    {
-      id: 12,
-      name: "KODEX 소비자재",
-      ticker: "266410",
-      theme: "소비재",
-      returnRate: 10.8,
-      price: 10200,
-      change: -0.1,
-    },
-  ],
-  energy: [
-    {
-      id: 2,
-      name: "TIGER 2차전지",
-      ticker: "305720",
-      theme: "에너지",
-      returnRate: 25.7,
-      price: 42300,
-      change: 1.8,
-    },
-    {
-      id: 7,
-      name: "TIGER 차이나전기차",
-      ticker: "371460",
-      theme: "에너지",
-      returnRate: 17.5,
-      price: 8750,
-      change: -0.8,
-    },
-  ],
-  global: [
-    {
-      id: 5,
-      name: "TIGER 미국나스닥100",
-      ticker: "133690",
-      theme: "글로벌",
-      returnRate: 20.8,
-      price: 21500,
-      change: 0.5,
-    },
-    {
-      id: 13,
-      name: "KODEX 선진국MSCI",
-      ticker: "251350",
-      theme: "글로벌",
-      returnRate: 9.5,
-      price: 11800,
-      change: 0.2,
-    },
-  ],
+// ETF 응답 타입 정의
+interface EtfItem {
+  etfName: string
+  etfCode: string
+  theme: string
+  returnRate: number
 }
 
-// 테마 이름 매핑
-const themeNames = {
-  tech: "기술",
-  finance: "금융",
-  healthcare: "헬스케어",
-  consumer: "소비재",
-  energy: "에너지",
-  global: "글로벌",
+interface EtfResponse {
+  totalPage: number
+  totalCount: number
+  currentPage: number
+  pageSize: number
+  etfReadResponseList: EtfItem[]
 }
 
-type ThemePageProps = {
-  params: {
-    theme: string
-  }
-}
+// 테마 목록 검증
+const validThemes = [
+  "AI_DATA", "USA", "KOREA", "REITS", "MULTI_ASSET", "COMMODITIES",
+  "HIGH_RISK", "SECTOR", "DIVIDEND", "ESG", "GOLD",
+  "GOVERNMENT_BOND", "CORPORATE_BOND", "DEFENSE", "SEMICONDUCTOR",
+  "BIO", "EMERGING_MARKETS"
+]
 
-export default function ThemePage({ params }: ThemePageProps) {
-  const { theme } = params
-
-  // 유효한 테마인지 확인
-  if (!etfData[theme as keyof typeof etfData]) {
-    notFound()
+// 테마 이름 변환 함수
+function getThemeDisplayName(themeId: string): string {
+  const themeMap: Record<string, string> = {
+    'AI_DATA': 'AI 데이터',
+    'USA': '미국',
+    'KOREA': '한국',
+    'REITS': '리츠',
+    'MULTI_ASSET': '멀티에셋',
+    'COMMODITIES': '원자재',
+    'HIGH_RISK': '고위험',
+    'SECTOR': '섹터',
+    'DIVIDEND': '배당',
+    'ESG': 'ESG',
+    'GOLD': '금',
+    'GOVERNMENT_BOND': '국채',
+    'CORPORATE_BOND': '회사채',
+    'DEFENSE': '방위산업',
+    'SEMICONDUCTOR': '반도체',
+    'BIO': '바이오',
+    'EMERGING_MARKETS': '신흥시장'
   }
 
-  const themeEtfs = etfData[theme as keyof typeof etfData]
-  const themeName = themeNames[theme as keyof typeof themeNames]
+  return themeMap[themeId] || themeId
+}
 
-  // 수익률 기준으로 정렬
-  const sortedEtfs = [...themeEtfs].sort((a, b) => b.returnRate - a.returnRate)
+// 서버 액션: ETF 데이터 가져오기
+async function fetchEtfsByTheme(
+    theme: string,
+    page: number = 1,
+    size: number = 20,
+    keyword: string = ''
+): Promise<EtfResponse> {
+    // API URL - 환경 변수 사용
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+    // 기본적으로 weekly로 고정
+    const apiUrl = `${baseUrl}/api/v1/etfs?theme=${theme}&page=${page}&size=${size}&period=weekly&keyword=${encodeURIComponent(keyword)}`
 
+    try {
+        const response = await fetch(apiUrl, {
+            next: {
+                revalidate: 3600 // 1시간마다 재검증
+            }
+        })
+
+        if (!response.ok) {
+            throw new Error(`API 요청 실패: ${response.status}`)
+        }
+
+        return await response.json()
+    } catch (error) {
+        console.error('ETF 데이터 가져오기 실패:', error)
+        // 기본값 반환
+        return {
+            totalPage: 0,
+            totalCount: 0,
+            currentPage: 1,
+            pageSize: 20,
+            etfReadResponseList: []
+        }
+    }
+}
+
+// ETF 목록 컴포넌트
+function EtfTable({ etfs }: { etfs: EtfItem[] }) {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{themeName} 테마 ETF</h1>
-        <p className="text-slate-500">{themeName} 관련 ETF 목록입니다.</p>
+      <div className="overflow-x-auto rounded-lg border border-gray-200">
+        <table className="w-full min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ETF 이름</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">종목코드</th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">수익률 (%)</th>
+          </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+          {etfs.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">
+                  ETF 정보가 없습니다
+                </td>
+              </tr>
+          ) : (
+              etfs.map((etf) => (
+                  <tr key={etf.etfCode} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{etf.etfName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{etf.etfCode}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
+                        etf.returnRate > 0 ? 'text-red-600' : etf.returnRate < 0 ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      {etf.returnRate > 0 ? '+' : ''}{etf.returnRate.toFixed(2)}
+                    </td>
+                  </tr>
+              ))
+          )}
+          </tbody>
+        </table>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{themeName} ETF 랭킹</CardTitle>
-          <CardDescription>수익률 기준으로 정렬된 {themeName} 테마 ETF 목록입니다.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>순위</TableHead>
-                <TableHead>ETF명</TableHead>
-                <TableHead>종목코드</TableHead>
-                <TableHead className="text-right">현재가</TableHead>
-                <TableHead className="text-right">등락률</TableHead>
-                <TableHead className="text-right">수익률</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedEtfs.map((etf, index) => (
-                <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell>
-                    <Link href={`/etf/${etf.ticker}`} className="hover:underline text-blue-600">
-                      {etf.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{etf.ticker}</TableCell>
-                  <TableCell className="text-right">{etf.price.toLocaleString()}원</TableCell>
-                  <TableCell className={`text-right ${etf.change >= 0 ? "text-green-600" : "text-red-600"}`}>
-                    {etf.change >= 0 ? "+" : ""}
-                    {etf.change}%
-                  </TableCell>
-                  <TableCell className="text-right font-bold text-green-600">+{etf.returnRate}%</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
   )
+}
+
+// 페이지네이션 컴포넌트
+function Pagination({
+                        theme,
+                        currentPage,
+                        totalPages,
+                        keyword
+                    }: {
+    theme: string,
+    currentPage: number,
+    totalPages: number,
+    keyword: string
+}) {
+    // 페이지 수가 0이면 페이지네이션 표시하지 않음
+    if (totalPages <= 1) {
+        return null;
+    }
+
+    return (
+        <div className="flex items-center justify-center mt-6 gap-1">
+            <Link
+                href={`/themes/${theme}?page=${Math.max(1, currentPage - 1)}&keyword=${encodeURIComponent(keyword)}`}
+                aria-disabled={currentPage <= 1}
+                tabIndex={currentPage <= 1 ? -1 : undefined}
+                className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+            >
+                <Button variant="outline" size="sm" disabled={currentPage <= 1}>
+                    <ArrowLeft className="h-4 w-4 mr-1" /> 이전
+                </Button>
+            </Link>
+
+            <div className="flex items-center mx-2">
+          <span className="text-sm px-3 py-1 rounded-md bg-gray-100">
+            {currentPage} / {totalPages}
+          </span>
+            </div>
+
+            <Link
+                href={`/themes/${theme}?page=${Math.min(totalPages, currentPage + 1)}&keyword=${encodeURIComponent(keyword)}`}
+                aria-disabled={currentPage >= totalPages}
+                tabIndex={currentPage >= totalPages ? -1 : undefined}
+                className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+            >
+                <Button variant="outline" size="sm" disabled={currentPage >= totalPages}>
+                    다음 <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+            </Link>
+        </div>
+    )
+}
+
+// 메인 페이지 컴포넌트 - 테마별 총 갯수 표시 개선
+export default async function ThemePage({
+                                            params,
+                                            searchParams
+                                        }: {
+    params: { theme: string },
+    searchParams: { page?: string, size?: string, keyword?: string }
+}) {
+    // URL 파라미터 가져오기
+    const { theme } = params
+    const page = parseInt(searchParams.page || '1')
+    const size = parseInt(searchParams.size || '20')
+    const keyword = searchParams.keyword || ''
+
+    // 유효하지 않은 테마인 경우 404 페이지 노출
+    if (!validThemes.includes(theme)) {
+        notFound()
+    }
+
+    // ETF 데이터 가져오기 (기간 파라미터 제거)
+    const etfData = await fetchEtfsByTheme(theme, page, size, keyword)
+
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold">{getThemeDisplayName(theme)} 테마 ETF</h1>
+                <p className="text-gray-500 mt-2">
+                    총 <span className="font-medium">{etfData.totalCount.toLocaleString()}</span>개의 ETF가 있습니다
+                </p>
+            </div>
+
+            {/* 필터 컴포넌트 (클라이언트 컴포넌트) - 기간 필터 제거 */}
+            <div className="mb-6">
+                <Suspense fallback={<div>필터 로딩중...</div>}>
+                    <EtfFilters theme={theme} initialKeyword={keyword} />
+                </Suspense>
+            </div>
+
+            {/* ETF 목록 */}
+            <EtfTable etfs={etfData.etfReadResponseList} />
+
+            {/* 페이지네이션 - 기간 파라미터 제거 */}
+            {etfData.totalPage > 0 && (
+                <Pagination
+                    theme={theme}
+                    currentPage={etfData.currentPage}
+                    totalPages={etfData.totalPage}
+                    keyword={keyword}
+                />
+            )}
+        </div>
+    )
 }
