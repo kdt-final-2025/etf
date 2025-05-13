@@ -57,7 +57,7 @@ export default function Home() {
           price: 10000 + index * 100,
           change: parseFloat((Math.random() * 5).toFixed(2)) * (Math.random() > 0.5 ? 1 : -1),
           volume: Math.floor(Math.random() * 100000),
-          returnRate: Number((etf.returnRate * 100).toFixed(2)),
+          returnRate: etf.returnRate,
         }))
 
         setEtfData(transformedData)
