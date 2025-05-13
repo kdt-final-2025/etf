@@ -7,7 +7,6 @@ import org.springframework.web.socket.config.annotation.*;
         import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 @Configuration
-@EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
     private final FrontendWebSocketHandler frontendWebSocketHandler;
 

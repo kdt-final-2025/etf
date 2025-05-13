@@ -1,6 +1,7 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.TestConfig;
+import EtfRecommendService.etf.domain.Etf;
 import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.dto.EtfReturnDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -85,6 +86,7 @@ public class EtfQueryRepositoryTest {
     @Test
     @DisplayName("조건 없이 모든 주간 ETF 조회")
     void findAllWeeklyWithoutFilter() {
+
         Pageable pageable = PageRequest.of(0, 10);
         List<EtfReturnDto> list = repository.findEtfsByPeriod(null, null, pageable, "weekly");
 
