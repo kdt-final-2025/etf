@@ -1,0 +1,93 @@
+\= ETF API 문서
+
+\:snippets: build/generated-snippets
+\:revnumber: {revnumber}
+\:revdate: {revdate}
+\:doctype: book
+\:toc: left
+
+\== ETF API Endpoints
+
+\=== 1. ETF 목록 조회 API
+
+GET /api/v1/etfs
+
+Query Parameters:
+
+* page (default = 1)
+* size (default = 20)
+* theme (선택)
+* keyword (선택)
+* period (daily, weekly, monthly)
+
+include::{snippets}/etf-list/http-request.adoc\[]
+
+include::{snippets}/etf-list/request-parameters.adoc\[]
+
+include::{snippets}/etf-list/http-response.adoc\[]
+
+include::{snippets}/etf-list/response-fields.adoc\[]
+
+\=== 2. ETF 상세 조회 API
+
+GET /api/v1/etfs/{etfId}
+
+Path Parameters:
+
+* etfId: 조회할 ETF ID
+
+include::{snippets}/etf-detail/http-request.adoc\[]
+
+include::{snippets}/etf-detail/path-parameters.adoc\[]
+
+include::{snippets}/etf-detail/http-response.adoc\[]
+
+include::{snippets}/etf-detail/response-fields.adoc\[]
+
+\=== 3. ETF 구독 생성 API
+
+POST /api/v1/users/etfs/{etfId}/subscription
+
+Request Headers:
+include::{snippets}/etf-subscription-create/request-headers.adoc\[]
+
+Path Parameters:
+include::{snippets}/etf-subscription-create/path-parameters.adoc\[]
+
+include::{snippets}/etf-subscription-create/http-request.adoc\[]
+
+include::{snippets}/etf-subscription-create/http-response.adoc\[]
+
+include::{snippets}/etf-subscription-create/response-fields.adoc\[]
+
+\=== 4. ETF 구독 목록 조회 API
+
+GET /api/v1/users/etfs/subscribes
+
+Request Headers:
+include::{snippets}/etf-subscription-list/request-headers.adoc\[]
+
+Query Parameters:
+include::{snippets}/etf-subscription-list/query-parameters.adoc\[]
+
+include::{snippets}/etf-subscription-list/http-request.adoc\[]
+
+include::{snippets}/etf-subscription-list/http-response.adoc\[]
+
+include::{snippets}/etf-subscription-list/response-fields.adoc\[]
+
+\=== 5. ETF 구독 취소 API
+
+DELETE /api/v1/users/etf/{etfId}/subscription
+
+Request Headers:
+include::{snippets}/etf-subscription-delete/request-headers.adoc\[]
+
+Path Parameters:
+include::{snippets}/etf-subscription-delete/path-parameters.adoc\[]
+
+include::{snippets}/etf-subscription-delete/http-request.adoc\[]
+
+include::{snippets}/etf-subscription-delete/http-response.adoc\[]
+
+include::{snippets}/etf-subscription-delete/response-fields.adoc\[]

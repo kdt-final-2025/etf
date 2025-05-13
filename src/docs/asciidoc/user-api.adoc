@@ -1,0 +1,155 @@
+= User API
+:doctype: book
+:toc: left
+:snippets: {snippets}
+
+== 회원 가입
+
+=== 요청
+
+include::{snippets}/user-create/http-request.adoc[]
+
+=== 응답
+
+include::{snippets}/user-create/http-response.adoc[]
+
+=== 요청 필드
+
+include::{snippets}/user-create/request-fields.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-create/response-fields.adoc[]
+
+
+== 로그인
+
+=== 요청
+
+include::{snippets}/user-login/http-request.adoc[]
+
+=== 응답
+
+include::{snippets}/user-login/http-response.adoc[]
+
+=== 요청 필드
+
+include::{snippets}/user-login/request-fields.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-login/response-fields.adoc[]
+
+
+== 프로필 업데이트
+
+=== 요청
+
+include::{snippets}/user-update/http-request.adoc[]
+
+=== 응답
+
+include::{snippets}/user-update/http-response.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/user-update/request-headers.adoc[]
+
+=== 요청 필드
+
+include::{snippets}/user-update/request-fields.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-update/response-fields.adoc[]
+
+
+== 회원 탈퇴
+
+=== 요청
+
+include::{snippets}/user-delete/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/user-delete/request-headers.adoc[]
+
+
+== 비밀번호 변경
+
+=== 요청
+
+include::{snippets}/user-password/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/user-password/request-headers.adoc[]
+
+=== 요청 필드
+
+include::{snippets}/user-password/request-fields.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-password/response-fields.adoc[]
+
+
+== 내 댓글/댓댓글 조회
+
+=== 요청
+
+include::{snippets}/user-comments/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/user-comments/request-headers.adoc[]
+
+=== 요청 매개변수
+
+include::{snippets}/user-comments/request-parameters.adoc[]
+
+=== 경로 매개변수
+
+include::{snippets}/user-comments/path-parameters.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-comments/response-fields.adoc[]
+
+
+== 프로필 이미지 업데이트
+
+=== 요청
+
+include::{snippets}/user-image/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/user-image/request-headers.adoc[]
+
+=== 요청 파트
+
+include::{snippets}/user-image/request-parts.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-image/response-fields.adoc[]
+
+
+== 회원 상세 조회
+
+=== 요청
+
+include::{snippets}/user-detail/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/user-detail/request-headers.adoc[]
+
+=== 경로 매개변수
+
+include::{snippets}/user-detail/path-parameters.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/user-detail/response-fields.adoc[]

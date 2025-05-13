@@ -1,0 +1,17 @@
+= API 문서 인덱스
+:doctype: book
+:toc: left
+
+== 문서 목록
+
+* xref:comment-api.html[Comment API 문서]
+* xref:etf-api.html[ETF API 문서]
+* xref:other-api.html[기타 API 문서]
+
+== 사용 방법
+
+이 페이지에서 각 API 문서 링크를 클릭하면 해당 HTML 문서로 이동합니다.
+
+== 문서 위치
+
+`src/main/resources/static/docs/` 디렉토리에 생성된 HTML 파일을 기준으로 링크를 설정했습니다.

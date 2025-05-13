@@ -3,31 +3,11 @@ plugins {
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
-    id 'idea'    // IDE 리소스 폴더 자동 인식용
-}
-
-
-/* ───── 공통 변수: 반드시 가장 먼저 선언 ───── */
-ext {
-    snippetsDir = file("$buildDir/generated-snippets")
-    asciidocOutDir = file("$buildDir/docs/asciidoc")
-    docsCopyDir = file("$buildDir/generated-resources")
-}
-
-sourceSets {
-    main {
-        resources {
-            srcDir docsCopyDir
-        }
-    }
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
-configurations {
-    asciidoctorExt
-}
 
 java {
     toolchain {
@@ -38,6 +18,11 @@ java {
 repositories {
     mavenCentral()
 }
+
+configurations {
+    asciidoctorExt // (2)
+}
+
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -52,7 +37,6 @@ dependencies {
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -67,54 +51,38 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
 }
-/* ───── 테스트 → 스니펫 ───── */
-tasks.test {
+
+ext {
+    snippetsDir = file('build/generated-snippets') // (5)
+}
+
+tasks.named('test') {
     useJUnitPlatform()
-    outputs.dir snippetsDir
+    outputs.dir snippetsDir // (6)
 }
 
-/* ───── Asciidoctor: HTML 생성 ───── */
-tasks.asciidoctor {
-    dependsOn tasks.test
-    inputs.dir 'src/docs/asciidoc'
-    sources {
-        include '**/*.adoc'            // ① 모든 .adoc 처리
-    }
-    outputDir asciidocOutDir
-    attributes snippets: snippetsDir,
-            revnumber: version,
-            revdate: new Date().format("yyyy-MM-dd HH:mm:ss", TimeZone.getTimeZone("Asia/Seoul"))
-    baseDirFollowsSourceFile()
+asciidoctor {
+    configurations 'asciidoctorExt' // (7)
+    baseDirFollowsSourceFile() // (8)
+    inputs.dir snippetsDir // (9)
+    dependsOn test // (10)
 }
 
-/* ───── HTML 복사 ───── */
-tasks.register('copyDocs', Copy) {
-    dependsOn tasks.asciidoctor
-
-    from(asciidocOutDir) {
-        include '**/*.html'
-        into 'static/docs'
-    }
-    into docsCopyDir
+asciidoctor.doFirst {
+    delete file('src/main/resources/static/docs')  // (11)
 }
 
-/* ───── 부트 실행/패키징 시 문서 포함 ───── */
-tasks.named('bootRun') {
-    dependsOn 'copyDocs'
-    classpath += files(docsCopyDir)
+task copyDocument(type: Copy) { // (12)
+    dependsOn asciidoctor
+    from file("build/docs/asciidoc")
+    into file("src/main/resources/static/docs")
 }
 
-tasks.named('bootJar') {
-    dependsOn 'copyDocs'
-    from(docsCopyDir) {
-        into 'BOOT-INF/classes'
-    }
-}
-
-/* ───── IDEA 모듈 리소스 폴더 설정 ───── */
-idea {
-    module {
-        resourceDirs += docsCopyDir
-    }
+build {
+    dependsOn copyDocument
 }

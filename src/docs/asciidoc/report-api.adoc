@@ -1,0 +1,28 @@
+== 신고 생성
+
+=== 요청
+
+include::{snippets}/report-create/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/report-create/request-headers.adoc[]
+
+=== 요청 필드
+
+include::{snippets}/report-create/request-fields.adoc[]
+
+
+== 전체 신고 목록 조회
+
+=== 요청
+
+include::{snippets}/report-read-all/http-request.adoc[]
+
+=== 요청 헤더
+
+include::{snippets}/report-read-all/request-headers.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/report-read-all/response-fields.adoc[]

@@ -1,0 +1,13 @@
+== 관리자 로그인
+
+=== 요청
+
+include::{snippets}/admin-login/http-request.adoc[]
+
+=== 요청 필드
+
+include::{snippets}/admin-login/request-fields.adoc[]
+
+=== 응답 필드
+
+include::{snippets}/admin-login/response-fields.adoc[]
