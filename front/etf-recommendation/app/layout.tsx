@@ -18,15 +18,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  // 쿠키 접근
-  // 로그인 아이디 읽기
-
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen">
-            {/* 로그인 아이디 전달 */}
             <Sidebar />
             <main className="flex-1">{children}</main>
           </div>
