@@ -1,47 +1,55 @@
 "use client"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {cookies} from "next/headers";
+
+import { useState } from "react";
+import { login } from "./actions";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
-  const [loginId, setLoginId] = useState("")
-  const [password, setPassword] = useState("")
-  const router = useRouter()
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
 
   const handleLogin = async () => {
-    try {
-
-      const res = await fetch("http://localhost:8080/api/v1/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          loginId: loginId,
-          password: password
-        }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        alert("로그인 성공!")
-        document.cookie = `accessToken=${data.token}; path=/; secure; samesite=strict`;
-        router.push("/") // 로그인 성공 후 메인으로 이동
-      } else {
-        const error = await res.text()
-        alert("로그인 실패: " + error)
-      }
-    } catch (err) {
-      console.error(err)
-      alert("서버 오류")
+    if (!loginId || !password) {
+      setErrorMessage("아이디와 비밀번호를 모두 입력해주세요.");
+      return;
     }
-  }
+
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const result = await login(loginId, password);
+
+      if (result.success) {
+        // 클라이언트에서 처리
+        alert(result.message);
+        router.push("/"); // 홈으로 이동
+        router.refresh(); // 페이지 새로고침으로 상태 갱신
+      } else {
+        setErrorMessage(result.message);
+      }
+    } catch (error) {
+      setErrorMessage("로그인 처리 중 오류가 발생했습니다.");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
       <div className="container mx-auto flex items-center justify-center min-h-screen py-8 px-4">
@@ -69,11 +77,21 @@ export default function LoginPage() {
                   placeholder="비밀번호를 입력하세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               />
             </div>
+            {errorMessage && (
+                <div className="text-red-500 text-sm">{errorMessage}</div>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button className="w-full" onClick={handleLogin}>로그인</Button>
+            <Button
+                className="w-full"
+                onClick={handleLogin}
+                disabled={isLoading}
+            >
+              {isLoading ? "로그인 중..." : "로그인"}
+            </Button>
             <div className="text-center text-sm">
               계정이 없으신가요?{" "}
               <Link href="/register" className="text-blue-600 hover:underline">
@@ -83,5 +101,5 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
       </div>
-  )
+  );
 }

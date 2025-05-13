@@ -1,12 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import Link from "next/link"
 import { ChevronRight, Home, TrendingUp, User, LogIn, UserPlus, Star, Menu, X, Newspaper } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useMobile } from "@/hooks/use-mobile"
 
+const getCookie = (name: string) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+};
 // 테마 카테고리 데이터
 const themeCategories = [
   { id: "AI_DATA", name: "AI 데이터" },
@@ -32,10 +38,19 @@ export default function Sidebar() {
   const [showThemes, setShowThemes] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const isMobile = useMobile()
-
+  const [loginId, setLoginId] = useState<string>("");
+  console.log("loginId: ")
+  console.log(loginId)
   const toggleSidebar = () => {
     setIsOpen(!isOpen)
   }
+  useEffect(() => {
+    // 쿠키에서 로그인 ID 가져오기
+    const userLoginId = getCookie("login_id");
+    if (userLoginId) {
+      setLoginId(userLoginId);
+    }
+  }, []);
 
   return (
     <>
@@ -105,7 +120,7 @@ export default function Sidebar() {
             </li>
 
             <li>
-              <Link href="/profile" className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800">
+              <Link href={`/profile/${loginId}`} className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800">
                 <User className="h-5 w-5" />
                 <span>내 프로필</span>
               </Link>
