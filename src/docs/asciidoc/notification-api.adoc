@@ -1,3 +1,16 @@
-== 알림 API
+= SSE 알림 스트림 연결 API
+:doctype: book
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:seclinks:
+:snippets: {snippets}
+
+== Table of Contents
+* 1. SSE 알림 스트림 연결
+
+== 1. SSE 알림 스트림 연결
+
+=== 요청 파라미터
 
 include::{snippets}/notification-stream/request-parameters.adoc[]

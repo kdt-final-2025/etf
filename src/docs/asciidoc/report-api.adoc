@@ -1,4 +1,16 @@
-== 신고 생성
+= Report API
+:doctype: book
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:seclinks:
+:snippets: {snippets}
+
+== Table of Contents
+* 1. 신고 생성
+* 2. 전체 신고 목록 조회
+
+== 1. 신고 생성
 
 === 요청
 
@@ -12,8 +24,7 @@ include::{snippets}/report-create/request-headers.adoc[]
 
 include::{snippets}/report-create/request-fields.adoc[]
 
-
-== 전체 신고 목록 조회
+== 2. 전체 신고 목록 조회
 
 === 요청
 

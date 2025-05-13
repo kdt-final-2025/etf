@@ -1,10 +1,25 @@
-== 대댓글 생성
+= Reply API
+:doctype: book
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:seclinks:
+:snippets: {snippets}
+
+== Table of Contents
+* 1. 대댓글 생성
+* 2. 대댓글 조회
+* 3. 대댓글 수정
+* 4. 대댓글 삭제
+* 5. 대댓글 좋아요 토글
+
+== 1. 대댓글 생성
 
 include::{snippets}/reply-create/http-request.adoc[]
 include::{snippets}/reply-create/request-headers.adoc[]
 include::{snippets}/reply-create/request-fields.adoc[]
 
-== 대댓글 조회
+== 2. 대댓글 조회
 
 include::{snippets}/reply-read-all/http-request.adoc[]
 include::{snippets}/reply-read-all/request-headers.adoc[]
@@ -12,20 +27,19 @@ include::{snippets}/reply-read-all/path-parameters.adoc[]
 include::{snippets}/reply-read-all/request-parameters.adoc[]
 include::{snippets}/reply-read-all/response-fields.adoc[]
 
-== 대댓글 수정
+== 3. 대댓글 수정
 
 include::{snippets}/reply-update/http-request.adoc[]
-include::{snippets}/reply-update/request-headers.adoc[]
 include::{snippets}/reply-update/path-parameters.adoc[]
 include::{snippets}/reply-update/request-fields.adoc[]
 
-== 대댓글 삭제
+== 4. 대댓글 삭제
 
 include::{snippets}/reply-delete/http-request.adoc[]
 include::{snippets}/reply-delete/request-headers.adoc[]
 include::{snippets}/reply-delete/path-parameters.adoc[]
 
-== 대댓글 좋아요 토글
+== 5. 대댓글 좋아요 토글
 
 include::{snippets}/reply-toggle-like/http-request.adoc[]
 include::{snippets}/reply-toggle-like/request-headers.adoc[]

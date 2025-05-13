@@ -8,7 +8,6 @@ plugins {
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
@@ -20,9 +19,8 @@ repositories {
 }
 
 configurations {
-    asciidoctorExt // (2)
+    asciidoctorExt
 }
-
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -32,52 +30,46 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
-
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-
 }
 
 ext {
-    snippetsDir = file('build/generated-snippets') // (5)
+    snippetsDir = file('build/generated-snippets')
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-    outputs.dir snippetsDir // (6)
+    outputs.dir snippetsDir
 }
 
 asciidoctor {
-    configurations 'asciidoctorExt' // (7)
-    baseDirFollowsSourceFile() // (8)
-    inputs.dir snippetsDir // (9)
-    dependsOn test // (10)
+    configurations 'asciidoctorExt'
+    baseDirFollowsSourceFile()
+    inputs.dir snippetsDir
+    dependsOn test
 }
 
 asciidoctor.doFirst {
-    delete file('src/main/resources/static/docs')  // (11)
+    delete file('src/main/resources/static/docs')
 }
 
-task copyDocument(type: Copy) { // (12)
+task copyDocument(type: Copy) {
     dependsOn asciidoctor
     from file("build/docs/asciidoc")
     into file("src/main/resources/static/docs")
@@ -85,4 +77,44 @@ task copyDocument(type: Copy) { // (12)
 
 build {
     dependsOn copyDocument
+}
+
+tasks.register("generateApiIndex") {
+    group = "documentation"
+    description = "static/docs/*.html 파일로 index.adoc 자동 생성"
+    doLast {
+        def docsDir = file("src/main/resources/static/docs")
+        def outFile = file("src/docs/asciidoc/index.adoc")
+        if (!docsDir.exists()) return
+
+        def content = new StringBuilder()
+                .append("= API 문서 인덱스\n:doctype: book\n:toc: left\n\n== 문서 목록\n\n")
+
+        docsDir.listFiles({ it.name.endsWith('.html') } as FileFilter)
+                .sort { it.name }
+                .each { f ->
+                    def title = f.name.replaceFirst(/\\.html$/, '')
+                    content.append("* xref:${f.name}[${title} API 문서]\n")
+                }
+
+        content.append("""
+        
+== 사용 방법
+
+http://localhost:8080/docs/index.html
+위 링크를 클릭하면 INDEX 문서로 이동합니다.
+
+== 문서 위치
+
+`src/main/resources/static/docs/` 기준입니다.
+""".stripIndent())
+
+        outFile.parentFile.mkdirs()
+        outFile.text = content.toString()
+        println "▶ index.adoc 생성: ${docsDir.listFiles().size()}개 항목"
+    }
+}
+
+tasks.named("asciidoctor") {
+    dependsOn("generateApiIndex")
 }
