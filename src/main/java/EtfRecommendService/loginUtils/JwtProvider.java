@@ -68,7 +68,7 @@ public class JwtProvider {
         claims.put("roles",roles);
         return Jwts.builder()
                 .setClaims(claims)
-                .signWith(secretKey)
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
     }
 
@@ -81,7 +81,7 @@ public class JwtProvider {
                 .setExpiration(expiration);// "exp": 1516249022
         return Jwts.builder()
                 .setClaims(claims)
-                .signWith(refreshSecret)
+                .signWith(refreshSecret, SignatureAlgorithm.HS512)
                 .compact();
     }
 
@@ -112,8 +112,8 @@ public class JwtProvider {
     }
 
     // 토큰에서 로그인한 사용자의 토큰 만료기간을 추출하는 함수
-    public Date getExpiration(String token) {
-        return parseToken(token)
+    public Date getExpirationFromRefreshToken(String token) {
+        return parseRefreshToken(token)
                 .getExpiration();
     }
 
@@ -126,12 +126,21 @@ public class JwtProvider {
                 .getBody();
     }
 
+    private Claims parseRefreshToken(String refreshToken) {
+        return Jwts.parserBuilder()
+                .setSigningKey(refreshSecret)
+                .build()
+                .parseClaimsJws(refreshToken)
+                .getBody();
+    }
+
     public Authentication getAuthentication(String token) {
         Claims claims = parseToken(token);
         String username = getSubject(token);
-        String authorityClaim = claims.get("roles", String.class);
+        @SuppressWarnings("unchecked")
+        List<String> roles = claims.get("roles", List.class);
         Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(authorityClaim.split(","))
+                Arrays.stream(roles.get(0).split(","))
                         .map(SimpleGrantedAuthority::new)
                         .toList();
         UserDetails userDetails = new UserDetail(username, null, authorities);

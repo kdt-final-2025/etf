@@ -46,9 +46,11 @@ public class UserService {
 
     public UserResponse create(CreateUserRequest userRequest) {
 
+        Password password = new Password(userRequest.password());
+
         User user = new User(
                 userRequest.loginId(),
-                userRequest.password(),
+                password,
                 userRequest.nickName(),
                 userRequest.isLikePrivate());
 
@@ -62,8 +64,10 @@ public class UserService {
     }
 
     public UserLoginResponse login(UserLoginRequest loginRequest) {
+        String identifier = loginRequest.role().toUpperCase()+":"+loginRequest.loginId();
+
         UsernamePasswordAuthenticationToken token =
-                new UsernamePasswordAuthenticationToken(loginRequest.loginId(), loginRequest.password());
+                new UsernamePasswordAuthenticationToken(identifier, loginRequest.password());
 
         Authentication authentication = authenticationManager.authenticate(token);
 
@@ -193,7 +197,7 @@ public class UserService {
         String refreshToken = jwtProvider.createRefreshToken(userDetail);
 
         User user = getByLoginId(userDetail.getUsername());
-        Date expirationDate = jwtProvider.getExpiration(refreshToken);
+        Date expirationDate = jwtProvider.getExpirationFromRefreshToken(refreshToken);
         LocalDateTime expiryDate = expirationDate.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();

@@ -45,7 +45,7 @@ public class UserController {
         return ResponseEntity.ok(body);
     }
 
-    @Secured("USER")
+    @Secured("Role_USER")
     @PatchMapping("/users")
     public ResponseEntity<UserUpdateResponse> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserUpdateRequest updateRequest) {
         UserUpdateResponse userUpdateResponse = userService.UpdateProfile(userDetails.getUsername(), updateRequest);

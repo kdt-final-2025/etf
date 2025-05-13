@@ -1,5 +1,7 @@
 package EtfRecommendService.config;
 
+import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.security.JwtAuthenticationFilter;
 import EtfRecommendService.security.Role;
 import EtfRecommendService.security.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,10 +40,15 @@ import java.util.List;
 public class SpringSecurityConfig {
 
     private CorsConfigurationSource corsConfigurationSource;
-    private final ObjectMapper objectMapper;
+    private final JwtProvider jwtProvider;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtProvider jwtProvider){
+        return new JwtAuthenticationFilter(jwtProvider);
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .formLogin(AbstractHttpConfigurer::disable)
                 .cors(cors-> cors.configurationSource(corsConfigurationSource))
@@ -64,7 +72,8 @@ public class SpringSecurityConfig {
 
                 .exceptionHandling((exceptionConfig) ->
                         exceptionConfig.authenticationEntryPoint(unauthorizedEntryPoint).accessDeniedHandler(accessDeniedHandler)
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -100,10 +109,5 @@ public class SpringSecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
     }
 }

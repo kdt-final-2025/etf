@@ -31,7 +31,7 @@ public class AdminService {
             throw new UserMismatchException(USER_MISMATCH);
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.roles()+":"+admin.getLoginId());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.roles().toUpperCase()+":"+admin.getLoginId());
 
         return new AdminLoginResponse(jwtProvider.createToken(userDetails));
     }

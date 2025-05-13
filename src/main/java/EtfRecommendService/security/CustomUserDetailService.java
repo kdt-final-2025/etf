@@ -1,5 +1,7 @@
 package EtfRecommendService.security;
 
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.user.User;
 import EtfRecommendService.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
 
     //identifier 는 "type:username" 과 같은 형식으로 전달
     @Override
@@ -25,6 +28,12 @@ public class CustomUserDetailService implements UserDetailsService {
         Collection<? extends GrantedAuthority> types =
                 List.of(new SimpleGrantedAuthority("Role_"+identifiers[0]));
         String loginId = identifiers[1];
+
+        if ("ADMIN".equals(identifiers[0])){
+            Admin admin = adminRepository.findByLoginId(loginId).orElseThrow(()->
+                    new UsernameNotFoundException("User Not Founded"));
+            return new UserDetail(admin.getLoginId(), admin.getPassword().getHash(), types);
+        }
 
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(()->
                 new UsernameNotFoundException("User Not Founded"));

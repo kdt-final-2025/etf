@@ -32,7 +32,7 @@ public class UserUnitTest {
         Password existingPassword = new Password("현재비밀번호");
         Password newPassword = new Password("새비밀번호");
 
-        user.updatePassword(existingPassword,newPassword);
+        user.updatePassword(existingPassword.getHash(),newPassword.getHash());
 
         assertThat(user.getPassword()).isEqualTo(newPassword);
     }
@@ -45,7 +45,7 @@ public class UserUnitTest {
 
         PasswordMismatchException exception = assertThrows(
                 PasswordMismatchException.class,
-                () -> user.updatePassword(existingPassword, newPassword)
+                () -> user.updatePassword(existingPassword.getHash(), newPassword.getHash())
         );
 
         assertEquals("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.", exception.getMessage());
@@ -59,7 +59,7 @@ public class UserUnitTest {
 
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> user.updatePassword(existingPassword, newPassword)
+                () -> user.updatePassword(existingPassword.getHash(), newPassword.getHash())
         );
 
         assertEquals("변경할 비밀번호가 같습니다.", exception.getMessage());

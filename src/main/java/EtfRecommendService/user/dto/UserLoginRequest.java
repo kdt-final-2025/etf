@@ -4,7 +4,7 @@ import EtfRecommendService.user.Password;
 
 public record UserLoginRequest(
         String loginId,
-        Password password,
+        String password,
         //Role: ADMIN, USER
         String role) {
 }
