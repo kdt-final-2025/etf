@@ -40,9 +40,8 @@ const popularThemes = [
 
 
 export default function Home() {
-
-
   const [etfData, setEtfData] = useState<ETF[]>([])
+  console.log(etfData)
   useEffect(() => {
     const fetchEtfs = async () => {
       try {
@@ -51,7 +50,7 @@ export default function Home() {
         const data = await response.json()
 
         const transformedData: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
-          id: index,
+          id: etf.etfId,
           name: etf.etfName,
           ticker: etf.etfCode,
           theme: etf.theme,
@@ -247,8 +246,8 @@ export default function Home() {
           <CardContent>
             <div className="space-y-4">
               {topGainers.map((etf) => (
-                <Link href={`/etf/${etf.ticker}`} key={etf.id}>
-                  <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <Link href={`/etf/${etf.id}`} >
+                      <div key={etf.id} className="flex justify-between items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
                     <div>
                       <div className="font-medium">{etf.name}</div>
                       <div className="text-sm text-slate-500">
@@ -259,8 +258,9 @@ export default function Home() {
                       <div className="text-green-600 font-bold">+{etf.change}%</div>
                       <div className="text-sm">{etf.price.toLocaleString()}원</div>
                     </div>
-                  </div>
-                </Link>
+                      </div>
+                      </Link>
+
               ))}
             </div>
           </CardContent>
@@ -277,7 +277,7 @@ export default function Home() {
           <CardContent>
             <div className="space-y-4">
               {topLosers.map((etf) => (
-                <Link href={`/etf/${etf.ticker}`} key={etf.id}>
+                <Link href={`/etf/${etf.id}`} key={etf.id}>
                   <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
                     <div>
                       <div className="font-medium">{etf.name}</div>
@@ -328,12 +328,12 @@ export default function Home() {
                   </TableHeader>
                   <TableBody>
                     {sortedEtfs.map((etf, index) => (
-                      <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                        <TableCell className="font-medium">{index + 1}</TableCell>
-                        <TableCell>
-                          <Link href={`/etf/${etf.ticker}`} className="hover:underline text-blue-600">
-                            {etf.name}
-                          </Link>
+                        <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
+                          <TableCell className="font-medium">{index + 1}</TableCell>
+                          <TableCell>
+                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
+                              {etf.name}
+                            </Link>
                         </TableCell>
                         <TableCell>{etf.ticker}</TableCell>
                         <TableCell>
@@ -377,9 +377,9 @@ export default function Home() {
                       .filter((etf) => etf.theme === "기술")
                       .map((etf, index) => (
                         <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                          <TableCell className="font-medium">{index + 1}</TableCell>
+                          <TableCell className="font-medium">{index}</TableCell>
                           <TableCell>
-                            <Link href={`/etf/${etf.ticker}`} className="hover:underline text-blue-600">
+                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
                               {etf.name}
                             </Link>
                           </TableCell>
@@ -421,7 +421,7 @@ export default function Home() {
                         <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
                           <TableCell className="font-medium">{index + 1}</TableCell>
                           <TableCell>
-                            <Link href={`/etf/${etf.ticker}`} className="hover:underline text-blue-600">
+                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
                               {etf.name}
                             </Link>
                           </TableCell>
@@ -463,7 +463,7 @@ export default function Home() {
                         <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
                           <TableCell className="font-medium">{index + 1}</TableCell>
                           <TableCell>
-                            <Link href={`/etf/${etf.ticker}`} className="hover:underline text-blue-600">
+                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
                               {etf.name}
                             </Link>
                           </TableCell>
