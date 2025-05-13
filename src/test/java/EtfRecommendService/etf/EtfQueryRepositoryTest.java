@@ -18,16 +18,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Constructor;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static EtfRecommendService.etf.domain.QEtfProjection.etfProjection;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @Import(TestConfig.class)
 public class EtfQueryRepositoryTest {
-
-    @Autowired
-    private EntityManager entityManager;
 
     @Autowired
     private JPAQueryFactory queryFactory;
@@ -37,26 +36,21 @@ public class EtfQueryRepositoryTest {
     @Autowired
     private EntityManager em;
 
-    @Autowired
-    private JPAQueryFactory jpaQueryFactory;
-
-    private EtfQueryRepository etfQueryRepository;
-
     @BeforeEach
+    @Transactional
     void setUp() {
         repository = new EtfQueryRepository(queryFactory);
         loadTestData();
+        em.flush();
+        em.clear();
     }
 
-    @Transactional
-    void loadTestData() {
+    private void loadTestData() {
         persistEtf("삼성전자 ETF", "005930", Theme.AI_DATA, 1.5, 3.2);
         persistEtf("SK하이닉스 ETF", "000660", Theme.AI_DATA, 2.1, 4.5);
         persistEtf("현대차 ETF", "005380", Theme.GOLD, -0.5, 1.8);
         persistEtf("기아차 ETF", "000270", Theme.GOLD, 0.8, 2.3);
         persistEtf("KB금융 ETF", "105560", Theme.COMMODITIES, 1.1, 2.2);
-        em.flush();
-        em.clear();
     }
 
     private void persistEtf(String name,
@@ -64,23 +58,24 @@ public class EtfQueryRepositoryTest {
                             Theme theme,
                             double weekly,
                             double monthly) {
-        try {
-            Constructor<EtfProjection> ctor = EtfProjection.class.getDeclaredConstructor();
-            ctor.setAccessible(true);
-
-            EtfProjection etf = ctor.newInstance();
-
-            ReflectionTestUtils.setField(etf, "etfName", name);
-            ReflectionTestUtils.setField(etf, "etfCode", code);
-            ReflectionTestUtils.setField(etf, "theme", theme);
-            ReflectionTestUtils.setField(etf, "weeklyReturn", weekly);
-            ReflectionTestUtils.setField(etf, "monthlyReturn", monthly);
-
-            em.persist(etf);
-
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException("테스트용 EtfReadProjection 생성 실패", ex);
-        }
+        // 1) Etf 엔티티 저장
+        Etf etf = Etf.builder()
+                .etfName(name)
+                .etfCode(code)
+                .companyName("테스트사")
+                .listingDate(LocalDateTime.now())
+                .theme(theme)
+                .build();
+        em.persist(etf);
+        // 2) EtfProjection 엔티티 저장
+        EtfProjection etfProjection = EtfProjection.builder()
+                .etfName(name)
+                .etfCode(code)
+                .theme(theme)
+                .monthlyReturn(monthly)
+                .weeklyReturn(weekly)
+                .build();
+        em.persist(etfProjection);
     }
 
     @Test
