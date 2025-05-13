@@ -5,13 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.HashMap;
 import java.util.Map;
 
 //웹소켓 키 발급
 @Service
-public class WebSocketKeyService {
+public class WebSocketKey {
 
     @Value("${kis.domain}")
     private String apiUrl;
