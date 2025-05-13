@@ -43,36 +43,6 @@ export async function updateProfile(loginId: string, nickname: string, isLikePri
     }
 }
 
-// 사용자 프로필 가져오기 서버 액션
-export async function fetchUserProfile(loginId: string) {
-    try {
-        const cookieStore = await cookies();
-        const accessToken = cookieStore.get('accessToken')?.value;
-
-        if (!accessToken) {
-            return { success: false, message: "인증 토큰이 없습니다" };
-        }
-
-        const response = await fetch(`http://localhost:8080/api/v1/users/${loginId}`, {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            return { success: true, data };
-        } else {
-            return { success: false, message: `API 오류: ${response.status}` };
-        }
-    } catch (error) {
-        console.error("프로필 조회 오류:", error);
-        return { success: false, message: "서버 오류가 발생했습니다" };
-    }
-}
-
-
 export async function updateProfileImage(formData: FormData) {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
