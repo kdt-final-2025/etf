@@ -24,7 +24,7 @@ include::{snippets}/reply-create/request-fields.adoc[]
 include::{snippets}/reply-read-all/http-request.adoc[]
 include::{snippets}/reply-read-all/request-headers.adoc[]
 include::{snippets}/reply-read-all/path-parameters.adoc[]
-include::{snippets}/reply-read-all/request-parameters.adoc[]
+include::{snippets}/reply-read-all/query-parameters.adoc[]
 include::{snippets}/reply-read-all/response-fields.adoc[]
 
 == 3. 대댓글 수정

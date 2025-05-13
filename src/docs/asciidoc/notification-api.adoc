@@ -13,4 +13,4 @@
 
 === 요청 파라미터
 
-include::{snippets}/notification-stream/request-parameters.adoc[]
+include::{snippets}/notification-stream/query-parameters.adoc[]
