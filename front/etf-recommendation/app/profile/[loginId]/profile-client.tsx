@@ -149,8 +149,9 @@ export default function ProfileClient({
                                     className="h-24 w-24 cursor-pointer group-hover:opacity-80 transition-opacity"
                                     onClick={handleAvatarClick}
                                 >
-                                    <AvatarImage src={avatarSrc || "/placeholder.svg"} alt="프로필 이미지"/>
-
+                                    <AvatarImage src={avatarSrc || "/placeholder.svg"} alt="프로필 이미지"
+                                                 className="h-full w-full object-cover object-center"
+                                    />
                                     <AvatarFallback>사용자</AvatarFallback>
                                 </Avatar>
                                 <div
@@ -209,8 +210,8 @@ export default function ProfileClient({
                         <Tabs defaultValue="account">
                             <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="account">계정 정보</TabsTrigger>
-                                <TabsTrigger value="portfolio">포트폴리오</TabsTrigger>
-                                <TabsTrigger value="history">투자 내역</TabsTrigger>
+                                <TabsTrigger value="comments">댓글 목록</TabsTrigger>
+                                <TabsTrigger value="subscribe">구독 내역</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="account" className="space-y-4 mt-4">
