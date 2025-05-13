@@ -76,6 +76,8 @@ public class CommentService {
                                     .builder()
                                     .id(c.getId())
                                     .userId(c.getUser().getId())
+                                    .nickName(c.getUser().getNickName())
+                                    .imageUrl(c.getUser().getImageUrl())
                                     .content(c.getContent())
                                     .createdAt(c.getCreatedAt())
                                     .build()
