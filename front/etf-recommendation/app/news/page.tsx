@@ -21,6 +21,7 @@ async function fetchEconomicNews(): Promise<NewsResponse[]> {
 
     // 🔧 서버 응답 필드 이름을 클라이언트가 기대하는 형태로 변환
     const mappedData: NewsResponse[] = rawData.map((item: any) => ({
+        id:item.id,
         title: item.newsTitle,
         link: item.newsLink,
         imageUrl: item.imageUrl,
@@ -56,10 +57,11 @@ export default function NewsPage() {
         <div className="container mx-auto py-8 px-4">
             <h1 className="text-3xl font-bold mb-6">경제 뉴스</h1>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {news.map((item, index) => (
-                    <Card className="h-full hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
+                {news.map((item) => (
+                    <Card
+                        key={item.id}
+                        className="h-full hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
                         <a
-                            key={item.id}
                             href={item.link}
                             target="_blank"
                             rel="noopener noreferrer"
