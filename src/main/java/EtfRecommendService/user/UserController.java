@@ -45,7 +45,7 @@ public class UserController {
         return ResponseEntity.ok(body);
     }
 
-    @Secured("Role_USER")
+    @Secured("ROLE_USER")
     @PatchMapping("/users")
     public ResponseEntity<UserUpdateResponse> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserUpdateRequest updateRequest) {
         UserUpdateResponse userUpdateResponse = userService.UpdateProfile(userDetails.getUsername(), updateRequest);
@@ -60,12 +60,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PatchMapping("/users/me/password")
     public ResponseEntity<UserPasswordResponse> updatePassword(@AuthenticationPrincipal UserDetails userDetails, @RequestBody UserPasswordRequest passwordRequest) {
         if (!passwordRequest.newPassword().equals(passwordRequest.confirmNewPassword())) {
             throw new PasswordMismatchException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
         }
+        System.out.println(userDetails);
         UserPasswordResponse userPasswordResponse = userService.updatePassword(userDetails.getUsername(), passwordRequest);
         return ResponseEntity.ok(userPasswordResponse);
     }
@@ -82,7 +83,7 @@ public class UserController {
         return ResponseEntity.ok(userPageResponse);
     }
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PatchMapping("/users/image")
     public ResponseEntity<UserProfileResponse> imageUpdate(@AuthenticationPrincipal UserDetails userDetails,
                                            @RequestPart(value = "images") MultipartFile file) throws IOException {

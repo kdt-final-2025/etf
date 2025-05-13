@@ -26,7 +26,7 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException{
         String[] identifiers = identifier.split(":");
         Collection<? extends GrantedAuthority> types =
-                List.of(new SimpleGrantedAuthority("Role_"+identifiers[0]));
+                List.of(new SimpleGrantedAuthority("ROLE_"+identifiers[0]));
         String loginId = identifiers[1];
 
         if ("ADMIN".equals(identifiers[0])){

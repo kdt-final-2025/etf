@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class ReplyController {
     private final ReplyService replyService;
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PostMapping
     public ResponseEntity<String> createReply(@AuthenticationPrincipal UserDetails userDetails, @RequestBody@Valid ReplyRequest rq){
         replyService.create(userDetails.getUsername(), rq);
@@ -45,7 +45,7 @@ public class ReplyController {
         return ResponseEntity.ok(repliesPageList);
     }
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PutMapping("/{replyId}")
     public ResponseEntity<String> updateReply(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long replyId, @RequestBody@Valid ReplyRequest rq){
         replyService.update(userDetails.getUsername(), replyId, rq);
@@ -59,7 +59,7 @@ public class ReplyController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Reply delete successfully");
     }
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PostMapping("/{replyId}/likes")
     public void toggleLike(
             @AuthenticationPrincipal UserDetails userDetails,

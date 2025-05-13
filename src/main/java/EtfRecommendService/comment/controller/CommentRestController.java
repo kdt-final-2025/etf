@@ -24,7 +24,7 @@ public class CommentRestController {
     private final CommentService commentService;
 
     //댓글 생성
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PostMapping
     public void createComment(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -44,7 +44,7 @@ public class CommentRestController {
     }
 
     //댓글 수정
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PutMapping("/{commentId}")
     public void updateComment(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -64,7 +64,7 @@ public class CommentRestController {
     }
 
     //좋아요 토글
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PostMapping("/{commentId}/likes")
     public ResponseEntity<ToggleLikeResponse> toggleLike(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -76,7 +76,7 @@ public class CommentRestController {
     //관리자가 신고된 댓글 조회할 때 사용할 API
     //유저별 신고목록 조회와 함께 사용
     //관리자만 접근 가능
-    @Secured("ADMIN")
+    @Secured("ROLE_ADMIN")
     @GetMapping("/{commentId}")
     public ResponseEntity<CommentResponse> readOneComment(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long commentId){
         return ResponseEntity.ok(commentService.readOneComment(userDetails.getUsername(), commentId));

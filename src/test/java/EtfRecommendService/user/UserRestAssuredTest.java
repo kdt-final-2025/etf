@@ -199,7 +199,7 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .jsonPath()
-                .getString("token");
+                .getString("accessToken");
 
         UserPasswordResponse response = RestAssured
                 .given().log().all()
@@ -322,7 +322,7 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .jsonPath()
-                .getString("token");
+                .getString("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -332,7 +332,7 @@ public class UserRestAssuredTest {
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
-                .statusCode(500)
+                    .statusCode(500)
                 .extract();
     }
 
@@ -361,7 +361,7 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .jsonPath()
-                .getString("token");
+                .getString("accessToken");
 
         RestAssured
                 .given().log().all()

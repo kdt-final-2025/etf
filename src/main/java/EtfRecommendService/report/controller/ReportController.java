@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.*;
 public class ReportController {
     private final ReportService reportService;
 
-    @Secured("USER")
+    @Secured("ROLE_USER")
     @PostMapping
     public ResponseEntity<String> createReport(@AuthenticationPrincipal UserDetails userDetails, @RequestBody ReportRequest rq){
         reportService.create(userDetails.getUsername(), rq);
         return ResponseEntity.status(HttpStatus.CREATED).body("Reply was Reported");
     }
 
-    @Secured("ADMIN")
+    @Secured("ROLE_ADMIN")
     //전체 신고 목록 조회
     @GetMapping
     public ResponseEntity<ReportListResponse> readAllReports(@AuthenticationPrincipal UserDetails userDetails) {
