@@ -46,10 +46,22 @@ export default function Home() {
   useEffect(() => {
     const fetchEtfs = async () => {
       try {
-        const response = await fetch('/api/v1/user/etfs?page=1&size=20&period=weekly')
+        const response = await fetch('http://localhost:8080/api/v1/etfs?page=1&size=20&period=weekly')
         if (!response.ok) throw new Error('데이터 로드 실패')
         const data = await response.json()
-        setEtfData(data.etfList) // EtfResponse의 내부 필드 이름에 따라 다를 수 있음
+
+        const transformedData: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
+          id: index,
+          name: etf.etfName,
+          ticker: etf.etfCode,
+          theme: etf.theme,
+          price: 10000 + index * 100,
+          change: parseFloat((Math.random() * 5).toFixed(2)) * (Math.random() > 0.5 ? 1 : -1),
+          volume: Math.floor(Math.random() * 100000),
+          returnRate: Number((etf.returnRate * 100).toFixed(2)),
+        }))
+
+        setEtfData(transformedData)
       } catch (error) {
         console.error('ETF 데이터 로딩 에러:', error)
       }
