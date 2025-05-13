@@ -142,7 +142,7 @@ public class UserService {
     }
 
     public UserDetailResponse findByUserId(String myLoginId, String loginId) {
-        getByLoginId(loginId);
+        getByLoginId(myLoginId);
         User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() ->
                 new RuntimeException("존재하지 않는 유저 id : " + loginId));
 
