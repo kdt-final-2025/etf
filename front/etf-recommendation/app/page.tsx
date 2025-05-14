@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Filter } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
+import EtfCard from "@/components/EtfCard";
 // 샘플 ETF 데이터
 
 type ETF = {
@@ -29,19 +29,33 @@ const marketSummary = {
   nasdaq: { value: 16250.8, change: 0.8 },
   sp500: { value: 5120.35, change: 0.6 },
 }
-
-// 인기 테마 데이터
-const popularThemes = [
-  { id: "tech", name: "기술", returnRate: 24.5, etfCount: 12 },
-  { id: "energy", name: "에너지", returnRate: 22.8, etfCount: 8 },
-  { id: "healthcare", name: "헬스케어", returnRate: 18.2, etfCount: 10 },
-  { id: "global", name: "글로벌", returnRate: 16.5, etfCount: 15 },
-]
+const themeNameMap: Record<string, string> = {
+  'AI_DATA': 'AI 데이터',
+  'USA': '미국',
+  'KOREA': '한국',
+  'REITS': '리츠',
+  'MULTI_ASSET': '멀티에셋',
+  'COMMODITIES': '원자재',
+  'HIGH_RISK': '고위험',
+  'SECTOR': '섹터',
+  'DIVIDEND': '배당',
+  'ESG': 'ESG',
+  'GOLD': '금',
+  'GOVERNMENT_BOND': '국채',
+  'CORPORATE_BOND': '회사채',
+  'DEFENSE': '방위산업',
+  'SEMICONDUCTOR': '반도체',
+  'BIO': '바이오',
+  'EMERGING_MARKETS': '신흥시장'
+};
 
 
 export default function Home() {
   const [etfData, setEtfData] = useState<ETF[]>([])
-  console.log(etfData)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('all');
+  const [sortKey, setSortKey] = useState('returnRate');
+
   useEffect(() => {
     const fetchEtfs = async () => {
       try {
@@ -77,6 +91,59 @@ export default function Home() {
   // 하락률 상위 ETF
   const topLosers = [...etfData].sort((a, b) => a.change - b.change).slice(0, 3)
 
+  const topThemes = useMemo(() => {
+    if (etfData.length === 0) return [];
+
+    // 테마별 데이터 분류 및 평균 수익률 계산
+    const themeMap: Record<string, { totalReturn: number; count: number }> = {};
+
+    etfData.forEach(etf => {
+      if (!themeMap[etf.theme]) {
+        themeMap[etf.theme] = { totalReturn: 0, count: 0 };
+      }
+      themeMap[etf.theme].totalReturn += etf.returnRate;
+      themeMap[etf.theme].count += 1;
+    });
+
+    const result = Object.entries(themeMap)
+        .map(([theme, data]) => ({
+          id: theme,
+          name: theme, // 실제 이름이 필요하면 매핑 테이블 사용
+          returnRate: data.totalReturn / data.count,
+          etfCount: data.count,
+        }))
+        .sort((a, b) => b.returnRate - a.returnRate)
+        .slice(0, 4); // 상위 4개만
+
+    return result;
+  }, [etfData]);
+
+  const filteredEtfs = useMemo(() => {
+    let filtered = [...etfData];
+
+    // 테마 필터
+    if (selectedTheme !== 'all') {
+      filtered = filtered.filter(etf => etf.theme === selectedTheme);
+    }
+
+    // 검색 필터
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(etf =>
+          etf.name.toLowerCase().includes(query) || etf.ticker.toLowerCase().includes(query)
+      );
+    }
+
+    // 정렬
+    filtered.sort((a, b) => {
+      if (sortKey === 'price') return b.price - a.price;
+      if (sortKey === 'change') return b.change - a.change;
+      if (sortKey === 'volume') return b.volume - a.volume;
+      return b.returnRate - a.returnRate;
+    });
+
+    return filtered;
+  }, [etfData, searchQuery, selectedTheme, sortKey]);
 
 
   return (
@@ -105,8 +172,14 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-400">+28.5%</div>
-                <p className="text-sm text-white/70">KODEX 삼성전자</p>
+                <div className="text-3xl font-bold text-green-400">{etfData.length > 0 ? `+${Math.max(...etfData.map(etf => etf.returnRate)).toFixed(1)}%` : '...'}</div>
+                <p className="text-sm text-white/70">  {
+                  etfData.length > 0
+                      ? etfData.reduce((prev, curr) =>
+                          curr.returnRate === Math.max(...etfData.map(e => e.returnRate)) ? curr : prev
+                      ).name
+                      : ''
+                }</p>
               </CardContent>
             </Card>
             <Card className="bg-white/10 border-0">
@@ -117,7 +190,9 @@ export default function Home() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-400">+18.6%</div>
+                <div className="text-3xl font-bold text-green-400"> {etfData.length > 0
+                    ? `+${(etfData.reduce((sum, etf) => sum + etf.returnRate, 0) / etfData.length).toFixed(1)}%`
+                    : '...'}</div>
                 <p className="text-sm text-white/70">전체 ETF 기준</p>
               </CardContent>
             </Card>
@@ -178,24 +253,29 @@ export default function Home() {
       <div className="mb-8 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <Input placeholder="ETF 이름 또는 종목코드 검색" className="pl-10" />
+          <Input
+              placeholder="ETF 이름 또는 종목코드 검색"
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
         <div className="flex gap-2">
-          <Select>
+          <Select value={selectedTheme} onValueChange={(val) => setSelectedTheme(val)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="테마 선택" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="tech">기술</SelectItem>
-              <SelectItem value="finance">금융</SelectItem>
-              <SelectItem value="healthcare">헬스케어</SelectItem>
-              <SelectItem value="consumer">소비재</SelectItem>
-              <SelectItem value="energy">에너지</SelectItem>
-              <SelectItem value="global">글로벌</SelectItem>
+              {Array.from(new Set(etfData.map(etf => etf.theme))).map(theme => (
+                  <SelectItem key={theme} value={theme}>
+                    {themeNameMap[theme] ?? theme}
+                  </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Select>
+
+          <Select value={sortKey} onValueChange={(val) => setSortKey(val)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="정렬 기준" />
             </SelectTrigger>
@@ -206,33 +286,39 @@ export default function Home() {
               <SelectItem value="volume">거래량 순</SelectItem>
             </SelectContent>
           </Select>
+
           <Button variant="outline" size="icon">
             <Filter className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
+
       {/* 인기 테마 */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">인기 테마</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {popularThemes.map((theme) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {topThemes.map((theme) => (
             <Link href={`/themes/${theme.id}`} key={theme.id}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Card className="p-4 bg-white shadow-sm rounded-lg hover:bg-slate-50 transition">
                 <CardHeader className="pb-2">
-                  <CardTitle>{theme.name}</CardTitle>
+                  <CardTitle className="text-lg font-semibold">
+                    {themeNameMap[theme.id] ?? theme.id}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">+{theme.returnRate}%</div>
-                  <p className="text-sm text-slate-500">평균 수익률</p>
+                  <p className="text-sm text-gray-500">평균 수익률</p>
+                  <div className="text-xl font-bold text-green-600">
+                    +{theme.returnRate.toFixed(1)}%
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1">{theme.etfCount}개 ETF</p>
                 </CardContent>
-                <CardFooter className="text-sm text-slate-500">ETF {theme.etfCount}개</CardFooter>
               </Card>
             </Link>
-          ))}
-        </div>
-      </div>
 
+        ))}
+      </div>
+      </div>
       {/* 상승/하락 ETF */}
       <div className="mb-8 grid md:grid-cols-2 gap-6">
         <Card>
@@ -302,12 +388,6 @@ export default function Home() {
         <Tabs defaultValue="all">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold">ETF 수익 랭킹</h2>
-            <TabsList>
-              <TabsTrigger value="all">전체</TabsTrigger>
-              <TabsTrigger value="tech">기술</TabsTrigger>
-              <TabsTrigger value="finance">금융</TabsTrigger>
-              <TabsTrigger value="energy">에너지</TabsTrigger>
-            </TabsList>
           </div>
 
           <TabsContent value="all">
@@ -327,27 +407,7 @@ export default function Home() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedEtfs.map((etf, index) => (
-                        <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                          <TableCell className="font-medium">{index + 1}</TableCell>
-                          <TableCell>
-                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
-                              {etf.name}
-                            </Link>
-                        </TableCell>
-                        <TableCell>{etf.ticker}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{etf.theme}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">{etf.price.toLocaleString()}원</TableCell>
-                        <TableCell className={`text-right ${etf.change >= 0 ? "text-green-600" : "text-red-600"}`}>
-                          {etf.change >= 0 ? "+" : ""}
-                          {etf.change}%
-                        </TableCell>
-                        <TableCell className="text-right">{etf.volume.toLocaleString()}</TableCell>
-                        <TableCell className="text-right font-bold text-green-600">+{etf.returnRate}%</TableCell>
-                      </TableRow>
-                    ))}
+                    <EtfCard etfs={filteredEtfs} />
                   </TableBody>
                 </Table>
               </CardContent>
@@ -357,131 +417,6 @@ export default function Home() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="tech">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>순위</TableHead>
-                      <TableHead>ETF명</TableHead>
-                      <TableHead>종목코드</TableHead>
-                      <TableHead className="text-right">현재가</TableHead>
-                      <TableHead className="text-right">등락률</TableHead>
-                      <TableHead className="text-right">거래량</TableHead>
-                      <TableHead className="text-right">수익률</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedEtfs
-                      .filter((etf) => etf.theme === "기술")
-                      .map((etf, index) => (
-                        <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                          <TableCell className="font-medium">{index}</TableCell>
-                          <TableCell>
-                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
-                              {etf.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{etf.ticker}</TableCell>
-                          <TableCell className="text-right">{etf.price.toLocaleString()}원</TableCell>
-                          <TableCell className={`text-right ${etf.change >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {etf.change >= 0 ? "+" : ""}
-                            {etf.change}%
-                          </TableCell>
-                          <TableCell className="text-right">{etf.volume.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-bold text-green-600">+{etf.returnRate}%</TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="finance">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>순위</TableHead>
-                      <TableHead>ETF명</TableHead>
-                      <TableHead>종목코드</TableHead>
-                      <TableHead className="text-right">현재가</TableHead>
-                      <TableHead className="text-right">등락률</TableHead>
-                      <TableHead className="text-right">거래량</TableHead>
-                      <TableHead className="text-right">수익률</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedEtfs
-                      .filter((etf) => etf.theme === "금융")
-                      .map((etf, index) => (
-                        <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                          <TableCell className="font-medium">{index + 1}</TableCell>
-                          <TableCell>
-                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
-                              {etf.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{etf.ticker}</TableCell>
-                          <TableCell className="text-right">{etf.price.toLocaleString()}원</TableCell>
-                          <TableCell className={`text-right ${etf.change >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {etf.change >= 0 ? "+" : ""}
-                            {etf.change}%
-                          </TableCell>
-                          <TableCell className="text-right">{etf.volume.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-bold text-green-600">+{etf.returnRate}%</TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="energy">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>순위</TableHead>
-                      <TableHead>ETF명</TableHead>
-                      <TableHead>종목코드</TableHead>
-                      <TableHead className="text-right">현재가</TableHead>
-                      <TableHead className="text-right">등락률</TableHead>
-                      <TableHead className="text-right">거래량</TableHead>
-                      <TableHead className="text-right">수익률</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedEtfs
-                      .filter((etf) => etf.theme === "에너지")
-                      .map((etf, index) => (
-                        <TableRow key={etf.id} className="cursor-pointer hover:bg-slate-50">
-                          <TableCell className="font-medium">{index + 1}</TableCell>
-                          <TableCell>
-                            <Link href={`/etf/${etf.id}`} className="hover:underline text-blue-600">
-                              {etf.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{etf.ticker}</TableCell>
-                          <TableCell className="text-right">{etf.price.toLocaleString()}원</TableCell>
-                          <TableCell className={`text-right ${etf.change >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {etf.change >= 0 ? "+" : ""}
-                            {etf.change}%
-                          </TableCell>
-                          <TableCell className="text-right">{etf.volume.toLocaleString()}</TableCell>
-                          <TableCell className="text-right font-bold text-green-600">+{etf.returnRate}%</TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
 
@@ -500,6 +435,9 @@ export default function Home() {
             </Button>
             <Button size="lg" variant="outline" className="bg-white text-slate-900 border-slate-300 hover:bg-slate-100">
               <Link href="/register">무료 회원가입</Link>
+              {/*{filteredEtfs.map((etf) => (*/}
+              {/*    <EtfCard key={etf.id} etf={etf} />*/}
+              {/*))}*/}
             </Button>
           </div>
         </div>
