@@ -1,0 +1,73 @@
+// 사용자 관련 API 문서
+// 이 문서는 Spring REST Docs로 생성된 스니펫을 포함해서 API 문서를 구성합니다.
+
+= User API
+:doctype: book
+:toc: left
+:snippets: {snippets}
+:revnumber: {revnumber}
+:revdate: {revdate}
+
+== 회원 가입 API우우우우우우
+
+=== 요청
+include::{snippets}/user-create/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-create/http-response.adoc[]
+
+== 로그인 API
+
+=== 요청
+include::{snippets}/user-login/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-login/http-response.adoc[]
+
+== 프로필 업데이트 API
+
+=== 요청
+include::{snippets}/user-update/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-update/http-response.adoc[]
+
+== 회원 탈퇴 API
+
+=== 요청
+include::{snippets}/user-delete/http-request.adoc[]
+
+=== 응답
+// No body
+
+== 비밀번호 변경 API
+
+=== 요청
+include::{snippets}/user-password/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-password/http-response.adoc[]
+
+== 내 댓글/댓댓글 조회 API
+
+=== 요청
+include::{snippets}/user-comments/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-comments/http-response.adoc[]
+
+== 프로필 이미지 업데이트 API
+
+=== 요청
+include::{snippets}/user-image/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-image/http-response.adoc[]
+
+== 회원 상세 조회 API
+
+=== 요청
+include::{snippets}/user-detail/http-request.adoc[]
+
+=== 응답
+include::{snippets}/user-detail/http-response.adoc[]
