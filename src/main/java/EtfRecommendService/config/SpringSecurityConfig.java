@@ -58,7 +58,7 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests( authorizeRequests ->
                         authorizeRequests
                                 // 회원가입은 인증 없이 허용
-                                .requestMatchers(HttpMethod.POST, "/api/v1/users/join").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/api/v1/admin/login").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
                                 .requestMatchers("/api/v1/comments/**").authenticated()
                                 .requestMatchers("/api/v1/etfs/**").authenticated()
