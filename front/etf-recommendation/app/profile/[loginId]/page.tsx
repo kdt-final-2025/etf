@@ -1,5 +1,6 @@
 import ProfileClient from './profile-client';
 import { cookies } from 'next/headers';
+import {redirect} from "next/navigation";
 
 export default async function ProfilePage({
                                               params,
@@ -12,7 +13,9 @@ export default async function ProfilePage({
     // 서버에서 쿠키 가져오기
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('accessToken')?.value;
-
+    if (!loginId || !accessToken) {
+        redirect('/login');
+    }
     // 서버에서 초기 프로필 데이터 가져오기
     let initialProfileData = null;
     if (accessToken) {
