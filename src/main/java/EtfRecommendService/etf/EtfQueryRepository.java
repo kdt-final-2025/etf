@@ -32,14 +32,13 @@ public class EtfQueryRepository {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         EtfReturnDto.class,
-                        etf.id,
-                        etf.etfName,
-                        etf.etfCode,
-                        etf.theme,
+                        etfProjection.id,
+                        etfProjection.etfName,
+                        etfProjection.etfCode,
+                        etfProjection.theme,
                         returnRate
                 ))
-                .from(etf)
-                .leftJoin(etfProjection).on(etf.etfCode.eq(etfProjection.etfCode))
+                .from(etfProjection)
                 .where(themeEq(theme), keywordContains(keyword))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -48,9 +47,8 @@ public class EtfQueryRepository {
 
     public Long fetchTotalCount(Theme theme, String keyword){
         Long count = jpaQueryFactory
-                .select(etf.count())
-                .from(etf)
-                .leftJoin(etfProjection).on(etf.etfCode.eq(etfProjection.etfCode))
+                .select(etfProjection.count())
+                .from(etfProjection)
                 .where(themeEq(theme),
                         keywordContains(keyword))
                 .fetchOne();
@@ -62,7 +60,7 @@ public class EtfQueryRepository {
         if (theme == null) {
             return null;  // dsl은 null값 무시 -> 전체 조회
         }
-        return etf.theme.eq(theme);
+        return etfProjection.theme.eq(theme);
     }
 
     //검색어 기능 - 종목명, 종목코드
@@ -70,8 +68,8 @@ public class EtfQueryRepository {
         if (keyword == null || keyword.trim().isEmpty()) {
             return null;
         }
-        return etf.etfName.containsIgnoreCase(keyword)
-                .or(etf.etfCode.containsIgnoreCase(keyword));
+        return etfProjection.etfName.containsIgnoreCase(keyword)
+                .or(etfProjection.etfCode.containsIgnoreCase(keyword));
     }
 }
 
