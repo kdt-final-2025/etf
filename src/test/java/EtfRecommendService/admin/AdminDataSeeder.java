@@ -13,7 +13,7 @@ public class AdminDataSeeder {
     private EntityManager em;
 
     @Transactional
-    void seedAdmin(){
+    public void seedAdmin(){
         Admin admin = new Admin("admin",new Password("password"));
         em.persist(admin);
         em.flush();

@@ -1,6 +1,8 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.DatabaseCleanup;
+import EtfRecommendService.admin.AdminDataSeeder;
+import EtfRecommendService.admin.dto.AdminLoginRequest;
 import EtfRecommendService.user.dto.*;
 
 import io.restassured.RestAssured;
@@ -25,6 +27,9 @@ public class UserRestAssuredTest {
 
     @Autowired
     DatabaseCleanup databaseCleanup;
+
+    @Autowired
+    private AdminDataSeeder adminDataSeeder;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -69,6 +74,7 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .as(UserLoginResponse.class);
+
     }
 
     @Test
@@ -135,10 +141,40 @@ public class UserRestAssuredTest {
                 .statusCode(200)
                 .extract()
                 .as(UserUpdateResponse.class);
+        adminDataSeeder.seedAdmin();
+
+        String adminToken = RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .body(AdminLoginRequest
+                        .builder()
+                        .loginId("admin")
+                        .password("password")
+                        .roles("ADMIN")
+                        .build())
+                .when()
+                .post("/api/v1/admin/login")
+                .then().log().all()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getString("accessToken");
+
+
+        RestAssured
+                .given().log().all()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + adminToken)
+                .body(updateRequest)
+                .when()
+                .patch("/api/v1/users")
+                .then().log().all()
+                .statusCode(403);
     }
 
     @Test
     void 회원삭제Test() {
+
+
         UserResponse userResponse = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)

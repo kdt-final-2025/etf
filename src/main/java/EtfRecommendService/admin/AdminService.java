@@ -33,6 +33,6 @@ public class AdminService {
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.roles().toUpperCase()+":"+admin.getLoginId());
 
-        return new AdminLoginResponse(jwtProvider.createToken(userDetails));
+        return new AdminLoginResponse(jwtProvider.createToken(userDetails), jwtProvider.createRefreshToken(userDetails));
     }
 }
