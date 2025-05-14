@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Filter } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import EtfCard from "@/components/EtfCard";
+import MarketTickerWidget from "@/components/MarketTickerWidget";
 // 샘플 ETF 데이터
 
 type ETF = {
@@ -214,47 +215,48 @@ export default function Home() {
                 <CardTitle className="text-lg">시장 요약</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-4 gap-2">
-                  <div>
-                    <p className="text-sm text-white/70">KOSPI</p>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold">{marketSummary.kospi.value.toLocaleString()}</span>
-                      <span className={marketSummary.kospi.change >= 0 ? "text-green-400" : "text-red-400"}>
-                        {marketSummary.kospi.change >= 0 ? "+" : ""}
-                        {marketSummary.kospi.change}%
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/70">KOSDAQ</p>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold">{marketSummary.kosdaq.value.toLocaleString()}</span>
-                      <span className={marketSummary.kosdaq.change >= 0 ? "text-green-400" : "text-red-400"}>
-                        {marketSummary.kosdaq.change >= 0 ? "+" : ""}
-                        {marketSummary.kosdaq.change}%
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/70">NASDAQ</p>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold">{marketSummary.nasdaq.value.toLocaleString()}</span>
-                      <span className={marketSummary.nasdaq.change >= 0 ? "text-green-400" : "text-red-400"}>
-                        {marketSummary.nasdaq.change >= 0 ? "+" : ""}
-                        {marketSummary.nasdaq.change}%
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/70">S&P 500</p>
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold">{marketSummary.sp500.value.toLocaleString()}</span>
-                      <span className={marketSummary.sp500.change >= 0 ? "text-green-400" : "text-red-400"}>
-                        {marketSummary.sp500.change >= 0 ? "+" : ""}
-                        {marketSummary.sp500.change}%
-                      </span>
-                    </div>
-                  </div>
+                <div>
+               <MarketTickerWidget/>
+                  {/*<div>*/}
+                  {/*  <p className="text-sm text-white/70">KOSPI</p>*/}
+                  {/*  <div className="flex items-center gap-1">*/}
+                  {/*    <span className="font-bold">{marketSummary.kospi.value.toLocaleString()}</span>*/}
+                  {/*    <span className={marketSummary.kospi.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
+                  {/*      {marketSummary.kospi.change >= 0 ? "+" : ""}*/}
+                  {/*      {marketSummary.kospi.change}%*/}
+                  {/*    </span>*/}
+                  {/*  </div>*/}
+                  {/*</div>*/}
+                  {/*<div>*/}
+                  {/*  <p className="text-sm text-white/70">KOSDAQ</p>*/}
+                  {/*  <div className="flex items-center gap-1">*/}
+                  {/*    <span className="font-bold">{marketSummary.kosdaq.value.toLocaleString()}</span>*/}
+                  {/*    <span className={marketSummary.kosdaq.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
+                  {/*      {marketSummary.kosdaq.change >= 0 ? "+" : ""}*/}
+                  {/*      {marketSummary.kosdaq.change}%*/}
+                  {/*    </span>*/}
+                  {/*  </div>*/}
+                  {/*</div>*/}
+                  {/*<div>*/}
+                  {/*  <p className="text-sm text-white/70">NASDAQ</p>*/}
+                  {/*  <div className="flex items-center gap-1">*/}
+                  {/*    <span className="font-bold">{marketSummary.nasdaq.value.toLocaleString()}</span>*/}
+                  {/*    <span className={marketSummary.nasdaq.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
+                  {/*      {marketSummary.nasdaq.change >= 0 ? "+" : ""}*/}
+                  {/*      {marketSummary.nasdaq.change}%*/}
+                  {/*    </span>*/}
+                  {/*  </div>*/}
+                  {/*</div>*/}
+                  {/*<div>*/}
+                  {/*  <p className="text-sm text-white/70">S&P 500</p>*/}
+                  {/*  <div className="flex items-center gap-1">*/}
+                  {/*    <span className="font-bold">{marketSummary.sp500.value.toLocaleString()}</span>*/}
+                  {/*    <span className={marketSummary.sp500.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
+                  {/*      {marketSummary.sp500.change >= 0 ? "+" : ""}*/}
+                  {/*      {marketSummary.sp500.change}%*/}
+                  {/*    </span>*/}
+                  {/*  </div>*/}
+                  {/*</div>*/}
                 </div>
               </CardContent>
             </Card>
@@ -265,7 +267,7 @@ export default function Home() {
       {/* 검색 및 필터 */}
       <div className="mb-8 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"/>
           <Input
               placeholder="ETF 이름 또는 종목코드 검색"
               className="pl-10"
