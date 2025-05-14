@@ -63,6 +63,12 @@ asciidoctor {
     baseDirFollowsSourceFile()
     inputs.dir snippetsDir
     dependsOn test
+
+    attributes(
+            'doctype':      'book',
+            'toc':          'left',
+            'encoding':     'UTF-8'
+    )
 }
 
 asciidoctor.doFirst {
@@ -84,7 +90,8 @@ tasks.register("generateApiIndex") {
     description = "static/docs/*.html 파일로 index.adoc 자동 생성"
     doLast {
         def docsDir = file("src/main/resources/static/docs")
-        def outFile = file("src/docs/asciidoc/index.adoc")
+//        def outFile = file("src/docs/asciidoc/index.adoc")
+        def outFile = docsDir.toPath().resolve("index.adoc").toFile()
         if (!docsDir.exists()) return
 
         def content = new StringBuilder()
@@ -111,9 +118,14 @@ http://localhost:8080/docs/index.html
 
         outFile.parentFile.mkdirs()
         outFile.text = content.toString()
+        outFile.parentFile.mkdirs()
+        outFile.withWriter('UTF-8') { writer ->
+            writer << content.toString()
+        }
         println "▶ index.adoc 생성: ${docsDir.listFiles().size()}개 항목"
     }
-    dependsOn copyDocument
+//    dependsOn copyDocument
+    dependsOn copyDocument, asciidoctor
 }
 
 tasks.named("asciidoctor") {

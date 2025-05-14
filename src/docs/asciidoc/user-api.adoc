@@ -8,7 +8,7 @@
 :revnumber: {revnumber}
 :revdate: {revdate}
 
-== 회원 가입 API
+== 회원 가입 API우우우우우우
 
 === 요청
 include::{snippets}/user-create/http-request.adoc[]
