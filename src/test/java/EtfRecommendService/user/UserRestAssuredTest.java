@@ -368,7 +368,7 @@ public class UserRestAssuredTest {
                 .when()
                 .patch("/api/v1/users/me/password")
                 .then().log().all()
-                .statusCode(500)
+                    .statusCode(500)
                 .extract();
     }
 
