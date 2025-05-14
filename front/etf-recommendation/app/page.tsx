@@ -59,13 +59,12 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchEtfs = async (pageToFetch: number) => {
+    const fetchEtfs = async (page: number) => {
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/etfs?page=${pageToFetch}&size=20&period=weekly`);
-        if (!response.ok) throw new Error('데이터 로드 실패');
+        const response = await fetch(`http://localhost:8080/api/v1/etfs?page=${page}&size=20&period=weekly`);
         const data = await response.json();
 
-        const transformedData: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
+        const newEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
           id: etf.etfId,
           name: etf.etfName,
           ticker: etf.etfCode,
@@ -76,12 +75,17 @@ export default function Home() {
           returnRate: etf.returnRate,
         }));
 
-        setEtfData(prev => [...prev, ...transformedData]);
-        setHasMore(!data.last); // Spring Pageable이라면 last=true는 마지막 페이지
+        // 중복 제거
+        setEtfData((prev) => {
+          const existingIds = new Set(prev.map((etf) => etf.id));
+          const filteredNew = newEtfs.filter((etf) => !existingIds.has(etf.id));
+          return [...prev, ...filteredNew];
+        });
+
       } catch (error) {
         console.error('ETF 데이터 로딩 에러:', error);
       }
-    };
+  };
     fetchEtfs(page);
   }, [page]);
   // 수익률 기준 정렬
