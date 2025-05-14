@@ -55,13 +55,15 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('all');
   const [sortKey, setSortKey] = useState('returnRate');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    const fetchEtfs = async () => {
+    const fetchEtfs = async (pageToFetch: number) => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/etfs?page=1&size=20&period=weekly')
-        if (!response.ok) throw new Error('데이터 로드 실패')
-        const data = await response.json()
+        const response = await fetch(`http://localhost:8080/api/v1/etfs?page=${pageToFetch}&size=20&period=weekly`);
+        if (!response.ok) throw new Error('데이터 로드 실패');
+        const data = await response.json();
 
         const transformedData: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
           id: etf.etfId,
@@ -72,16 +74,16 @@ export default function Home() {
           change: parseFloat((Math.random() * 5).toFixed(2)) * (Math.random() > 0.5 ? 1 : -1),
           volume: Math.floor(Math.random() * 100000),
           returnRate: etf.returnRate,
-        }))
+        }));
 
-        setEtfData(transformedData)
+        setEtfData(prev => [...prev, ...transformedData]);
+        setHasMore(!data.last); // Spring Pageable이라면 last=true는 마지막 페이지
       } catch (error) {
-        console.error('ETF 데이터 로딩 에러:', error)
+        console.error('ETF 데이터 로딩 에러:', error);
       }
-    }
-
-    fetchEtfs()
-  }, [])
+    };
+    fetchEtfs(page);
+  }, [page]);
   // 수익률 기준 정렬
   const sortedEtfs = [...etfData].sort((a, b) => b.returnRate - a.returnRate)
 
@@ -144,6 +146,13 @@ export default function Home() {
 
     return filtered;
   }, [etfData, searchQuery, selectedTheme, sortKey]);
+
+
+  const handleLoadMore = () => {
+    if (hasMore) {
+      setPage(prev => prev + 1);
+    }
+  };
 
 
   return (
@@ -411,8 +420,13 @@ export default function Home() {
                   </TableBody>
                 </Table>
               </CardContent>
+
               <CardFooter className="flex justify-center py-4">
-                <Button variant="outline">더 보기</Button>
+                {hasMore && (
+                    <Button variant="outline" onClick={handleLoadMore}>
+                      더 보기
+                    </Button>
+                )}
               </CardFooter>
             </Card>
           </TabsContent>
