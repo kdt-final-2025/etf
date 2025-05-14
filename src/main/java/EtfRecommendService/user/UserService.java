@@ -20,8 +20,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -182,18 +180,18 @@ public class UserService {
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }
 
-    public UserDetailResponse findByUserId(String loginId, Long userId) {
-        getByLoginId(loginId);
+    public UserDetailResponse findByUserId(String myLoginId, String loginId) {
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() ->
+                new RuntimeException("존재하지 않는 유저 id : " + loginId));
 
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new RuntimeException("존재하지 않는 유저 id : " + userId));
 
         return new UserDetailResponse(
                 user.getId(),
                 user.getLoginId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.isLikePrivate());
+                user.isLikePrivate(),
+                user.getCreatedAt());
     }
 
     public JwtTokens refresh(RefreshRequest request) {
