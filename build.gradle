@@ -40,6 +40,7 @@ dependencies {
 	testImplementation 'io.rest-assured:rest-assured:5.4.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	implementation 'org.imgscalr:imgscalr-lib:4.2'
 	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
