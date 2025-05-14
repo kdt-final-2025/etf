@@ -3,7 +3,6 @@ package EtfRecommendService.comment.controller;
 
 import EtfRecommendService.comment.dto.*;
 import EtfRecommendService.comment.serviece.CommentService;
-import EtfRecommendService.loginUtils.LoginMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

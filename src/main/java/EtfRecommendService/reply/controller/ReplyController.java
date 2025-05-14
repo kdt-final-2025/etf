@@ -1,6 +1,5 @@
 package EtfRecommendService.reply.controller;
 
-import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.reply.dto.RepliesPageList;
 import EtfRecommendService.reply.dto.ReplyRequest;
 import EtfRecommendService.reply.service.ReplyService;

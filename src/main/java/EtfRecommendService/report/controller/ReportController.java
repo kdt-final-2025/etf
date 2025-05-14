@@ -1,6 +1,5 @@
 package EtfRecommendService.report.controller;
 
-import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.report.dto.ReportListResponse;
 import EtfRecommendService.report.dto.ReportRequest;
 import EtfRecommendService.report.service.ReportService;

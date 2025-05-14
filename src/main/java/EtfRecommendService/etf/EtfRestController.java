@@ -1,7 +1,6 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
-import EtfRecommendService.loginUtils.LoginMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

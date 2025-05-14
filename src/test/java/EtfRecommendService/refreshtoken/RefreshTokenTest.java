@@ -4,24 +4,11 @@ import EtfRecommendService.AcceptanceTest;
 import EtfRecommendService.admin.AdminDataSeeder;
 import EtfRecommendService.admin.dto.AdminLoginRequest;
 import EtfRecommendService.user.RefreshRequest;
-import EtfRecommendService.user.dto.UserUpdateRequest;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
-
-import javax.crypto.SecretKey;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 @ActiveProfiles("test")
 public class RefreshTokenTest extends AcceptanceTest {
