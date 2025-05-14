@@ -1,8 +1,6 @@
 package EtfRecommendService.loginUtils;
 
-import EtfRecommendService.security.CustomUserDetailService;
 import EtfRecommendService.security.UserDetail;
-import EtfRecommendService.user.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -18,10 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class JwtProvider {
@@ -54,8 +49,7 @@ public class JwtProvider {
         this.refreshExpirationInMilliseconds = refreshExpirationInMilliseconds;
     }
 
-    // 토큰을 만들어 내는 함수
-    public String createToken(UserDetails userDetail) {
+    private Claims createClaims(UserDetails userDetail){
         Date now = new Date();
         Date expiration = new Date(now.getTime() + this.expirationInMilliseconds);
         Claims claims = Jwts.claims()
@@ -66,30 +60,34 @@ public class JwtProvider {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
         claims.put("roles",roles);
+        return claims;
+    }
+
+    // 토큰을 만들어 내는 함수
+    public String createToken(UserDetails userDetail) {
         return Jwts.builder()
-                .setClaims(claims)
+                .setClaims(createClaims(userDetail))
                 .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
     }
 
     public String createRefreshToken(UserDetails userDetail) {
-        Date now = new Date();
-        Date expiration = new Date(now.getTime() + this.refreshExpirationInMilliseconds);
-        Claims claims = Jwts.claims()
-                .setSubject(userDetail.getUsername())       // "sub": "abc@gmail.com"
-                .setIssuedAt(now)          // "iat": 1516239022
-                .setExpiration(expiration);// "exp": 1516249022
         return Jwts.builder()
-                .setClaims(claims)
+                .setClaims(createClaims(userDetail))
                 .signWith(refreshSecret, SignatureAlgorithm.HS512)
                 .compact();
     }
 
 
     // 유효한 토큰인지 검증하는 함수
-    public Boolean isValidToken(String token) {
+    public Boolean isValidToken(String token, boolean isAccess) {
         try {
-            parseToken(token); // 토큰 데이터를 읽는 함수를 검증용으로 활용
+            if (isAccess){
+                parseToken(token); // 토큰 데이터를 읽는 함수를 검증용으로 활용
+            }
+            else {
+                parseRefreshToken(token);
+            }
             return true; // 읽는 도중 에러가 발생하지 않았으면 true를 return
         } catch (ExpiredJwtException e) {
             logger.error("Token expired", e);
@@ -110,11 +108,29 @@ public class JwtProvider {
         return parseToken(token)
                 .getSubject();
     }
+    public String getSubjectFromRefresh(String token) {
+        return parseRefreshToken(token)
+                .getSubject();
+    }
 
     // 토큰에서 로그인한 사용자의 토큰 만료기간을 추출하는 함수
     public Date getExpirationFromRefreshToken(String token) {
         return parseRefreshToken(token)
                 .getExpiration();
+    }
+
+    public List<String> getRolesFromRefresh(String token) {
+        Object ob =  parseRefreshToken(token)
+                .get("roles");
+
+        List<String> roles = new ArrayList<>();
+        if (ob instanceof List<?>) {
+            for (Object role : (List<?>) ob) {
+                roles.add(String.valueOf(role));
+            }
+            return roles;
+        }
+        return roles;
     }
 
     // 유효한 토큰의 데이터를 읽는 함수

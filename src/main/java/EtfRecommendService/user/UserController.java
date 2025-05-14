@@ -38,10 +38,9 @@ public class UserController {
         return ResponseEntity.ok(login);
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @PostMapping("/api/refresh")
-    public ResponseEntity<JwtTokens> refresh(@AuthenticationPrincipal UserDetails userDetails, @RequestBody RefreshRequest request) {
-        JwtTokens body = userService.refresh(userDetails, request);
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtTokens> refresh(@RequestBody RefreshRequest request) {
+        JwtTokens body = userService.refresh(request);
         return ResponseEntity.ok(body);
     }
 

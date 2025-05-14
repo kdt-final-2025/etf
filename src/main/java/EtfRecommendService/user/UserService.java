@@ -1,29 +1,31 @@
 package EtfRecommendService.user;
 
 import EtfRecommendService.S3Service;
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
 import EtfRecommendService.loginUtils.JwtTokens;
 import EtfRecommendService.security.RefreshTokenDetails;
 import EtfRecommendService.security.RefreshTokenRepository;
 import EtfRecommendService.security.TokenNotFoundException;
+import EtfRecommendService.security.UserDetail;
 import EtfRecommendService.user.dto.*;
 import EtfRecommendService.user.exception.UserMismatchException;
+import com.amazonaws.services.kms.model.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -40,6 +42,7 @@ public class UserService {
     private final UserQueryRepository userQueryRepository;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AdminRepository adminRepository;
 
     public User getByLoginId(String loginId) {
         return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
@@ -66,7 +69,7 @@ public class UserService {
     }
 
     public UserLoginResponse login(UserLoginRequest loginRequest) {
-        String identifier = loginRequest.role().toUpperCase()+":"+loginRequest.loginId();
+        String identifier = loginRequest.role().toUpperCase() + ":" + loginRequest.loginId();
 
         UsernamePasswordAuthenticationToken token =
                 new UsernamePasswordAuthenticationToken(identifier, loginRequest.password());
@@ -76,9 +79,23 @@ public class UserService {
         UserDetails userDetail = (UserDetails) authentication.getPrincipal();
 
         //{accessToken, refreshToken}
-        String [] tokens = generateTokens(userDetail);
+        String[] tokens = generateTokens(userDetail);
 
-        return new UserLoginResponse(tokens[0],tokens[1]);
+        User user = getByLoginId(userDetail.getUsername());
+        LocalDateTime expiryDate = jwtProvider
+                .getExpirationFromRefreshToken(tokens[1])
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+
+        RefreshTokenDetails refreshTokenDetails = RefreshTokenDetails.builder()
+                .refreshToken(tokens[1])
+                .userId(user.getId())
+                .expiryDate(expiryDate)
+                .build();
+        refreshTokenRepository.save(refreshTokenDetails);
+
+        return new UserLoginResponse(tokens[0], tokens[1]);
     }
 
     @Transactional
@@ -166,7 +183,7 @@ public class UserService {
     public UserDetailResponse findByUserId(String loginId, Long userId) {
         getByLoginId(loginId);
 
-        User user = userRepository.findById(userId).orElseThrow( () ->
+        User user = userRepository.findById(userId).orElseThrow(() ->
                 new RuntimeException("존재하지 않는 유저 id : " + userId));
 
         return new UserDetailResponse(
@@ -177,41 +194,59 @@ public class UserService {
                 user.isLikePrivate());
     }
 
-    public JwtTokens refresh(UserDetails userDetail, RefreshRequest request) {
+    public JwtTokens refresh(RefreshRequest request) {
         String refreshToken = request.refreshToken();
-        if (jwtProvider.isValidToken(refreshToken)){
+        if (jwtProvider.isValidToken(refreshToken, false)) {
             RefreshTokenDetails refreshTokenDetails =
                     refreshTokenRepository.findByRefreshToken(refreshToken)
                             .orElseThrow(
-                                    ()->new TokenNotFoundException("만료된 리프레시 토큰, 재로그인 바람")
+                                    () -> new TokenNotFoundException("만료된 리프레시 토큰, 재로그인 바람")
                             );
+            String username = jwtProvider.getSubjectFromRefresh(refreshToken);
+            List<SimpleGrantedAuthority> roles = jwtProvider.getRolesFromRefresh(refreshToken)
+                    .stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+
+            UserDetails userDetails = new UserDetail(username,"", roles);
+
             //{accessToken, refreshToken}
-            String[] tokens = generateTokens(userDetail);
+            String[] tokens = generateTokens(userDetails);
+
+            Long userId;
+            if ("ROLE_ADMIN".equalsIgnoreCase(roles.get(0).getAuthority())){
+                userId = getByAdminLoginId(username).getId();
+            }
+            else {
+                userId = getByLoginId(username).getId();
+            }
+            LocalDateTime expiryDate = jwtProvider
+                    .getExpirationFromRefreshToken(tokens[1])
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            RefreshTokenDetails newRefresh = RefreshTokenDetails.builder()
+                    .refreshToken(tokens[1])
+                    .userId(userId)
+                    .expiryDate(expiryDate)
+                    .build();
+            refreshTokenRepository.deleteById(refreshTokenDetails.getId());
+            refreshTokenRepository.save(newRefresh);
             return new JwtTokens(tokens[0], tokens[1]);
-        }
-        else {
+        } else {
             throw new TokenNotFoundException("유효하지 않은 토큰");
         }
     }
 
-    private String[] generateTokens(UserDetails userDetail){
+    public Admin getByAdminLoginId(String loginId) {
+        return adminRepository.findByLoginId(loginId).orElseThrow(
+                () -> new NotFoundException("존재하지 않는 관리자"));
+    }
+
+    private String[] generateTokens(UserDetails userDetail) {
         String accessToken = jwtProvider.createToken(userDetail);
         String refreshToken = jwtProvider.createRefreshToken(userDetail);
-
-        User user = getByLoginId(userDetail.getUsername());
-        Date expirationDate = jwtProvider.getExpirationFromRefreshToken(refreshToken);
-        LocalDateTime expiryDate = expirationDate.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-
-        RefreshTokenDetails refreshTokenDetails = RefreshTokenDetails.builder()
-                .refreshToken(refreshToken)
-                .userId(user.getId())
-                .expiryDate(expiryDate)
-                .build();
-
-        refreshTokenRepository.save(refreshTokenDetails);
-
         return new String[]{accessToken, refreshToken};
     }
 }
