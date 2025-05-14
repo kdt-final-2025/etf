@@ -76,7 +76,7 @@ task copyDocument(type: Copy) {
 }
 
 build {
-    dependsOn copyDocument
+    dependsOn bootJar
 }
 
 tasks.register("generateApiIndex") {
@@ -113,8 +113,13 @@ http://localhost:8080/docs/index.html
         outFile.text = content.toString()
         println "▶ index.adoc 생성: ${docsDir.listFiles().size()}개 항목"
     }
+    dependsOn copyDocument
 }
 
 tasks.named("asciidoctor") {
-    dependsOn("generateApiIndex")
+    dependsOn test
+}
+
+tasks.named("bootJar") {
+    dependsOn generateApiIndex
 }
