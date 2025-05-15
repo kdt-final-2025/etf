@@ -1,18 +1,26 @@
 package EtfRecommendService.security;
 
 import EtfRecommendService.loginUtils.JwtProvider;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -27,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = extractToken(request);
             if (token != null && jwtProvider.isValidToken(token, true)) {
-                Authentication auth = jwtProvider.getAuthentication(token);
+                Authentication auth = getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
             chain.doFilter(request, response);
@@ -48,6 +56,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    private Authentication getAuthentication(String token) {
+        String username = jwtProvider.getSubject(token);
+        List<String> roles = jwtProvider.getRolesFromAccess(token);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(roles.get(0).split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
+        UserDetails userDetails = new UserDetail(username, null, authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 }
 
