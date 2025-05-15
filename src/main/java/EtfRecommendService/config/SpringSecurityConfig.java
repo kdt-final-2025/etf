@@ -101,7 +101,7 @@ public class SpringSecurityConfig {
             };
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     // UserService가 AuthenticationManager 타입의 빈을 필요로 하지만,
