@@ -5,9 +5,11 @@ import EtfRecommendService.loginUtils.JwtTokens;
 import EtfRecommendService.user.dto.*;
 
 import EtfRecommendService.user.exception.PasswordMismatchException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,8 +35,31 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
+    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest,
+                                                   HttpServletResponse response) {
         UserLoginResponse login = userService.login(loginRequest);
+
+        // 액세스 토큰 쿠키
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", login.accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("None")
+                .maxAge(60 * 15) // 15분
+                .build();
+
+        // 리프레시 토큰 쿠키
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", login.refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("None")
+                .maxAge(60 * 60 * 24 * 14) // 2주
+                .build();
+
+        response.addHeader("Set-Cookie", accessTokenCookie.toString());
+        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+
         return ResponseEntity.ok(login);
     }
 
@@ -85,7 +110,7 @@ public class UserController {
     @Secured("ROLE_USER")
     @PatchMapping("/users/image")
     public ResponseEntity<UserProfileResponse> imageUpdate(@AuthenticationPrincipal UserDetails userDetails,
-                                           @RequestPart(value = "images") MultipartFile file) throws IOException {
+                                                           @RequestPart(value = "images") MultipartFile file) throws IOException {
         UserProfileResponse userProfileResponse = userService.imageUpdate(userDetails.getUsername(), file);
         return ResponseEntity.ok(userProfileResponse);
     }
