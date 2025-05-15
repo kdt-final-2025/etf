@@ -1,29 +1,47 @@
 "use server"
 
-import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import {cookies} from "next/headers";
+import {revalidatePath} from "next/cache";
 
 // 프로필 업데이트 서버 액션
 export async function updateProfile(loginId: string, nickname: string, isLikePrivate: boolean) {
     try {
-        const cookieStore = await cookies();
-        const accessToken = cookieStore.get('accessToken')?.value;
 
-        if (!accessToken) {
-            return { success: false, message: "인증 토큰이 없습니다" };
-        }
-
-        const res = await fetch("http://localhost:8080/api/v1/users", {
+        let res = await fetch("http://localhost:8080/api/v1/users", {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
                 nickName: nickname,
                 isLikePrivate: isLikePrivate
             }),
+            credentials: "include",
         });
+
+        if (res.status === 401) {
+            // accessToken 만료 or 없음 → 리프레시 토큰으로 재발급 시도
+            const refreshRes = await fetch("/api/v1/refresh", {method: "POST", credentials: "include"});
+
+            if (refreshRes.ok) {
+                // 재발급 성공 → 원래 요청 다시 시도
+                res = await fetch("http://localhost:8080/api/v1/users", {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        nickName: nickname,
+                        isLikePrivate: isLikePrivate
+                    }),
+                    credentials: "include",
+                });
+            } else {
+                // 리프레시 토큰도 만료 → 로그인 페이지로 리다이렉트
+                window.location.href = "/login";
+                return null;
+            }
+        }
 
         if (res.ok) {
             // 경로 재검증하여 데이터 새로고침
@@ -35,11 +53,11 @@ export async function updateProfile(loginId: string, nickname: string, isLikePri
             };
         } else {
             const errorText = await res.text();
-            return { success: false, message: `업데이트 실패: ${errorText}` };
+            return {success: false, message: `업데이트 실패: ${errorText}`};
         }
     } catch (error) {
         console.error("프로필 업데이트 오류:", error);
-        return { success: false, message: "서버 오류가 발생했습니다" };
+        return {success: false, message: "서버 오류가 발생했습니다"};
     }
 }
 
@@ -48,7 +66,7 @@ export async function updateProfileImage(formData: FormData) {
     const accessToken = cookieStore.get('accessToken')?.value;
 
     if (!accessToken) {
-        return { success: false, message: "인증 토큰이 없습니다" };
+        return {success: false, message: "인증 토큰이 없습니다"};
     }
 
     const res = await fetch("http://localhost:8080/api/v1/users/image", {
@@ -61,10 +79,10 @@ export async function updateProfileImage(formData: FormData) {
 
     if (res.ok) {
         const data = await res.json();
-        return { success: true, imageUrl: data.imageUrl };
+        return {success: true, imageUrl: data.imageUrl};
     } else {
         const error = await res.text();
-        return { success: false, message: error };
+        return {success: false, message: error};
     }
 }
 
@@ -77,7 +95,7 @@ export async function changePassword(
     const accessToken = cookieStore.get("accessToken")?.value;
 
     if (!accessToken) {
-        return { success: false, message: "인증 토큰이 없습니다." };
+        return {success: false, message: "인증 토큰이 없습니다."};
     }
 
     const res = await fetch(
@@ -97,9 +115,9 @@ export async function changePassword(
     );
 
     if (res.ok) {
-        return { success: true };
+        return {success: true};
     } else {
         const msg = await res.text();
-        return { success: false, message: msg };
+        return {success: false, message: msg};
     }
 }

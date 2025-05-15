@@ -5,6 +5,8 @@ import EtfRecommendService.loginUtils.JwtTokens;
 import EtfRecommendService.user.dto.*;
 
 import EtfRecommendService.user.exception.PasswordMismatchException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequestMapping(value = "/api/v1")
 @RequiredArgsConstructor
@@ -35,38 +38,41 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest,
+    public ResponseEntity<Void> login(@RequestBody UserLoginRequest loginRequest,
                                                    HttpServletResponse response) {
-        UserLoginResponse login = userService.login(loginRequest);
+        JwtTokens login = userService.login(loginRequest);
 
-        // 액세스 토큰 쿠키
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", login.accessToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .sameSite("None")
-                .maxAge(60 * 15) // 15분
-                .build();
+        List<ResponseCookie> responseCookies = setCookies(login);
 
-        // 리프레시 토큰 쿠키
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", login.refreshToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .sameSite("None")
-                .maxAge(60 * 60 * 24 * 14) // 2주
-                .build();
+        response.addHeader("Set-Cookie", responseCookies.get(0).toString());
+        response.addHeader("Set-Cookie", responseCookies.get(1).toString());
 
-        response.addHeader("Set-Cookie", accessTokenCookie.toString());
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
-
-        return ResponseEntity.ok(login);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<JwtTokens> refresh(@RequestBody RefreshRequest request) {
-        JwtTokens body = userService.refresh(request);
-        return ResponseEntity.ok(body);
+    public ResponseEntity<Void> refresh(HttpServletRequest request,
+                                             HttpServletResponse response) {
+        // 쿠키에서 리프레시 토큰 추출
+        String refreshToken = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        JwtTokens body = userService.refresh(refreshToken);
+
+        List<ResponseCookie> responseCookies = setCookies(body);
+
+        response.addHeader("Set-Cookie", responseCookies.get(0).toString());
+        response.addHeader("Set-Cookie", responseCookies.get(1).toString());
+
+        return ResponseEntity.ok().build();
     }
 
     @Secured("ROLE_USER")
@@ -122,4 +128,25 @@ public class UserController {
         return ResponseEntity.ok(userDetailResponse);
     }
 
+    private List<ResponseCookie> setCookies(JwtTokens jwtTokens){
+        // 액세스 토큰 쿠키
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtTokens.accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("None")
+                .maxAge(60 * 15) // 15분
+                .build();
+
+        // 리프레시 토큰 쿠키
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokens.refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("None")
+                .maxAge(60 * 60 * 24 * 14) // 2주
+                .build();
+
+        return List.of(accessTokenCookie,refreshTokenCookie);
+    }
 }

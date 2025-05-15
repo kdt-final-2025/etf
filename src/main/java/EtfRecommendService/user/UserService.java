@@ -70,7 +70,7 @@ public class UserService {
                 userRequest.isLikePrivate());
     }
 
-    public UserLoginResponse login(UserLoginRequest loginRequest) {
+    public JwtTokens login(UserLoginRequest loginRequest) {
         String identifier = loginRequest.role().toUpperCase() + ":" + loginRequest.loginId();
 
         UsernamePasswordAuthenticationToken token =
@@ -97,7 +97,7 @@ public class UserService {
                 .build();
         refreshTokenRepository.save(refreshTokenDetails);
 
-        return new UserLoginResponse(tokens[0], tokens[1]);
+        return new JwtTokens(tokens[0], tokens[1]);
     }
 
     @Transactional
@@ -197,16 +197,15 @@ public class UserService {
                 user.getCreatedAt());
     }
 
-    public JwtTokens refresh(RefreshRequest request) {
-        String refreshToken = request.refreshToken();
-        if (jwtProvider.isValidToken(refreshToken, false)) {
+    public JwtTokens refresh(String refresh) {
+        if (jwtProvider.isValidToken(refresh, false)) {
             RefreshTokenDetails refreshTokenDetails =
-                    refreshTokenRepository.findByRefreshToken(refreshToken)
+                    refreshTokenRepository.findByRefreshToken(refresh)
                             .orElseThrow(
                                     () -> new TokenNotFoundException("만료된 리프레시 토큰, 재로그인 바람")
                             );
-            String username = jwtProvider.getSubjectFromRefresh(refreshToken);
-            List<SimpleGrantedAuthority> roles = jwtProvider.getRolesFromRefresh(refreshToken)
+            String username = jwtProvider.getSubjectFromRefresh(refresh);
+            List<SimpleGrantedAuthority> roles = jwtProvider.getRolesFromRefresh(refresh)
                     .stream()
                     .map(SimpleGrantedAuthority::new)
                     .toList();
