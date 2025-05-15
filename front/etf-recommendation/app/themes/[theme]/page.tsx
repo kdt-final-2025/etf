@@ -7,6 +7,7 @@ import EtfFilters from './EtfFilters'
 
 // ETF 응답 타입 정의
 interface EtfItem {
+    etfId: number
   etfName: string
   etfCode: string
   theme: string
