@@ -5,6 +5,9 @@
 :toclevels: 2
 :seclinks:
 
+// ─── 여기에 홈 버튼 추가 ───
+xref:index.html[🏠 홈으로 돌아가기]
+
 == 회원 가입 API
 
 === 요청

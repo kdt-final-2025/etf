@@ -5,10 +5,13 @@
 :toclevels: 2
 :seclinks:
 
+// ─── 여기에 홈 버튼 추가 ───
+xref:index.html[🏠 홈으로 돌아가기]
+
 == Table of Contents
 * 1. 관리자 로그인
 
-== 1. 관리자 로그인
+== 1. 관리자 로그인 잔상테스트 11 26
 
 === 요청
 
