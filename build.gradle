@@ -9,9 +9,7 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
 }
 
 repositories {
@@ -22,60 +20,54 @@ configurations {
     asciidoctorExt
 }
 
-// REST Docs snippets 위치
 ext {
-    snippetsDir = file('build/generated-snippets')
+    // REST Docs 스니펫 위치
+    snippetsDir = file("${buildDir}/generated-snippets")
 }
-// configuration 단계에서 미리 생성해 줍니다
 snippetsDir.mkdirs()
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly    'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly    'com.h2database:h2'
+    runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
-
-    testRuntimeOnly    'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'io.rest-assured:rest-assured:5.4.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly     'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly     'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
-    // Asciidoctor 연동
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
 }
 
-tasks.named('test') {
+// 1) 테스트에서 스니펫 생성
+test {
     useJUnitPlatform()
     outputs.dir snippetsDir
+    systemProperty 'org.springframework.restdocs.outputDir', snippetsDir
 }
 
-// 1) index.adoc 자동 생성 (test 의존성 제거)
+// 2) index.adoc 자동 생성
 tasks.register("generateApiIndex") {
     group = "documentation"
     description = "src/docs/asciidoc 폴더의 .adoc 목록으로 index.adoc 생성"
-
     doLast {
         def srcDir = file("src/docs/asciidoc")
         srcDir.mkdirs()
-        def outFile = new File(srcDir, "index.adoc")
-
+        def out = new File(srcDir, "index.adoc")
         def sb = new StringBuilder()
                 .append("= API 문서 인덱스\n")
                 .append(":doctype: book\n")
@@ -83,10 +75,11 @@ tasks.register("generateApiIndex") {
                 .append(":toclevels: 2\n\n")
                 .append("== 문서 목록\n\n")
 
-        srcDir.listFiles({ it.name.endsWith('.adoc') && it.name != 'index.adoc' } as FileFilter)
+        fileTree(dir: srcDir, include: '*.adoc')
+                .filter { it.name != 'index.adoc' }
                 .sort { a, b -> a.name <=> b.name }
                 .each { f ->
-                    def name = f.name.replaceFirst(/\.adoc$/, '')
+                    def name = f.name.replace('.adoc', '')
                     sb.append("* xref:${name}.html[${name} API 문서]\n")
                 }
 
@@ -101,39 +94,51 @@ http://localhost:8080/docs/index.html
 JAR 내부 classpath:/static/docs/ 에 포함됩니다.
 """.stripIndent())
 
-        outFile.text = sb.toString()
-        println "▶ index.adoc 생성 완료: ${outFile.path}"
+        out.text = sb.toString()
+        println "▶ index.adoc 생성 완료: ${out.path}"
     }
 }
 
-// 2) Asciidoctor 설정: test + generateApiIndex → asciidoctor
+// 3) Asciidoctor 설정: .adoc → build/docs/html5/*.html
 asciidoctor {
+    dependsOn test, generateApiIndex
     sourceDir = file("src/docs/asciidoc")
     configurations 'asciidoctorExt'
     baseDirFollowsSourceFile()
+
+    inputs.dir sourceDir
+    inputs.files fileTree(dir: sourceDir, include: '**/*.adoc')
     inputs.dir snippetsDir
 
+    // application.properties에서 참조하는 최종 폴더 위치
+    outputDir = file("$buildDir/docs/html5/docs")
+
     attributes(
-            'doctype':   'book',
-            'toc':       'left',
+            'doctype': 'book',
+            'toc': 'left',
             'toclevels': '2',
-            'encoding':  'UTF-8'
+            'source-highlighter': 'highlightjs',
+            'snippets': "${buildDir}/generated-snippets"
     )
 }
-tasks.named("asciidoctor") {
-    dependsOn tasks.named("generateApiIndex")
-    dependsOn tasks.named("test")
-}
 
-// 3) bootJar 에 빌드된 docs 포함
+//// (IDE/bootRun을 위해 processResources에도 복사하고 싶으면)
+//tasks.named("processResources") {
+//    dependsOn asciidoctor
+//    from("$buildDir/docs/html5/docs") {
+//        into "static/docs"
+//    }
+//}
+
+// 5) bootJar 에 복사 (배포용)
 tasks.named("bootJar") {
-    dependsOn tasks.named("asciidoctor")
-    from("$buildDir/docs/asciidoc") {
+    dependsOn asciidoctor
+    from("$buildDir/docs/html5/docs") {
         into 'static/docs'
     }
 }
 
-// assemble 모든 것 포함
-build {
-    dependsOn tasks.named("bootJar")
+// 6) assemble 빌드에 포함
+tasks.named("build") {
+    dependsOn bootJar
 }

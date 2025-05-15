@@ -4,7 +4,6 @@
 :toc: left
 :toclevels: 2
 :seclinks:
-:snippets: {snippets}
 
 == Table of Contents
 * 1. 신고 생성

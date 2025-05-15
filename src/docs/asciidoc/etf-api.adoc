@@ -1,9 +1,9 @@
 = ETF API
 :doctype: book
+:source-highlighter: highlightjs
 :toc: left
-:snippets: {snippets}
-:revnumber: {revnumber}
-:revdate: {revdate}
+:toclevels: 2
+:seclinks:
 
 == 1. ETF 목록 조회 API
 

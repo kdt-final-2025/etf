@@ -1,1 +1,24 @@
+= API 문서 인덱스
+:doctype: book
+:toc: left
+:toclevels: 2
 
+== 문서 목록
+
+* xref:admin-api.html[admin-api API 문서]
+* xref:comment-api.html[comment-api API 문서]
+* xref:etf-api.html[etf-api API 문서]
+* xref:news-api.html[news-api API 문서]
+* xref:notification-api.html[notification-api API 문서]
+* xref:reply-api.html[reply-api API 문서]
+* xref:report-api.html[report-api API 문서]
+* xref:user-api.html[user-api API 문서]
+
+
+== 사용 방법
+
+http://localhost:8080/docs/index.html
+
+== 문서 위치
+
+JAR 내부 classpath:/static/docs/ 에 포함됩니다.

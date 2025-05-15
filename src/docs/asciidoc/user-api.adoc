@@ -1,14 +1,11 @@
-// 사용자 관련 API 문서
-// 이 문서는 Spring REST Docs로 생성된 스니펫을 포함해서 API 문서를 구성합니다.
-
 = User API
 :doctype: book
+:source-highlighter: highlightjs
 :toc: left
-:snippets: {snippets}
-:revnumber: {revnumber}
-:revdate: {revdate}
+:toclevels: 2
+:seclinks:
 
-== 회원 가입 API우우우우우우
+== 회원 가입 API
 
 === 요청
 include::{snippets}/user-create/http-request.adoc[]
