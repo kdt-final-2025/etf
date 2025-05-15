@@ -1,9 +1,14 @@
 = API 문서 인덱스
-:doctype: book
-:toc: left
-:toclevels: 2
 
-== 문서 목록
+:doctype: book
+:source-highlighter: highlightjs
+:icons: font
+:toc!:
+:docinfo: shared
+
+이 페이지는 프로젝트의 **모든 API 문서**를 모아 놓은 메인 인덱스입니다.
+
+== API 문서 목록
 
 * xref:admin-api.html[admin-api API 문서]
 * xref:comment-api.html[comment-api API 문서]
@@ -14,11 +19,6 @@
 * xref:report-api.html[report-api API 문서]
 * xref:user-api.html[user-api API 문서]
 
-
-== 사용 방법
-
-http://localhost:8080/docs/index.html
-
-== 문서 위치
-
-JAR 내부 classpath:/static/docs/ 에 포함됩니다.
+----
+src/docs/asciidoc/ 폴더에 adoc 파일을 작성하시면, 해당 목록에 자동으로 추가됩니다.
+----

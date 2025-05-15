@@ -60,44 +60,50 @@ test {
     systemProperty 'org.springframework.restdocs.outputDir', snippetsDir
 }
 
-// 2) index.adoc 자동 생성
+// 2) index.adoc 자동 생성 (TOC 제거, 링크 정상 작동, Docinfo 푸터 적용, 깔끔한 헤딩/목록 형태)
 tasks.register("generateApiIndex") {
     group = "documentation"
     description = "src/docs/asciidoc 폴더의 .adoc 목록으로 index.adoc 생성"
+
     doLast {
         def srcDir = file("src/docs/asciidoc")
         srcDir.mkdirs()
-        def out = new File(srcDir, "index.adoc")
+        def outFile = new File(srcDir, "index.adoc")
         def sb = new StringBuilder()
-                .append("= API 문서 인덱스\n")
-                .append(":doctype: book\n")
-                .append(":toc: left\n")
-                .append(":toclevels: 2\n\n")
-                .append("== 문서 목록\n\n")
 
+        // — 문서 헤더
+        sb << "= API 문서 인덱스\n\n"
+        sb << ":doctype: book\n"
+        sb << ":source-highlighter: highlightjs\n"
+        sb << ":icons: font\n"
+        sb << ":toc!:\n"
+        sb << ":docinfo: shared\n\n"
+
+        // — 리드 문구
+        sb << "이 페이지는 프로젝트의 **모든 API 문서**를 모아 놓은 메인 인덱스입니다.\n\n"
+
+        // — API 문서 목록
+        sb << "== API 문서 목록\n\n"
         fileTree(dir: srcDir, include: '*.adoc')
                 .filter { it.name != 'index.adoc' }
                 .sort { a, b -> a.name <=> b.name }
                 .each { f ->
-                    def name = f.name.replace('.adoc', '')
-                    sb.append("* xref:${name}.html[${name} API 문서]\n")
+                    def base = f.name.replaceFirst(/\.adoc$/, '')
+                    sb << "* xref:${base}.html[${base} API 문서]\n"
                 }
+        sb << "\n"
 
-        sb.append("""
+        // — 갱신 안내
+        sb << "----\n"
+        sb << "src/docs/asciidoc/ 폴더에 adoc 파일을 작성하시면, 해당 목록에 자동으로 추가됩니다.\n"
+        sb << "----\n"
 
-== 사용 방법
-
-http://localhost:8080/docs/index.html
-
-== 문서 위치
-
-JAR 내부 classpath:/static/docs/ 에 포함됩니다.
-""".stripIndent())
-
-        out.text = sb.toString()
-        println "▶ index.adoc 생성 완료: ${out.path}"
+        outFile.text = sb.toString()
+        println "▶ index.adoc 생성 완료: ${outFile.path}"
+        println "▶ http://localhost:8080/docs/index.html: ${outFile.path}"
     }
 }
+
 
 // 3) Asciidoctor 설정: .adoc → build/docs/html5/*.html
 asciidoctor {
