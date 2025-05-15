@@ -217,46 +217,7 @@ export default function Home() {
               <CardContent>
                 <div>
                <MarketTickerWidget/>
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">KOSPI</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.kospi.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.kospi.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.kospi.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.kospi.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">KOSDAQ</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.kosdaq.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.kosdaq.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.kosdaq.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.kosdaq.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">NASDAQ</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.nasdaq.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.nasdaq.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.nasdaq.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.nasdaq.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-                  {/*<div>*/}
-                  {/*  <p className="text-sm text-white/70">S&P 500</p>*/}
-                  {/*  <div className="flex items-center gap-1">*/}
-                  {/*    <span className="font-bold">{marketSummary.sp500.value.toLocaleString()}</span>*/}
-                  {/*    <span className={marketSummary.sp500.change >= 0 ? "text-green-400" : "text-red-400"}>*/}
-                  {/*      {marketSummary.sp500.change >= 0 ? "+" : ""}*/}
-                  {/*      {marketSummary.sp500.change}%*/}
-                  {/*    </span>*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
+
                 </div>
               </CardContent>
             </Card>

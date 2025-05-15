@@ -140,17 +140,17 @@ export default function ETFDetailPage() {
                   {etf.change}%
                 </div>
               </div>
-              <p className="text-sm text-slate-500 mt-1">NAV: {etf.nav ? etf.nav.toLocaleString() : 'Loading...'}원</p>
+              {/*<p className="text-sm text-slate-500 mt-1">NAV: {etf.nav ? etf.nav.toLocaleString() : 'Loading...'}원</p>*/}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle>수익률</CardTitle>
+              <CardTitle>등락률</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-600">+{etf.returnRate}%</div>
-              <p className="text-sm text-slate-500 mt-1">최근 1년 기준</p>
+              {/*<p className="text-sm text-slate-500 mt-1">오늘 기준</p>*/}
             </CardContent>
           </Card>
 
@@ -160,7 +160,7 @@ export default function ETFDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold"> {etf.volume ? etf.volume.toLocaleString() : 'Loading...'}</div>
-              <p className="text-sm text-slate-500 mt-1">오늘 기준</p>
+              {/*<p className="text-sm text-slate-500 mt-1">오늘 기준</p>*/}
             </CardContent>
           </Card>
         </div>
@@ -206,9 +206,8 @@ export default function ETFDetailPage() {
                 <p>{etf.description || '상세 정보가 없습니다.'}</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div><p className="text-sm text-slate-500">운용사</p><p className="font-medium">{etf.issuer}</p></div>
-                  <div><p className="text-sm text-slate-500">설정일</p><p className="font-medium">{etf.launchDate}</p></div>
-                  <div><p className="text-sm text-slate-500">총 자산</p><p className="font-medium">{(etf.aum / 1e12).toFixed(2)}조원</p></div>
-                  <div><p className="text-sm text-slate-500">보수율</p><p className="font-medium">{etf.expense}%</p></div>
+                  <div><p className="text-sm text-slate-500">상장일</p><p className="font-medium">{etf.launchDate}</p></div>
+
                 </div>
               </div>
             </CardContent>
