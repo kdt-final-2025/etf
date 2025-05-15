@@ -2,6 +2,7 @@ package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
 import EtfRecommendService.loginUtils.LoginMember;
+import EtfRecommendService.webSocket.CsvLoader;
 import EtfRecommendService.webSocket.WebSocketConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
@@ -17,6 +20,7 @@ public class EtfRestController {
 
     private final EtfService etfService;
     private final WebSocketConnectionService webSocketConnectionService;
+    private final CsvLoader csvLoader;
 
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
@@ -57,7 +61,16 @@ public class EtfRestController {
     }
 
     //웹소켓
-    //전체 목록
+    //어떤 종목코드를 구독할지
+    @RestController
+    public class StockCodeController {
+        @GetMapping("/api/stocks")
+        public List<String> getCodes(@RequestParam int page, @RequestParam int size) throws Exception{
+            var all = csvLoader.loadCodes("src/main/resources/etf_data_result.csv");
+            return all.subList(page*size, Math.min(all.size(), (page+1)*size));
+        }
+    }
+
 
     //상세보기
 
