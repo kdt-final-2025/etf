@@ -193,7 +193,8 @@ public class UserService {
                 user.getLoginId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.isLikePrivate());
+                user.isLikePrivate(),
+                user.getCreatedAt());
     }
 
     public JwtTokens refresh(RefreshRequest request) {
