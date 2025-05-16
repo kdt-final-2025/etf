@@ -27,7 +27,7 @@ public class WebSocketStartup implements ApplicationRunner {
         // 2) CSV에서 구독할 종목코드 (첫 페이지 50개)
         List<String> 종목코드 = csvLoader
                 .loadCodes("src/main/resources/etf_data_result.csv")
-                .subList(0, 5);
+                .subList(0,10);
 
 //        //테스트용
 //        List<String> 종목코드 = List.of("005930");
