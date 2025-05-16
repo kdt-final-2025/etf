@@ -1,9 +1,9 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import {useParams, useRouter} from 'next/navigation'
+import {useEffect, useState, useTransition} from 'react'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Star, Bell, Share2 } from 'lucide-react'
+import { ArrowLeft, Star, StarHalf } from 'lucide-react'
 import Link from 'next/link'
 import TradingViewWidget from "@/components/tradingViewWidget";
 
@@ -22,7 +22,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ETFChart } from "@/components/etf-chart";
+import {getSubscribedEtfIds, subscribeToEtf, unsubscribeFromEtf} from "@/app/etf/[id]/action";
+
 
 type Holding = {
   name: string
@@ -57,6 +58,10 @@ export default function ETFDetailPage() {
   const params = useParams()
   const etfId = params.id// URL에서 id 값을 가져옴
   const [etf, setEtf] = useState<ETF | null>(null)
+  const router = useRouter()
+  const [subscribed, setSubscribed] = useState(false) // 구독 상태
+  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
     if (!etfId) return
@@ -94,6 +99,81 @@ export default function ETFDetailPage() {
         .catch(() => notFound()) // 오류 발생 시 404 페이지로 이동
   },[etfId]);
 
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const ids = await getSubscribedEtfIds()
+        setSubscribed(ids.includes(etfId))
+      }
+    if (etfId) {
+      checkSubscription()
+    }
+  }, [etfId])
+
+  const handleToggleSubscribe = async () => {
+    setLoading(true)
+    try {
+      if (subscribed) {
+        await unsubscribeFromEtf(etfId) // 구독 취소
+        setSubscribed(false)
+      } else {
+        await subscribeToEtf(etfId) // 구독
+        setSubscribed(true)
+      }
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // // (2) 구독 API 호출
+  // const handleSubscribe = () => {
+  //   startTransition(async () => {
+  //     setLoading(true)
+  //     try {
+  //       // 서버 액션 호출
+  //       await subscribeToEtf(etfId)
+  //
+  //       setSubscribed(true)
+  //       alert('ETF를 성공적으로 구독했습니다.')
+  //     } catch (err: any) {
+  //       if (err.message.includes('로그인')) {
+  //         router.push('/login')
+  //       } else {
+  //         alert(err.message || '알 수 없는 오류가 발생했습니다.')
+  //       }
+  //     } finally {
+  //       setLoading(false)
+  //     }
+  //   })
+  // }
+  // // 구독 취소 API 호출
+  // const handleUnsubscribe = () => {
+  //   startTransition(async () => {
+  //     setLoading(true)
+  //     try {
+  //       // 구독 취소 처리
+  //       await unsubscribeFromEtf(etfId)
+  //       setSubscribed(false) // 구독 상태를 false로 업데이트
+  //       alert('ETF 구독이 취소되었습니다.')
+  //     } catch (err: any) {
+  //       alert(err.message || '구독 취소 중 오류가 발생했습니다.')
+  //     } finally {
+  //       setLoading(false)
+  //     }
+  //   })
+  // }
+  // // export default function ETFDetailPage() {
+  // //   const [subscribed, setSubscribed] = useState(false)
+  // //   const etfId = Number(useParams().id)
+  // //
+  // //   useEffect(() => {
+  // //     getSubscribedEtfIds().then((ids) => {
+  // //       setSubscribed(ids.includes(etfId))
+  // //     })
+  // //   }, [etfId])
+
+
   if (!etf) return <div className="p-6">ETF 데이터를 불러오는 중입니다...</div>
 
   const tradingViewSymbol = `KRX:${etf.ticker.toUpperCase()}`
@@ -119,10 +199,14 @@ export default function ETFDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon"><Star className="h-4 w-4" /></Button>
-              <Button variant="outline" size="icon"><Bell className="h-4 w-4" /></Button>
-              <Button variant="outline" size="icon"><Share2 className="h-4 w-4" /></Button>
-              <Button>매수하기</Button>
+              <Button
+                  variant={subscribed ? 'secondary' : 'outline'}
+                  size="icon"
+                  onClick={handleToggleSubscribe}
+                  disabled={loading}
+              >
+                {subscribed ? <Star className="h-4 w-4 text-yellow-500" /> : <Star className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </div>
