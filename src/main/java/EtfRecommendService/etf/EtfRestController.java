@@ -1,6 +1,8 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
+import EtfRecommendService.webSocket.CsvLoader;
+import EtfRecommendService.webSocket.WebSocketConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,12 +14,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
 public class EtfRestController {
 
     private final EtfService etfService;
+    private final WebSocketConnectionService webSocketConnectionService;
+    private final CsvLoader csvLoader;
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs")
@@ -27,13 +33,13 @@ public class EtfRestController {
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword, period);
+        EtfResponse etfResponse = etfService.readAll(pageable, theme, keyword, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/{etfId}")
-    public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId){
+    public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId) {
         EtfDetailResponse etfDetailResponse = etfService.findById(etfId);
         return ResponseEntity.status(HttpStatus.OK).body(etfDetailResponse);
     }
@@ -62,5 +68,17 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 
+    //웹소켓
+    //어떤 종목코드를 구독할지
+    @GetMapping("/stocks")
+    public List<String> getCodes(@RequestParam int page, @RequestParam int size) throws Exception {
+        var all = csvLoader.loadCodes("src/main/resources/etf_data_result.csv");
+        return all.subList(page * size, Math.min(all.size(), (page + 1) * size));
+    }
 
+    //종목 수 반환
+    @GetMapping("/stocks/count")
+    public int getTotalStockCount() throws Exception {
+        return csvLoader.loadCodes("src/main/resources/etf_data_result.csv").size();
+    }
 }
