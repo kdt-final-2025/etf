@@ -100,14 +100,15 @@ export default function ETFDetailPage() {
   },[etfId]);
 
   useEffect(() => {
+    if (!etfId) return;
+
     const checkSubscription = async () => {
-      const ids = await getSubscribedEtfIds()
-        setSubscribed(ids.includes(etfId))
-      }
-    if (etfId) {
-      checkSubscription()
-    }
-  }, [etfId])
+      const ids = await getSubscribedEtfIds();
+      setSubscribed(ids.includes(Number(etfId)));
+    };
+
+    checkSubscription();
+  }, [etfId]);
 
   const handleToggleSubscribe = async () => {
     setLoading(true)
@@ -205,7 +206,11 @@ export default function ETFDetailPage() {
                   onClick={handleToggleSubscribe}
                   disabled={loading}
               >
-                {subscribed ? <Star className="h-4 w-4 text-yellow-500" /> : <Star className="h-4 w-4" />}
+                {subscribed ? (
+                    <Star className="h-4 w-4 text-yellow-500" />
+                ) : (
+                    <Star className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
