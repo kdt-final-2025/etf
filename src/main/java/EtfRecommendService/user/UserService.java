@@ -51,55 +51,6 @@ public class UserService {
                 () -> new UserMismatchException(USER_MISMATCH));
     }
 
-    public UserResponse create(CreateUserRequest userRequest) {
-
-        Password password = new Password(userRequest.password());
-
-        User user = new User(
-                userRequest.loginId(),
-                password,
-                userRequest.nickName(),
-                userRequest.isLikePrivate());
-
-        userRepository.save(user);
-
-        return new UserResponse(
-                user.getId(),
-                userRequest.loginId(),
-                userRequest.nickName(),
-                userRequest.isLikePrivate());
-    }
-
-    public JwtTokens login(UserLoginRequest loginRequest) {
-        String identifier = loginRequest.role().toUpperCase() + ":" + loginRequest.loginId();
-
-        UsernamePasswordAuthenticationToken token =
-                new UsernamePasswordAuthenticationToken(identifier, loginRequest.password());
-
-        Authentication authentication = authenticationManager.authenticate(token);
-
-        UserDetails userDetail = (UserDetails) authentication.getPrincipal();
-
-        //{accessToken, refreshToken}
-        String[] tokens = generateTokens(userDetail);
-
-        User user = getByLoginId(userDetail.getUsername());
-        LocalDateTime expiryDate = jwtProvider
-                .getExpirationFromRefreshToken(tokens[1])
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-
-        RefreshTokenDetails refreshTokenDetails = RefreshTokenDetails.builder()
-                .refreshToken(tokens[1])
-                .userId(user.getId())
-                .expiryDate(expiryDate)
-                .build();
-        refreshTokenRepository.save(refreshTokenDetails);
-
-        return new JwtTokens(tokens[0], tokens[1]);
-    }
-
     @Transactional
     public UserUpdateResponse UpdateProfile(String loginId, UserUpdateRequest updateRequest) {
         User user = getByLoginId(loginId);
@@ -195,60 +146,5 @@ public class UserService {
                 user.getImageUrl(),
                 user.isLikePrivate(),
                 user.getCreatedAt());
-    }
-
-    public JwtTokens refresh(String refresh) {
-        if (jwtProvider.isValidToken(refresh, false)) {
-            RefreshTokenDetails refreshTokenDetails =
-                    refreshTokenRepository.findByRefreshToken(refresh)
-                            .orElseThrow(
-                                    () -> new TokenNotFoundException("만료된 리프레시 토큰, 재로그인 바람")
-                            );
-            String username = jwtProvider.getSubjectFromRefresh(refresh);
-            List<SimpleGrantedAuthority> roles = jwtProvider.getRolesFromRefresh(refresh)
-                    .stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
-
-            UserDetails userDetails = new UserDetail(username,"", roles);
-
-            //{accessToken, refreshToken}
-            String[] tokens = generateTokens(userDetails);
-
-            Long userId;
-            if ("ROLE_ADMIN".equalsIgnoreCase(roles.get(0).getAuthority())){
-                userId = getByAdminLoginId(username).getId();
-            }
-            else {
-                userId = getByLoginId(username).getId();
-            }
-            LocalDateTime expiryDate = jwtProvider
-                    .getExpirationFromRefreshToken(tokens[1])
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-
-            RefreshTokenDetails newRefresh = RefreshTokenDetails.builder()
-                    .refreshToken(tokens[1])
-                    .userId(userId)
-                    .expiryDate(expiryDate)
-                    .build();
-            refreshTokenRepository.deleteById(refreshTokenDetails.getId());
-            refreshTokenRepository.save(newRefresh);
-            return new JwtTokens(tokens[0], tokens[1]);
-        } else {
-            throw new TokenNotFoundException("유효하지 않은 토큰");
-        }
-    }
-
-    public Admin getByAdminLoginId(String loginId) {
-        return adminRepository.findByLoginId(loginId).orElseThrow(
-                () -> new NotFoundException("존재하지 않는 관리자"));
-    }
-
-    private String[] generateTokens(UserDetails userDetail) {
-        String accessToken = jwtProvider.createToken(userDetail);
-        String refreshToken = jwtProvider.createRefreshToken(userDetail);
-        return new String[]{accessToken, refreshToken};
     }
 }

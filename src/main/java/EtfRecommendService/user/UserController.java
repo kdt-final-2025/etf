@@ -31,49 +31,7 @@ public class UserController {
     private final UserService userService;
     private final S3Service s3Service;
 
-    @PostMapping("/join")
-    public ResponseEntity<UserResponse> create(@RequestBody CreateUserRequest userRequest) {
-        UserResponse userResponse = userService.create(userRequest);
-        return ResponseEntity.status(201).body(userResponse);
-    }
 
-    @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody UserLoginRequest loginRequest,
-                                                   HttpServletResponse response) {
-        JwtTokens login = userService.login(loginRequest);
-
-        List<ResponseCookie> responseCookies = setCookies(login);
-
-        response.addHeader("Set-Cookie", responseCookies.get(0).toString());
-        response.addHeader("Set-Cookie", responseCookies.get(1).toString());
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(HttpServletRequest request,
-                                             HttpServletResponse response) {
-        // 쿠키에서 리프레시 토큰 추출
-        String refreshToken = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("refreshToken".equals(cookie.getName())) {
-                    refreshToken = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        JwtTokens body = userService.refresh(refreshToken);
-
-        List<ResponseCookie> responseCookies = setCookies(body);
-
-        response.addHeader("Set-Cookie", responseCookies.get(0).toString());
-        response.addHeader("Set-Cookie", responseCookies.get(1).toString());
-
-        return ResponseEntity.ok().build();
-    }
 
     @Secured("ROLE_USER")
     @PatchMapping("/users")
@@ -128,25 +86,4 @@ public class UserController {
         return ResponseEntity.ok(userDetailResponse);
     }
 
-    private List<ResponseCookie> setCookies(JwtTokens jwtTokens){
-        // 액세스 토큰 쿠키
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtTokens.accessToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .sameSite("None")
-                .maxAge(60 * 15) // 15분
-                .build();
-
-        // 리프레시 토큰 쿠키
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokens.refreshToken())
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .sameSite("None")
-                .maxAge(60 * 60 * 24 * 14) // 2주
-                .build();
-
-        return List.of(accessTokenCookie,refreshTokenCookie);
-    }
 }

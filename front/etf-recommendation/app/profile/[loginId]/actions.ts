@@ -2,12 +2,14 @@
 
 import {cookies} from "next/headers";
 import {revalidatePath} from "next/cache";
+import {authFetch} from "@/app/utils/authFetch";
 
 // 프로필 업데이트 서버 액션
 export async function updateProfile(loginId: string, nickname: string, isLikePrivate: boolean) {
     try {
 
-        let res = await fetch("http://localhost:8080/api/v1/users", {
+
+        let res = await authFetch("https://localhost:8443/api/v1/users", {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -18,30 +20,6 @@ export async function updateProfile(loginId: string, nickname: string, isLikePri
             }),
             credentials: "include",
         });
-
-        if (res.status === 401) {
-            // accessToken 만료 or 없음 → 리프레시 토큰으로 재발급 시도
-            const refreshRes = await fetch("/api/v1/refresh", {method: "POST", credentials: "include"});
-
-            if (refreshRes.ok) {
-                // 재발급 성공 → 원래 요청 다시 시도
-                res = await fetch("http://localhost:8080/api/v1/users", {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        nickName: nickname,
-                        isLikePrivate: isLikePrivate
-                    }),
-                    credentials: "include",
-                });
-            } else {
-                // 리프레시 토큰도 만료 → 로그인 페이지로 리다이렉트
-                window.location.href = "/login";
-                return null;
-            }
-        }
 
         if (res.ok) {
             // 경로 재검증하여 데이터 새로고침
@@ -69,7 +47,7 @@ export async function updateProfileImage(formData: FormData) {
         return {success: false, message: "인증 토큰이 없습니다"};
     }
 
-    const res = await fetch("http://localhost:8080/api/v1/users/image", {
+    const res = await fetch("https://localhost:8443/api/v1/users/image", {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -99,7 +77,7 @@ export async function changePassword(
     }
 
     const res = await fetch(
-        "http://localhost:8080/api/v1/users/me/password",
+        "https://localhost:8443/api/v1/users/me/password",
         {
             method: "PATCH",
             headers: {

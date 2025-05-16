@@ -2,8 +2,7 @@ package EtfRecommendService.refreshtoken;
 
 import EtfRecommendService.AcceptanceTest;
 import EtfRecommendService.admin.AdminDataSeeder;
-import EtfRecommendService.admin.dto.AdminLoginRequest;
-import EtfRecommendService.user.RefreshRequest;
+import EtfRecommendService.user.dto.UserLoginRequest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
@@ -22,25 +21,24 @@ public class RefreshTokenTest extends AcceptanceTest {
 
         String refreshToken = RestAssured.given().log().all()
                 .contentType(ContentType.JSON)
-                .body(AdminLoginRequest
+                .body(UserLoginRequest
                         .builder()
                         .loginId("admin")
                         .password("password")
-                        .roles("ADMIN")
+                        .role("ADMIN")
                         .build())
                 .when()
-                .post("/api/v1/admin/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("refreshToken");
+                .cookie("refreshToken");
+
+        System.out.println(refreshToken);
 
         RestAssured.given().log().all()
                 .contentType(ContentType.JSON)
-                .body(RefreshRequest.builder()
-                        .refreshToken(refreshToken)
-                        .build())
+                .cookie("refreshToken", refreshToken)
                 .when()
                 .post("/api/v1/refresh")
                 .then().log().all()

@@ -2,7 +2,6 @@ package EtfRecommendService.user;
 
 import EtfRecommendService.DatabaseCleanup;
 import EtfRecommendService.admin.AdminDataSeeder;
-import EtfRecommendService.admin.dto.AdminLoginRequest;
 import EtfRecommendService.user.dto.*;
 
 import io.restassured.RestAssured;
@@ -35,6 +34,8 @@ public class UserRestAssuredTest {
     void setUp() throws IOException {
         databaseCleanup.execute();
         RestAssured.port = port;
+        RestAssured.baseURI = "https://localhost";
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Test
@@ -64,16 +65,14 @@ public class UserRestAssuredTest {
                 .extract()
                 .as(UserResponse.class);
 
-        UserLoginResponse loginResponse = RestAssured
+        RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .body(new UserLoginRequest("user1","123", "USER"))
                 .when()
                 .post("/api/v1/login")
                 .then().log().all()
-                .statusCode(200)
-                .extract()
-                .as(UserLoginResponse.class);
+                .statusCode(200);
 
     }
 
@@ -125,8 +124,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)  // 400에서 200으로 수정
                 .extract()
-                .jsonPath()
-                .getString("accessToken");
+                .cookie("accessToken");
 
         UserUpdateRequest updateRequest = new UserUpdateRequest("newNick",false);
 
@@ -145,19 +143,18 @@ public class UserRestAssuredTest {
 
         String adminToken = RestAssured.given().log().all()
                 .contentType(ContentType.JSON)
-                .body(AdminLoginRequest
+                .body(UserLoginRequest
                         .builder()
                         .loginId("admin")
                         .password("password")
-                        .roles("ADMIN")
+                        .role("ADMIN")
                         .build())
                 .when()
-                .post("/api/v1/admin/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("accessToken");
+                .cookie("accessToken");
 
 
         RestAssured
@@ -195,8 +192,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("accessToken");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -234,8 +230,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("accessToken");
+                .cookie("accessToken");
 
         UserPasswordResponse response = RestAssured
                 .given().log().all()
@@ -277,8 +272,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -318,8 +312,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("token");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -357,8 +350,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("accessToken");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -396,8 +388,7 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .jsonPath()
-                .getString("accessToken");
+                .cookie("accessToken");
 
         RestAssured
                 .given().log().all()
@@ -426,7 +417,7 @@ public class UserRestAssuredTest {
                 .extract()
                 .as(UserResponse.class);
 
-        UserLoginResponse loginResponse = RestAssured
+        String token = RestAssured
                 .given().log().all()
                 .contentType(ContentType.JSON)
                 .body(new UserLoginRequest("user1","123", "USER"))
@@ -435,9 +426,8 @@ public class UserRestAssuredTest {
                 .then().log().all()
                 .statusCode(200)
                 .extract()
-                .as(UserLoginResponse.class);
+                .cookie("accessToken");
 
-        String token = loginResponse.accessToken();
         Long userId = userResponse.id();
 
         UserDetailResponse detailResponse = RestAssured
