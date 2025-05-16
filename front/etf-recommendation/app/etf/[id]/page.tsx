@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, Star, Bell, Share2 } from 'lucide-react'
 import TradingViewWidget from '@/components/tradingViewWidget'
 
-import { createComment } from './actions'
+import {createComment, updateComment} from './actions'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -76,6 +76,9 @@ export default function ETFDetailPage() {
 
     const params = useParams()
     const [loading, setLoading] = useState(true)
+    const [editMode, setEditMode] = useState(false); // 수정 모드 상태
+    const [editedContent, setEditedContent] = useState(''); // 수정된 내용
+    const [editingCommentId, setEditingCommentId] = useState(null); // 수정 중인 댓글의 ID
 
     const etfId = Number(params.id)
     // 클라이언트에서만 접근 가능한 토큰
@@ -83,7 +86,40 @@ export default function ETFDetailPage() {
         typeof window !== 'undefined'
             ? localStorage.getItem('accessToken')
             : null
+    // 수정 버튼 클릭 시
+    const handleEditClick = (commentId, currentContent) => {
+        setEditingCommentId(commentId);
+        setEditedContent(currentContent); // 현재 댓글 내용을 수정할 텍스트로 설정
+        setEditMode(true); // 수정 모드 활성화
+    };
 
+    // 수정 취소 버튼 클릭 시
+    const handleCancelEdit = () => {
+        setEditMode(false); // 수정 모드 종료
+        setEditedContent(''); // 입력 필드 초기화
+        setEditingCommentId(null); // 수정 중인 댓글 ID 초기화
+    };
+
+    // 수정 내용 제출 시
+    const handleSubmit = async () => {
+        if (editedContent.trim() === '') {
+            alert('댓글 내용은 비워둘 수 없습니다!');
+            return;
+        }
+
+        try {
+            // 서버로 수정된 내용 전달
+            await updateComment(editingCommentId, { content: editedContent });
+
+            // 수정 완료 후 상태 초기화
+            setEditMode(false);
+            setEditingCommentId(null);
+            setEditedContent('');
+        } catch (error) {
+            console.error('댓글 수정 오류:', error);
+            alert('댓글 수정에 실패했습니다. 다시 시도해 주세요.');
+        }
+    };
     // ─── 1) ETF 상세 정보 로드 ─────────────────────────
     useEffect(() => {
         if (!etfId) return
@@ -142,6 +178,7 @@ export default function ETFDetailPage() {
             </div>
         )
     }
+
 
     return (
         <div className="container mx-auto py-6 px-4">
@@ -375,7 +412,27 @@ export default function ETFDetailPage() {
                                     </div>
                                     <span className="text-sm text-gray-400">{new Date(comment.createdAt).toLocaleString()}</span>
                                 </div>
-                                <p className="mt-2 text-gray-800">{comment.content}</p>
+                                {/* 수정 전 댓글 내용 */}
+                                {!editMode || editingCommentId !== comment.id ? (
+                                    <p className="mt-2 text-gray-800">{comment.content}</p>
+                                ) : (
+                                    // 수정 중일 때 텍스트 영역 보여주기
+                                    <textarea
+                                        value={editedContent}
+                                        onChange={(e) => setEditedContent(e.target.value)}
+                                        className="mt-2 w-full p-2 border border-gray-300 rounded"
+                                    />
+                                )}
+
+                                {/* 수정 버튼과 취소 버튼 */}
+                                {editMode && editingCommentId === comment.id ? (
+                                    <div className="flex gap-2 mt-2">
+                                        <button onClick={handleSubmit} className="bg-blue-500 text-white p-2 rounded">저장</button>
+                                        <button onClick={handleCancelEdit} className="bg-gray-300 p-2 rounded">취소</button>
+                                    </div>
+                                ) : (
+                                    <button onClick={() => handleEditClick(comment.id, comment.content)} className="bg-yellow-500 text-white p-2 rounded">수정</button>
+                                )}
                             </li>
                         ))}
                     </ul>
