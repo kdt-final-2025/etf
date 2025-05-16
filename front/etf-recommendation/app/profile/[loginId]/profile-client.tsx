@@ -21,6 +21,7 @@ import {
 import {Camera, Pencil, Star} from "lucide-react"
 import LogoutButton from "@/components/ui/LogoutButton";
 import {getSubscribedEtfIds} from "@/app/etf/[id]/action";
+import Link from "next/link";
 
 export default function ProfileClient({
                                           initialProfileData,
@@ -249,8 +250,10 @@ export default function ProfileClient({
                                             {etfDetails.map((etf, index) => (
                                                 <li key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded-lg hover:bg-gray-200 transition duration-200">
                                                     <div>
-                                                        <h3 className="text-xl font-semibold text-gray-800">{etf.name}</h3>
-                                                        <p className="text-gray-600">{etf.ticker}</p>
+                                                        <Link href={`/etf/${etf.id}`} className="text-xl font-semibold text-gray-800">
+                                                            {etf.name}
+                                                            <p className="text-gray-600">{etf.ticker}</p>
+                                                        </Link>
                                                     </div>
                                                     <div className="text-yellow-500">
                                                         <Star className="h-6 w-6" />
@@ -261,7 +264,6 @@ export default function ProfileClient({
                                     )}
                                 </div>
                             </div>
-
                             </TabsContent>
                             <TabsContent value="account" className="space-y-4 mt-4">
                                 <div className="space-y-2">

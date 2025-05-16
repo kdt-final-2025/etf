@@ -127,54 +127,6 @@ export default function ETFDetailPage() {
     }
   }
 
-  // // (2) 구독 API 호출
-  // const handleSubscribe = () => {
-  //   startTransition(async () => {
-  //     setLoading(true)
-  //     try {
-  //       // 서버 액션 호출
-  //       await subscribeToEtf(etfId)
-  //
-  //       setSubscribed(true)
-  //       alert('ETF를 성공적으로 구독했습니다.')
-  //     } catch (err: any) {
-  //       if (err.message.includes('로그인')) {
-  //         router.push('/login')
-  //       } else {
-  //         alert(err.message || '알 수 없는 오류가 발생했습니다.')
-  //       }
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   })
-  // }
-  // // 구독 취소 API 호출
-  // const handleUnsubscribe = () => {
-  //   startTransition(async () => {
-  //     setLoading(true)
-  //     try {
-  //       // 구독 취소 처리
-  //       await unsubscribeFromEtf(etfId)
-  //       setSubscribed(false) // 구독 상태를 false로 업데이트
-  //       alert('ETF 구독이 취소되었습니다.')
-  //     } catch (err: any) {
-  //       alert(err.message || '구독 취소 중 오류가 발생했습니다.')
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   })
-  // }
-  // // export default function ETFDetailPage() {
-  // //   const [subscribed, setSubscribed] = useState(false)
-  // //   const etfId = Number(useParams().id)
-  // //
-  // //   useEffect(() => {
-  // //     getSubscribedEtfIds().then((ids) => {
-  // //       setSubscribed(ids.includes(etfId))
-  // //     })
-  // //   }, [etfId])
-
-
   if (!etf) return <div className="p-6">ETF 데이터를 불러오는 중입니다...</div>
 
   const tradingViewSymbol = `KRX:${etf.ticker.toUpperCase()}`
