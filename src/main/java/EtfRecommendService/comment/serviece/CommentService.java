@@ -76,6 +76,8 @@ public class CommentService {
                                     .builder()
                                     .id(c.getId())
                                     .userId(c.getUser().getId())
+                                    .nickName(c.getUser().getNickName())
+                                    .imageUrl(c.getUser().getImageUrl())
                                     .content(c.getContent())
                                     .createdAt(c.getCreatedAt())
                                     .build()
@@ -157,6 +159,9 @@ public class CommentService {
     //Comment Soft Delete
     @Transactional
     public void delete(String loginId, Long commentId) {
+
+        userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() -> new RuntimeException("User ID not found"));
+
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
         comment.setDeleted(true); // isDeleted = true 로 표시
