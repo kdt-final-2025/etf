@@ -15,6 +15,7 @@ import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ETFChart } from '@/components/etf-chart'
+import {getCommentsByEtfId} from "@/app/etf/[id]/actions";
 
 // ─── 타입 정의 ─────────────────────────────────────
 type Holding = { name: string; weight: number }
@@ -66,13 +67,17 @@ type CommentsPageList = {
 export default function ETFDetailPage() {
     // URL param에서 id
     const { id } = useParams()
-    const etfId = Number(id)
+
 
     // 상태
     const [etf, setEtf] = useState<ETF | null>(null)
     const [comments, setComments] = useState<CommentResponse[]>([])
     const [newComment, setNewComment] = useState('')
 
+    const params = useParams()
+    const [loading, setLoading] = useState(true)
+
+    const etfId = Number(params.id)
     // 클라이언트에서만 접근 가능한 토큰
     const token =
         typeof window !== 'undefined'
@@ -112,25 +117,19 @@ export default function ETFDetailPage() {
     }, [etfId])
 
     // ─── 2) 댓글 목록 로드 ────────────────────────────
+
     useEffect(() => {
         if (!etf) return
 
-        fetch(
-            `http://localhost:8080/api/v1/user/comments?etf_id=${etf.id}&page=0&size=20`,
-            {
-                headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                cache: 'no-store',
+        // comments를 getCommentsByEtfId에서 가져옴
+        getCommentsByEtfId(etf.id).then((data) => {
+            if (data && Array.isArray(data)) {
+                setComments(data) // 정상 데이터가 있으면 업데이트
+            } else {
+                setComments([]) // null 또는 빈 데이터면 빈 배열로 설정
             }
-        )
-            .then(res => {
-                if (!res.ok) throw new Error('댓글 조회 실패')
-                return res.json()
-            })
-            .then((data: CommentsPageList) => {
-                setComments(data.commentResponses)
-            })
-            .catch(err => console.error(err))
-    }, [etf, token])
+        }).catch(err => console.error('Error loading comments:', err))
+    }, [etf])
 
     // ─── 3) 댓글 작성 (서버 액션) ────────────────────
     // <form action={createComment}> 방식으로 처리하면 자동 페이지 리프레시됩니다.
@@ -360,23 +359,23 @@ export default function ETFDetailPage() {
                     </p>
                 ) : (
                     <ul className="space-y-4">
-                        {comments.map(c => (
-                            <li
-                                key={c.id}
-                                className="p-4 border rounded-lg hover:shadow transition-shadow"
-                            >
-                                <div className="flex items-center mb-2">
-                                    <img
-                                        src={c.imageUrl}
-                                        alt={c.nickName}
-                                        className="w-8 h-8 rounded-full mr-2"
-                                    />
-                                    <span className="font-medium">{c.nickName}</span>
-                                    <span className="text-sm text-gray-500 ml-auto">
-                    {new Date(c.createdAt).toLocaleString()}
-                  </span>
+                        {comments.map((comment) => (
+                            <li key={comment.id} className="bg-white p-4 rounded-lg shadow">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        {comment.imageUrl && (
+                                            <img
+                                                src={comment.imageUrl || '/default-avatar.png'}  // 기본 이미지 URL로 대체
+                                                alt="user"
+                                                className="w-8 h-8 rounded-full"
+                                                onError={(e) => e.target.src = '/default-avatar.png'} // 이미지 로드 오류 시 기본 이미지로 대체
+                                            />
+                                        )}
+                                        <span className="font-semibold">{comment.nickName}</span>
+                                    </div>
+                                    <span className="text-sm text-gray-400">{new Date(comment.createdAt).toLocaleString()}</span>
                                 </div>
-                                <p>{c.content}</p>
+                                <p className="mt-2 text-gray-800">{comment.content}</p>
                             </li>
                         ))}
                     </ul>
