@@ -87,3 +87,30 @@ export async function updateComment(commentId, updatedData) {
         throw error; // 에러를 호출한 곳에서 처리할 수 있도록 throw
     }
 }
+export async function deleteComment(commentId: number) {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('accessToken')?.value;
+
+    // accessToken이 없으면 에러 처리
+    if (!accessToken) {
+        throw new Error('Access token이 없습니다.');
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/v1/user/comments/${commentId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('댓글 삭제에 실패했습니다.');
+        }
+        // 성공적으로 삭제된 후 처리 (예: 삭제된 댓글을 UI에서 제거)
+        return true;  // 성공 시 true 반환
+    } catch (error) {
+        console.error('댓글 삭제 중 오류 발생:', error);
+        throw error;  // 에러를 호출한 곳에서 처리할 수 있도록 던짐
+    }
+}

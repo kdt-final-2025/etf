@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, Star, Bell, Share2 } from 'lucide-react'
 import TradingViewWidget from '@/components/tradingViewWidget'
 
-import {createComment, updateComment} from './actions'
+import {createComment, deleteComment, updateComment} from './actions'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -73,7 +73,7 @@ export default function ETFDetailPage() {
     const [etf, setEtf] = useState<ETF | null>(null)
     const [comments, setComments] = useState<CommentResponse[]>([])
     const [newComment, setNewComment] = useState('')
-
+    const [accessToken, setAccessToken] = useState<string>('');
     const params = useParams()
     const [loading, setLoading] = useState(true)
     const [editMode, setEditMode] = useState(false); // 수정 모드 상태
@@ -178,6 +178,26 @@ export default function ETFDetailPage() {
             </div>
         )
     }
+
+    const handleDelete = async (commentId: number) => {
+        try {
+            setLoading(true);
+
+            // 댓글 삭제 처리
+            const success = await deleteComment(commentId, accessToken);
+
+            if (success) {
+                // 댓글 삭제 성공 시 해당 댓글을 상태에서 제거
+                setComments(prevComments =>
+                    prevComments.filter(comment => comment.id !== commentId)
+                );
+            }
+        } catch (error) {
+            console.error('댓글 삭제 실패:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     return (
@@ -433,6 +453,14 @@ export default function ETFDetailPage() {
                                 ) : (
                                     <button onClick={() => handleEditClick(comment.id, comment.content)} className="bg-yellow-500 text-white p-2 rounded">수정</button>
                                 )}
+
+                                {/* 삭제 버튼 */}
+                                <button
+                                    onClick={() => handleDelete(comment.id)}
+                                    className="bg-red-500 text-white p-2 rounded mt-2"
+                                >
+                                    삭제
+                                </button>
                             </li>
                         ))}
                     </ul>
