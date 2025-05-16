@@ -1,4 +1,4 @@
 package EtfRecommendService.admin.dto;
 
-public record AdminLoginResponse(String token) {
+public record AdminLoginResponse(String accessToken, String refreshToken) {
 }
