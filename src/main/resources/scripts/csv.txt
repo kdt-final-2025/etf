@@ -2,16 +2,18 @@ INSERT INTO etf (id, etf_code, etf_name, company_name, listing_date, theme)
 SELECT id, etf_code, etf_name, company_name, listing_date, theme
 FROM CSVREAD('C:/Users/TJOEUN/Documents/lee/etf/src/main/resources/etf.csv');
 
-INSERT INTO ETF_PROJECTION (etf_code, date, weekly_return, monthly_return)
+INSERT INTO ETF_PROJECTION (etf_code, date, weekly_return, monthly_return,etf_name,theme)
 SELECT
   ETF_CODE,
   DATE,
   CAST(COALESCE(WEEKLY_RETURN, '0') AS DOUBLE),
-  CAST(COALESCE(MONTHLY_RETURN, '0') AS DOUBLE)
-FROM CSVREAD('C:/Users/TJOEUN/Documents/lee/etf/src/main/resources/Etf_read_projection.csv', NULL);
+  CAST(COALESCE(MONTHLY_RETURN, '0') AS DOUBLE),etf_name,theme
+FROM CSVREAD('C:/Users/TJOEUN/Documents/lee/etf/src/main/resources/Etf_read_projection_with_names.csv', NULL);
 
-
-1.로그인 안하고 내프로필 눌렀을때 로그인 화면으로 가게끔 하기
-
+0.웹소켓 실시간 데이터 받아오기 (지예)
+2.인기테마가 현재 보여지는 데이터 기준이라 전체 데이터기준으로 되게끔 (지예님 하고나서)
+3.댓글,추천받기,알림 ,관리자
+4.상세 그래프 받아오기 (지예)
+5.댓글좋아요 나중에 
 
 
