@@ -10,10 +10,13 @@ import EtfRecommendService.user.exception.PasswordMismatchException;
 import EtfRecommendService.utils.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -25,14 +28,13 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String loginId;
 
     @Embedded
-    @Column(nullable = false)
     private Password password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nickName;
 
     @OneToMany(mappedBy = "user")
@@ -107,21 +109,34 @@ public class User extends BaseEntity {
         this.imageUrl = imgUrl;
     }
 
-    public void updatePassword(Password existingPassword,Password newPassword) {
+    public void updatePassword(String existingPassword,String newPassword) {
         if (!this.isSamePassword(existingPassword)) {
             throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
         }
-        if (this.isSamePassword(newPassword)) {
+        if (existingPassword.equals(newPassword)) {
             throw new RuntimeException("변경할 비밀번호가 같습니다.");
         }
-        this.password = newPassword;
+        this.password = new Password(newPassword);
     }
 
-    public boolean isSamePassword(Password otherPassword) {
+    public boolean isSamePassword(String otherPassword) {
         if (this.getPassword().isSamePassword(otherPassword)) {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(password, user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(password);
     }
 
 }
