@@ -1,7 +1,6 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
-import EtfRecommendService.loginUtils.LoginMember;
 import EtfRecommendService.webSocket.CsvLoader;
 import EtfRecommendService.webSocket.WebSocketConnectionService;
 import lombok.RequiredArgsConstructor;
