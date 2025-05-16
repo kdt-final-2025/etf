@@ -9,15 +9,15 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,22 +37,62 @@ public class S3Service {
     private String cloudFrontDomainName;
 
     public String uploadFile(MultipartFile multipartFile) throws IOException {
+        // 랜덤 UUID 생성
         String fileName = UUID.randomUUID().toString();
 
+        // 50KB 미만은 그대로 업로드 (재 인코딩 과정에서 오히려 용량이 커질 수 있음)
+        long originalSize = multipartFile.getSize();
+        if (originalSize < 50 * 1024) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(multipartFile.getContentType());
+            metadata.setContentLength(multipartFile.getSize());
+            metadata.setHeader("Content-Disposition", "inline");
+
+            try (InputStream inputStream = multipartFile.getInputStream()) {
+                PutObjectRequest putObjectRequest = new PutObjectRequest(
+                        bucketName,
+                        fileName,
+                        inputStream,
+                        metadata
+                );
+
+                amazonS3.putObject(putObjectRequest);
+            }
+            return cloudFrontDomainName + "/" +fileName;
+        }
+
+
+        // MultipartFile → BufferedImage 로 읽기
+        BufferedImage originalImage = ImageIO.read(multipartFile.getInputStream());
+
+        // 리사이즈
+        int targetWidth = 800;
+        BufferedImage resizedImage = Scalr.resize(
+                originalImage,
+                Scalr.Method.QUALITY,
+                Scalr.Mode.FIT_TO_WIDTH,
+                targetWidth
+        );
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        // JPEG 포맷으로 저장
+        ImageIO.write(resizedImage, "jpg", baos);
+        byte[] bytes = baos.toByteArray();
+
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(multipartFile.getContentType());
-        metadata.setContentLength(multipartFile.getSize());
+        metadata.setContentType("image/jpeg");
+        metadata.setContentLength(bytes.length);
         metadata.setHeader("Content-Disposition", "inline");
 
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(
+        try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
+            PutObjectRequest putReq = new PutObjectRequest(
                     bucketName,
                     fileName,
-                    inputStream,
+                    is,
                     metadata
             );
-
-            amazonS3.putObject(putObjectRequest);
+            amazonS3.putObject(putReq);
         }
 
 //        return amazonS3.getUrl(bucketName, fileName).toString(); 현재는 안쓰지만 나중에 성능비교할때 쓸수도 있음
