@@ -1,6 +1,6 @@
 package EtfRecommendService.article;
 
-public record NewsResponse(
+public record ArticleResponse(
         Long id,
         String newsTitle,
         String newsLink,

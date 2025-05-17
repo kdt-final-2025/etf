@@ -12,13 +12,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
-public class NewsController {
+public class ArticleRestController {
 
-    private final NewsService newsService;
+    private final ArticleService articleService;
 
-    @GetMapping("/news")
-    public ResponseEntity<List<NewsResponse>> read(){
-        List<NewsResponse> responses = newsService.read();
+    @GetMapping("/articles")
+    public ResponseEntity<List<ArticleResponse>> read(){
+        List<ArticleResponse> responses = articleService.read();
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 }

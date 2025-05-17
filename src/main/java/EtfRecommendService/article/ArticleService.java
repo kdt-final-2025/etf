@@ -22,9 +22,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class NewsService {
+public class ArticleService {
 
-    private final NewsRepository newsRepository;
+    private final ArticleRepository articleRepository;
 
     @PostConstruct
     public void init() {
@@ -105,18 +105,18 @@ public class NewsService {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-            List<News> newsItems = objectMapper.readValue(jsonData,
-                    new TypeReference<List<News>>() {
+            List<Article> articles = objectMapper.readValue(jsonData,
+                    new TypeReference<List<Article>>() {
                     });
 
-            log.info("뉴스 항목 {}개 파싱 성공", newsItems.size());
+            log.info("뉴스 항목 {}개 파싱 성공", articles.size());
 
             // 기존 데이터 모두 삭제
-            newsRepository.deleteAll();
+            articleRepository.deleteAll();
             log.info("기존 뉴스 데이터 모두 삭제 완료");
 
             // 새 데이터 저장
-            List<News> savedItems = newsRepository.saveAll(newsItems);
+            List<Article> savedItems = articleRepository.saveAll(articles);
             log.info("뉴스 항목 {}개 저장 성공", savedItems.size());
 
         } catch (Exception e) {
@@ -125,10 +125,10 @@ public class NewsService {
         }
     }
 
-    public List<NewsResponse> read() {
-        return newsRepository.findAll()
+    public List<ArticleResponse> read() {
+        return articleRepository.findAll()
                 .stream()
-                .map(news -> new NewsResponse(
+                .map(news -> new ArticleResponse(
                         news.getId(),
                         news.getTitle(),
                         news.getLink(),

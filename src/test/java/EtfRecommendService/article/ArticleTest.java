@@ -14,13 +14,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class NewsTest {
+public class ArticleTest {
 
     @Mock
-    private NewsRepository newsRepository;
+    private ArticleRepository articleRepository;
 
     @InjectMocks
-    private NewsService newsService;
+    private ArticleService articleService;
 
     @BeforeEach
     public void setUp() {
@@ -31,20 +31,20 @@ public class NewsTest {
     @Test
     public void testRead() {
         // Given
-        News news1 = new News();
-        ReflectionTestUtils.setField(news1, "title", "Title1");
-        ReflectionTestUtils.setField(news1, "link", "Link1");
-        ReflectionTestUtils.setField(news1, "imageUrl", "ImageUrl1");
+        Article article1 = new Article();
+        ReflectionTestUtils.setField(article1, "title", "Title1");
+        ReflectionTestUtils.setField(article1, "link", "Link1");
+        ReflectionTestUtils.setField(article1, "imageUrl", "ImageUrl1");
 
-        News news2 = new News();
-        ReflectionTestUtils.setField(news2, "title", "Title2");
-        ReflectionTestUtils.setField(news2, "link", "Link2");
-        ReflectionTestUtils.setField(news2, "imageUrl", "ImageUrl2");
+        Article article2 = new Article();
+        ReflectionTestUtils.setField(article2, "title", "Title2");
+        ReflectionTestUtils.setField(article2, "link", "Link2");
+        ReflectionTestUtils.setField(article2, "imageUrl", "ImageUrl2");
 
-        when(newsRepository.findAll()).thenReturn(Arrays.asList(news1, news2));
+        when(articleRepository.findAll()).thenReturn(Arrays.asList(article1, article2));
 
         // When
-        List<NewsResponse> responses = newsService.read();
+        List<ArticleResponse> responses = articleService.read();
 
         // Then
         assertEquals(2, responses.size());
@@ -55,6 +55,6 @@ public class NewsTest {
         assertEquals("Link2", responses.get(1).newsLink());
         assertEquals("ImageUrl2", responses.get(1).imageUrl());
 
-        verify(newsRepository, times(1)).findAll();
+        verify(articleRepository, times(1)).findAll();
     }
 }
