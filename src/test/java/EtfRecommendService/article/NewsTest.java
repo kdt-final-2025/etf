@@ -1,4 +1,4 @@
-package EtfRecommendService.news;
+package EtfRecommendService.article;
 
 
 import org.junit.jupiter.api.BeforeEach;

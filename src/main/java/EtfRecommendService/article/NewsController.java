@@ -1,4 +1,4 @@
-package EtfRecommendService.news;
+package EtfRecommendService.article;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

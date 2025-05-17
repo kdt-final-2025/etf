@@ -1,4 +1,4 @@
-package EtfRecommendService.news;
+package EtfRecommendService.article;
 
 public record NewsResponse(
         Long id,

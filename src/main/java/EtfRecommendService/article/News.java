@@ -1,4 +1,4 @@
-package EtfRecommendService.news;
+package EtfRecommendService.article;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
