@@ -98,9 +98,9 @@ class FinanceNewsScraper:
 
             return {
                 "title": title,
-                "image_url": image_url,
-                "article_url": article_url,
-                "published_date": convert_date_format(published_date),
+                "thumbnail_url": image_url,
+                "source_url": article_url,
+                "published_at": published_date,
                 "scraped_at": datetime.now().isoformat()
             }
         except Exception as e:
@@ -143,6 +143,11 @@ def main():
         if articles:
             articles_with_dates = filter_articles_with_dates(articles)
             logger.info(f"날짜가 있는 기사 수: {len(articles_with_dates)}")
+            for article in articles_with_dates:
+                try:
+                    article["published_at"] = convert_date_format(article["published_at"])
+                except ValueError as e:
+                    logger.warning(f"날짜 형식 변환 실패: {article['published_at']} - {e}")
             json_data = scraper.to_json(articles_with_dates)
 
             # 결과 저장 (옵션)
