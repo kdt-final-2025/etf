@@ -100,7 +100,7 @@ class FinanceNewsScraper:
                 "title": title,
                 "image_url": image_url,
                 "article_url": article_url,
-                "published_date": published_date,
+                "published_date": convert_date_format(published_date),
                 "scraped_at": datetime.now().isoformat()
             }
         except Exception as e:
@@ -126,6 +126,14 @@ class FinanceNewsScraper:
         """스크래핑 결과를 JSON 문자열로 변환"""
         return json.dumps(articles, ensure_ascii=False, indent=2)
 
+def convert_date_format(date_str: str, add_seconds: str = "00") -> str:
+    parsed_date = datetime.strptime(date_str, "%Y.%m.%d %H:%M")
+    iso_format = parsed_date.strftime("%Y-%m-%dT%H:%M:") + add_seconds
+    return iso_format
+
+def filter_articles_with_dates(articles):
+    return [article for article in articles if article.get('published_at') != '날짜 없음']
+
 def main():
     """메인 실행 함수"""
     try:
@@ -133,19 +141,15 @@ def main():
         articles = scraper.scrape()
 
         if articles:
-            json_data = scraper.to_json(articles[:10])
+            articles_with_dates = filter_articles_with_dates(articles)
+            logger.info(f"날짜가 있는 기사 수: {len(articles_with_dates)}")
+            json_data = scraper.to_json(articles_with_dates)
 
             # 결과 저장 (옵션)
             with open("finance_news.json", "w", encoding="utf-8") as f:
                 f.write(json_data)
 
             print(f"총 {len(articles)}개의 기사가 스크래핑되었습니다.")
-            print("샘플 기사:")
-            for i, article in enumerate(articles[:3], 1):
-                print(f"\n{i}. {article['title']}")
-                print(f"   링크: {article['article_url']}")
-                print(f"  썸네일: {article['image_url']}")
-                print(f"   날짜: {article['published_date']}")
         else:
             print("스크래핑된 기사가 없습니다.")
 
