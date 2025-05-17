@@ -1,12 +1,38 @@
 package EtfRecommendService.user;
 
+import EtfRecommendService.S3Service;
+import EtfRecommendService.admin.Admin;
+import EtfRecommendService.admin.AdminRepository;
 import EtfRecommendService.loginUtils.JwtProvider;
+import EtfRecommendService.loginUtils.JwtTokens;
+import EtfRecommendService.security.RefreshTokenDetails;
+import EtfRecommendService.security.RefreshTokenRepository;
+import EtfRecommendService.security.TokenNotFoundException;
+import EtfRecommendService.security.UserDetail;
 import EtfRecommendService.user.dto.*;
+import EtfRecommendService.user.exception.UserMismatchException;
+import com.amazonaws.services.kms.model.NotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
 import java.util.NoSuchElementException;
+
+import static EtfRecommendService.user.exception.ErrorMessages.USER_MISMATCH;
+
 
 @RequiredArgsConstructor
 @Service
@@ -14,44 +40,22 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final S3Service s3Service;
+    private final UserQueryRepository userQueryRepository;
+    private final AuthenticationManager authenticationManager;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final AdminRepository adminRepository;
 
     public User getByLoginId(String loginId) {
-        return userRepository.findByLoginId(loginId).orElseThrow(
-                () -> new NoSuchElementException("회원을 찾을 수 없습니다."));
-    }
-
-    public UserResponse create(CreateUserRequest userRequest) {
-
-        User user = new User(
-                userRequest.loginId(),
-                userRequest.password(),
-                userRequest.nickName(),
-                userRequest.isLikePrivate());
-
-        userRepository.save(user);
-
-        return new UserResponse(
-                user.getId(),
-                userRequest.loginId(),
-                userRequest.nickName(),
-                userRequest.isLikePrivate());
-    }
-
-    public UserLoginResponse login(UserLoginRequest loginRequest) {
-        User user = getByLoginId(loginRequest.loginId());
-
-        if (loginRequest.password().isSamePassword(user.getPassword())) {
-            return new UserLoginResponse(jwtProvider.createToken(loginRequest.loginId()));
-        }
-
-        throw new PasswordMismatchException("비밀번호가 다릅니다.");
+        return userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(
+                () -> new UserMismatchException(USER_MISMATCH));
     }
 
     @Transactional
-    public UserUpdateResponse profileUpdate(String loginId, UserUpdateRequest updateRequest) {
+    public UserUpdateResponse UpdateProfile(String loginId, UserUpdateRequest updateRequest) {
         User user = getByLoginId(loginId);
 
-        user.profileUpdate(
+        user.updateProfile(
                 updateRequest.nickName(),
                 updateRequest.isLikePrivate());
 
@@ -59,54 +63,88 @@ public class UserService {
                 user.getId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.getIsLikePrivate());
+                user.isLikePrivate());
     }
 
     @Transactional
-    public UserDeleteResponse delete(String loginId) {
+    public void delete(String loginId) {
         User user = getByLoginId(loginId);
 
-        return new UserDeleteResponse(user.getId(), user.getIsDeleted());
+        user.deleteUser();
     }
 
     @Transactional
-    public UserPasswordResponse passwordUpdate(String loginId, UserPasswordRequest passwordRequest) {
+    public UserPasswordResponse updatePassword(String loginId, UserPasswordRequest passwordRequest) {
         User user = getByLoginId(loginId);
 
-        if (!passwordRequest.newPassword().isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new RuntimeException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
-        }
-
-        // 유저의 비밀번호와 입력받은 비밀번호가 같지않으면 예외처리
-        if (!user.isSamePassword(passwordRequest.existingPassword())) {
-            throw new PasswordMismatchException("유저의 비밀번호와 입력받은 비밀번호가 같지 않습니다.");
-        }
-
-        // 유저의 비밀번호와 입력받은 새 비밀번호가 같으면 예외처리
-        if (user.isSamePassword(passwordRequest.confirmNewPassword())) {
-            throw new RuntimeException("변경할 비밀번호가 같습니다.");
-        }
-
-        user.passwordUpdate(passwordRequest.newPassword());
-
-        userRepository.save(user);
+        user.updatePassword(
+                passwordRequest.existingPassword(),
+                passwordRequest.newPassword());
 
         return new UserPasswordResponse(user.getId());
     }
 
-    public MypageResponse findByUser(String loginId, Long userId) {
+    public UserPageResponse findUserComments(String loginId, Long userId, Pageable pageable) {
+        User findUser = userRepository.findById(userId).orElseThrow(
+                () -> new NoSuchElementException("존재하지 않는 회원입니다."));
+
+        User loginUser = getByLoginId(loginId);
+
+        boolean selfProfile = loginUser.isSelfProfile(userId);
+
+        // 만약 찾는유저의 정보가 비공개 설정이고 로그인한 유저의 조회가 아니라면
+        if (findUser.isLikePrivate() && !selfProfile) {
+            return new UserPageResponse(
+                    pageable.getPageNumber() + 1,
+                    pageable.getPageSize(),
+                    0,
+                    0,
+                    null
+            );
+        }
+
+        List<getUserCommentsAndReplies> getUserCommentRespons = userQueryRepository.getUserCommentsAndReplies(userId, pageable);
+
+        long totalCount = userQueryRepository.totalCount(userId);
+
+        return new UserPageResponse(
+                pageable.getPageNumber() + 1,
+                pageable.getPageSize(),
+                totalCount,
+                (totalCount + pageable.getPageSize() - 1) / pageable.getPageSize(),
+                getUserCommentRespons
+        );
+    }
+
+    @Transactional
+    public UserProfileResponse imageUpdate(String loginId, MultipartFile file) throws IOException {
+        User user = getByLoginId(loginId);
+
+        String existingImageUrl = user.getImageUrl();
+
+        if (existingImageUrl != null && !existingImageUrl.isEmpty()) {
+            s3Service.deleteFile(existingImageUrl);
+        }
+
+        String newImageUrl = s3Service.uploadFile(file);
+
+        user.updateProfileImg(newImageUrl);
+
+        return new UserProfileResponse(user.getId(), user.getImageUrl());
+    }
+
+    public UserDetailResponse findByUserId(String loginId, Long userId) {
         getByLoginId(loginId);
 
         User user = userRepository.findById(userId).orElseThrow(() ->
-                new NoSuchElementException("존재하지 않는 유저, id : " + userId));
+                new RuntimeException("존재하지 않는 유저 id : " + userId));
 
-        return new MypageResponse(
+        return new UserDetailResponse(
                 user.getId(),
                 user.getLoginId(),
                 user.getNickName(),
                 user.getImageUrl(),
-                user.getIsLikePrivate());
+                user.isLikePrivate(),
+                user.getCreatedAt());
     }
-
-
 }
