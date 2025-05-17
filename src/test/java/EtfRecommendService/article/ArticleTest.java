@@ -33,27 +33,27 @@ public class ArticleTest {
         // Given
         Article article1 = new Article();
         ReflectionTestUtils.setField(article1, "title", "Title1");
-        ReflectionTestUtils.setField(article1, "link", "Link1");
-        ReflectionTestUtils.setField(article1, "imageUrl", "ImageUrl1");
+        ReflectionTestUtils.setField(article1, "sourceUrl", "Link1");
+        ReflectionTestUtils.setField(article1, "thumbnailUrl", "ImageUrl1");
 
         Article article2 = new Article();
         ReflectionTestUtils.setField(article2, "title", "Title2");
-        ReflectionTestUtils.setField(article2, "link", "Link2");
-        ReflectionTestUtils.setField(article2, "imageUrl", "ImageUrl2");
+        ReflectionTestUtils.setField(article2, "sourceUrl", "Link2");
+        ReflectionTestUtils.setField(article2, "thumbnailUrl", "ImageUrl2");
 
         when(articleRepository.findAll()).thenReturn(Arrays.asList(article1, article2));
 
         // When
-        List<ArticleResponse> responses = articleService.read();
+        List<ArticleResponse> responses = articleService.findAll();
 
         // Then
         assertEquals(2, responses.size());
-        assertEquals("Title1", responses.get(0).newsTitle());
-        assertEquals("Link1", responses.get(0).newsLink());
-        assertEquals("ImageUrl1", responses.get(0).imageUrl());
-        assertEquals("Title2", responses.get(1).newsTitle());
-        assertEquals("Link2", responses.get(1).newsLink());
-        assertEquals("ImageUrl2", responses.get(1).imageUrl());
+        assertEquals("Title1", responses.get(0).title());
+        assertEquals("Link1", responses.get(0).sourceUrl());
+        assertEquals("ImageUrl1", responses.get(0).thumbnailUrl());
+        assertEquals("Title2", responses.get(1).title());
+        assertEquals("Link2", responses.get(1).sourceUrl());
+        assertEquals("ImageUrl2", responses.get(1).thumbnailUrl());
 
         verify(articleRepository, times(1)).findAll();
     }

@@ -125,14 +125,15 @@ public class ArticleService {
         }
     }
 
-    public List<ArticleResponse> read() {
+    public List<ArticleResponse> findAll() {
         return articleRepository.findAll()
                 .stream()
-                .map(news -> new ArticleResponse(
-                        news.getId(),
-                        news.getTitle(),
-                        news.getLink(),
-                        news.getImageUrl()
+                .map(article -> new ArticleResponse(
+                        article.getId(),
+                        article.getTitle(),
+                        article.getSourceUrl(),
+                        article.getThumbnailUrl(),
+                        article.getPublishedAt()
                 ))
                 .toList();
 

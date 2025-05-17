@@ -1,10 +1,12 @@
 package EtfRecommendService.article;
 
+import java.time.LocalDateTime;
+
 public record ArticleResponse(
         Long id,
-        String newsTitle,
-        String newsLink,
-        String imageUrl
-
+        String title,
+        String sourceUrl,
+        String thumbnailUrl,
+        LocalDateTime publishedAt
 ) {
 }
