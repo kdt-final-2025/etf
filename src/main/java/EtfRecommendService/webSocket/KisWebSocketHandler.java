@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 
 
@@ -13,14 +14,15 @@ import java.util.Arrays;
 //api 파싱 핸들러 - websocketConnectionService에서 받은 원시 데이터 파싱 및 가공 + webSocketBroadcaster로 전달
 @Slf4j
 @Component
-public class KisWebSocketHandler{
+public class KisWebSocketHandler {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final StockDataParser stockDataParseUtil;
-    private final WebSocketBroadcaster webSocketBroadcaster;
 
-    public KisWebSocketHandler(StockDataParser stockDataParseUtil, WebSocketBroadcaster webSocketBroadcaster) {
+    private final StockDataParser stockDataParseUtil;
+    private final StockStompController stompController;
+
+    public KisWebSocketHandler(StockDataParser stockDataParseUtil, StockStompController stompController) {
         this.stockDataParseUtil = stockDataParseUtil;
-        this.webSocketBroadcaster = webSocketBroadcaster;
+        this.stompController = stompController;
     }
 
     // WebSocketConnectionService 에서 호출됨
@@ -49,10 +51,8 @@ public class KisWebSocketHandler{
                 StockPriceData data = stockDataParseUtil.parseFromJson(output);
                 log.info("[기타 JSON 데이터] {}", data);
 
-                //전체 목록 - 모든 세션에 전달
-                webSocketBroadcaster.broadcast(data);
-                //상세 목록 - 요청한 세션에만 전달
-                webSocketBroadcaster.broadcastToSubscribers(data);
+                // STOMP 토픽으로 브로드캐스트 (전체 + 종목별)
+                stompController.broadcast(data);
             }
         } catch (Exception e) {
             log.error("[JSON 파싱 오류] payload={}", json, e);
@@ -68,10 +68,8 @@ public class KisWebSocketHandler{
                 StockPriceData data = stockDataParseUtil.parseFromDelimitedFields(fields);
                 log.info("[시세 데이터] {}", data);
 
-                //전체 종목페이지 프론트로 데이터 전송
-                webSocketBroadcaster.broadcast(data);
-                //상세 목록
-                webSocketBroadcaster.broadcastToSubscribers(data);
+                // STOMP 토픽으로 브로드캐스트 (전체 + 종목별)
+                stompController.broadcast(data);
 
             } catch (Exception e) {
                 log.error("[PIPE 파싱 오류] fields={}", Arrays.toString(fields), e);
