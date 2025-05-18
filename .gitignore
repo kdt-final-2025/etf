@@ -40,3 +40,6 @@ out/
 
 ### SSL 인증서 ###
 keystore.p12
+
+### AI API KEY ###
+etfrecommendserviceai.json

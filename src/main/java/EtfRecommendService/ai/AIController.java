@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatModel;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,9 @@ public class AIController {
 
     @GetMapping("/chat")
     public Map<String, String> chat(@RequestBody String message) {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("etfrecommendserviceai.json");
+        System.out.println(is != null ? "파일 찾음" : "파일 못 찾음");
+
         Map<String, String> responses = new HashMap<>();
 
         // AI에게 금융과 주식 관련 전문가로서 대답하도록 지시하는 프롬프트 생성
