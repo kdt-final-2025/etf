@@ -227,18 +227,23 @@ export function patch<T, U>(
   data: T,
   config?: BodyRequestConfig
 ): Promise<FetchResult<U>> {
+  const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(config?.headers || {}),
   };
   return fetchApi<U>(endpoint, {
     ...config,
     method: 'PATCH',
     headers,
-    body:
-      typeof data === 'string' || data instanceof FormData
-        ? data
-        : JSON.stringify(data),
+    body: isFormData
+    // FormData면 그대로
+            ? (data as unknown as FormData)
+        // 아니면 string 혹은 JSON.stringify
+        : typeof data === 'string'
+            ? data
+            : JSON.stringify(data),
   });
 }
 
