@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/v1")
 @RestController
 public class AIController {
     private final VertexAiGeminiChatModel vertexAiGeminiChatModel;
