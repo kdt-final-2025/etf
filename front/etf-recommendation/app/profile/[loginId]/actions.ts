@@ -1,28 +1,24 @@
 "use server"
 
-import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import {cookies} from "next/headers";
+import {revalidatePath} from "next/cache";
+import {authFetch} from "@/app/utils/authFetch";
 
 // 프로필 업데이트 서버 액션
 export async function updateProfile(loginId: string, nickname: string, isLikePrivate: boolean) {
     try {
-        const cookieStore = await cookies();
-        const accessToken = cookieStore.get('accessToken')?.value;
 
-        if (!accessToken) {
-            return { success: false, message: "인증 토큰이 없습니다" };
-        }
 
-        const res = await fetch("http://localhost:8080/api/v1/users", {
+        let res = await authFetch("https://localhost:8443/api/v1/users", {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
                 nickName: nickname,
                 isLikePrivate: isLikePrivate
             }),
+            credentials: "include",
         });
 
         if (res.ok) {
@@ -51,7 +47,7 @@ export async function updateProfileImage(formData: FormData) {
         return { success: false, message: "인증 토큰이 없습니다" };
     }
 
-    const res = await fetch("http://localhost:8080/api/v1/users/image", {
+    const res = await fetch("https://localhost:8443/api/v1/users/image", {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -81,7 +77,7 @@ export async function changePassword(
     }
 
     const res = await fetch(
-        "http://localhost:8080/api/v1/users/me/password",
+        "https://localhost:8443/api/v1/users/me/password",
         {
             method: "PATCH",
             headers: {

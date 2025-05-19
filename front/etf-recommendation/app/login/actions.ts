@@ -4,10 +4,12 @@ import { cookies }  from "next/headers"
 import { redirect } from "next/navigation"
 
 export async function login(loginId: string, password: string) {
-    const res = await fetch("http://localhost:8080/api/v1/users/login", {
+    const res = await fetch("https://localhost:8443/api/v1/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loginId, password }),
+        body: JSON.stringify({ loginId, password, role: "USER" }),
+        credentials: "include"
+
     })
 
     if (!res.ok) {

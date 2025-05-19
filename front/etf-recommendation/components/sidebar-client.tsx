@@ -32,7 +32,6 @@ const themeCategories = [
   { id: "EMERGING_MARKETS", name: "신흥시장" }
 ]
 
-
 export default function SidebarClient({ loginId }: SidebarClientProps) {
   const [showThemes, setShowThemes] = useState(false)
   const [isOpen,    setIsOpen]    = useState(false)
