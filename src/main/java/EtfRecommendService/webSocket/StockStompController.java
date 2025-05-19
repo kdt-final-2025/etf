@@ -1,9 +1,11 @@
 package EtfRecommendService.webSocket;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+@MessageMapping("/stocks") //클라이언트가 보낼때 사용
 @Controller
 @RequiredArgsConstructor
 public class StockStompController {
