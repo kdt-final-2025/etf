@@ -1,4 +1,4 @@
-package EtfRecommendService.ai;
+package EtfRecommendService.aiChat;
 
 public record ChatRequest(
         String userInput,      // 사용자가 보낸 메시지

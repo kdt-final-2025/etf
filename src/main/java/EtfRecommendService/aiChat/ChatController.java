@@ -1,4 +1,4 @@
-package EtfRecommendService.ai;
+package EtfRecommendService.aiChat;
 
 
 
