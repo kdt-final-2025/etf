@@ -37,19 +37,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<JwtTokens> refresh(HttpServletRequest request) {
-        // 쿠키에서 리프레시 토큰 추출
-        String refreshToken = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("refreshToken".equals(cookie.getName())) {
-                    refreshToken = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
+    public ResponseEntity<JwtTokens> refresh(@RequestBody String refreshToken) {
         JwtTokens newTokens = authService.refresh(refreshToken);
 
         return ResponseEntity.ok(newTokens);
