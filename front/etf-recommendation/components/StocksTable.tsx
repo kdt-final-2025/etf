@@ -1,5 +1,8 @@
 "use client";
-import {useEffect, useState, useRef} from "react";
+
+import React, { useEffect, useRef, useState } from "react";
+import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 type StockPriceData = {
     stockCode: string;
@@ -10,138 +13,85 @@ type StockPriceData = {
     accumulatedVolume: number;
 };
 
-export default function StocksTable({page = 0, size = 10}: { page?: number; size?: number }) {
+interface StocksTableProps {
+    page: number;
+    size: number;
+}
+
+export default function StocksTable({ page, size }: StocksTableProps) {
     const [codes, setCodes] = useState<string[]>([]);
     const [prices, setPrices] = useState<Record<string, StockPriceData>>({});
-    const [socketStatus, setSocketStatus] = useState<"connecting" | "connected" | "closed">("connecting");
-    const wsRef = useRef<WebSocket | null>(null);
-    const subscribedRef = useRef<Set<string>>(new Set());
+    const clientRef = useRef<Client | null>(null);
+    const subscriptionsRef = useRef<StompSubscription[]>([]);
 
+    // 메시지 핸들러
+    function onMessage(msg: IMessage) {
+        const data: StockPriceData = JSON.parse(msg.body);
+        setPrices(prev => ({ ...prev, [data.stockCode]: data }));
+    }
+
+    // STOMP 클라이언트 초기화 (한 번만)
     useEffect(() => {
-        let reconnectTimeout: NodeJS.Timeout;
+        const socket = new SockJS("http://localhost:8080/ws/stocks");
+        const client = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
+        });
 
-        const connectSocket = () => {
-            if (wsRef.current) {
-                try {
-                    wsRef.current.close();
-                    console.log("🔌 기존 소켓 연결 종료");
-                } catch (e) {
-                    console.error("⚠️ 이전 소켓 닫기 실패:", e);
-                }
-            }
+        client.onConnect = () => {
+            console.log("🟢 STOMP 연결됨");
 
-            console.log("🟡 웹소켓 연결 시도 중...");
-            setSocketStatus("connecting");
-            const socket = new WebSocket("ws://localhost:8080/ws/stocks");
-            wsRef.current = socket;
-
-            socket.onopen = () => {
-                console.log("🟢 웹소켓 연결 성공: ws://localhost:8080/ws/stocks");
-                setSocketStatus("connected");
-
-                if (codes.length > 0) {
-                    console.log(`📨 기존 코드 ${codes.length}개 재구독 시도`);
-                    codes.forEach(code => {
-                        socket.send(`SUBSCRIBE|${code}`);
-                        subscribedRef.current.add(code);
-                        console.log(`↗️ SUBSCRIBE (재연결): ${code}`);
-                    });
-                }
-            };
-
-            socket.onmessage = (e) => {
-                try {
-                    const data: StockPriceData = JSON.parse(e.data);
-                    console.log("📩 수신 데이터:", data);
-                    setPrices(prev => ({...prev, [data.stockCode]: data}));
-                } catch (err) {
-                    console.warn("⚠️ JSON 파싱 실패:", e.data, err);
-                }
-            };
-
-            socket.onclose = () => {
-                console.log("🔴 웹소켓 연결 종료됨");
-                setSocketStatus("closed");
-
-                reconnectTimeout = setTimeout(() => {
-                    console.log("🔄 웹소켓 재연결 시도 중...");
-                    connectSocket();
-                }, 3000);
-            };
+            // 페이지에 있는 종목코드가 있다면 구독 진행
+            codes.forEach(code => {
+                subscriptionsRef.current.push(
+                    client.subscribe(`/topic/stocks/${code}`, onMessage)
+                );
+            });
         };
 
-        connectSocket();
+        client.activate();
+        clientRef.current = client;
 
         return () => {
-            clearTimeout(reconnectTimeout);
-            if (wsRef.current) {
-                wsRef.current.close();
-                console.log("🔌 컴포넌트 언마운트 시 소켓 종료");
-            }
+            client.deactivate();
+            console.log("🛑 STOMP 클라이언트 비활성화");
         };
     }, []);
 
+    // 페이지 변경 시 종목코드 fetch 및 구독 처리
     useEffect(() => {
-        let cancelled = false;
+        // 종목코드 가져오기
+        fetch(`http://localhost:8080/api/v1/stocks?page=${page}&size=${size}`)
+            .then(res => res.json())
+            .then((newCodes: string[]) => {
+                setCodes(newCodes);
 
-        const updateSubscriptions = async () => {
-            try {
-                const url = `http://localhost:8080/api/v1/stocks?page=${page}&size=${size}`;
-                console.log(`🌐 Fetch 요청: ${url}`);
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const client = clientRef.current;
+                if (client && client.connected) {
+                    // 기존 구독 해제
+                    subscriptionsRef.current.forEach(sub => sub.unsubscribe());
+                    subscriptionsRef.current = [];
 
-                const newCodes: string[] = await response.json();
-                if (cancelled) return;
-
-                console.log(`📥 fetch 받은 종목코드 목록 (page ${page + 1}):`, newCodes);
-
-                if (wsRef.current && wsRef.current.readyState === 1) {
-                    // 구독 해제
-                    subscribedRef.current.forEach(code => {
-                        if (!newCodes.includes(code)) {
-                            wsRef.current?.send(`UNSUBSCRIBE|${code}`);
-                            subscribedRef.current.delete(code);
-                            console.log(`❌ UNSUBSCRIBE: ${code}`);
-                        }
-                    });
-
-                    // 신규 구독
+                    // 새 종목 구독
                     newCodes.forEach(code => {
-                        if (!subscribedRef.current.has(code)) {
-                            wsRef.current?.send(`SUBSCRIBE|${code}`);
-                            subscribedRef.current.add(code);
-                            console.log(`✅ SUBSCRIBE: ${code}`);
-                        }
+                        const sub = client.subscribe(`/topic/stocks/${code}`, onMessage);
+                        subscriptionsRef.current.push(sub);
+                        console.log(`✅ SUBSCRIBE /topic/stocks/${code}`);
                     });
                 } else {
-                    console.log("⚠️ WebSocket 연결되지 않아 SUBSCRIBE/UNSUBSCRIBE 생략");
+                    console.warn("⚠️ STOMP 연결되지 않아 구독 생략");
                 }
+            })
+            .catch(error => {
+                console.error("🚨 종목코드 fetch 실패:", error);
+            });
 
-                setCodes(newCodes);
-            } catch (error) {
-                console.error("🚨 ETF 코드 fetch 실패:", error);
-            }
-        };
-
-        updateSubscriptions();
-
-        return () => {
-            cancelled = true;
-        };
     }, [page, size]);
 
     return (
-        <section style={{marginTop: 20}}>
+        <section style={{ marginTop: 20 }}>
             <h2>실시간 ETF 시세 (페이지 {page + 1})</h2>
-            <div style={{marginBottom: 10}}>
-                상태: {
-                socketStatus === "connected" ? "🟢 연결됨" :
-                    socketStatus === "connecting" ? "🟡 연결 중..." :
-                        "🔴 연결 끊김"
-            }
-            </div>
-            <table style={{width: "100%", borderCollapse: "collapse"}}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                 <tr>
                     <th>종목코드</th>
@@ -155,14 +105,14 @@ export default function StocksTable({page = 0, size = 10}: { page?: number; size
                     return (
                         <tr key={code}>
                             <td>{code}</td>
-                            <td>{d?.dayOverDayRate?.toFixed(2) || "-"}%</td>
-                            <td>{d?.dayOverDayChange || "-"}</td>
+                            <td>{d?.dayOverDayRate?.toFixed(2) ?? "-"}%</td>
+                            <td>{d?.dayOverDayChange ?? "-"}</td>
                         </tr>
                     );
                 })}
                 {codes.length === 0 && (
                     <tr>
-                        <td colSpan={3} style={{textAlign: "center", padding: "20px"}}>
+                        <td colSpan={3} style={{ textAlign: "center", padding: "20px" }}>
                             데이터 로딩 중...
                         </td>
                     </tr>
