@@ -201,9 +201,16 @@ export default function Home() {
       );
     }
 
-    return result.sort(
-      (a, b) => b[sortKey as keyof ETF] - a[sortKey as keyof ETF]
-    );
+    return result.sort((a, b) => {
+      const valueA = a[sortKey as keyof ETF];
+      const valueB = b[sortKey as keyof ETF];
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return valueB - valueA;
+      }
+
+      return String(valueB).localeCompare(String(valueA));
+    });
   }, [etfData, selectedTheme, searchQuery, sortKey]);
 
   const handleLoadMore = () => {
