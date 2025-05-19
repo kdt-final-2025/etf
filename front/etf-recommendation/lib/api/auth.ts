@@ -9,7 +9,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   loginId: string;
   password: string;
-  nickname: string;
+  nickName: string;
   isLikePrivate: boolean;
 }
 
