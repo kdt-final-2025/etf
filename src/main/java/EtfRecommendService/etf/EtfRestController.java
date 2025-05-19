@@ -25,6 +25,7 @@ public class EtfRestController {
     private final WebSocketConnectionService webSocketConnectionService;
     private final CsvLoader csvLoader;
 
+
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "20") int size,
