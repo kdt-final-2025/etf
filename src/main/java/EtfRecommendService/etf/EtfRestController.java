@@ -25,7 +25,6 @@ public class EtfRestController {
     private final WebSocketConnectionService webSocketConnectionService;
     private final CsvLoader csvLoader;
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "20") int size,
@@ -37,7 +36,7 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+
     @GetMapping("/etfs/{etfId}")
     public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId) {
         EtfDetailResponse etfDetailResponse = etfService.findById(etfId);
@@ -70,15 +69,26 @@ public class EtfRestController {
 
     //웹소켓
     //어떤 종목코드를 구독할지
+//    @GetMapping("/stocks")
+//    public List<String> getCodes(@RequestParam int page, @RequestParam int size) throws Exception {
+//        var all = csvLoader.loadCodes("src/main/resources/etf_data_result.csv");
+//        return all.subList(page * size, Math.min(all.size(), (page + 1) * size));
+//    }
+//
+//    //종목 수 반환
+//    @GetMapping("/stocks/count")
+//    public int getTotalStockCount() throws Exception {
+//        return csvLoader.loadCodes("src/main/resources/etf_data_result.csv").size();
+//    }
+
     @GetMapping("/stocks")
-    public List<String> getCodes(@RequestParam int page, @RequestParam int size) throws Exception {
-        var all = csvLoader.loadCodes("src/main/resources/etf_data_result.csv");
+    public List<String> getCodes(@RequestParam int page, @RequestParam int size) {
+        var all = csvLoader.getCodes();
         return all.subList(page * size, Math.min(all.size(), (page + 1) * size));
     }
 
-    //종목 수 반환
     @GetMapping("/stocks/count")
-    public int getTotalStockCount() throws Exception {
-        return csvLoader.loadCodes("src/main/resources/etf_data_result.csv").size();
+    public int getTotalStockCount() {
+        return csvLoader.getCount();
     }
 }
