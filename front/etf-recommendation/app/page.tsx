@@ -64,7 +64,7 @@ export default function Home() {
   useEffect(() => {
     const fetchAllEtfs = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/v1/etfs?page=1&size=10000&period=weekly`);
+        const res = await fetch(`https://localhost:8443/api/v1/etfs?page=1&size=10000&period=weekly`);
         const data = await res.json();
 
         const allEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
@@ -91,7 +91,7 @@ export default function Home() {
   useEffect(() => {
     const fetchEtfPage = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/v1/etfs?page=${page}&size=20&period=weekly`);
+        const res = await fetch(`https://localhost:8443/api/v1/etfs?page=${page}&size=20&period=weekly`);
         const data = await res.json();
 
         const pageEtfs: ETF[] = data.etfReadResponseList.map((etf: any,index:number) => ({

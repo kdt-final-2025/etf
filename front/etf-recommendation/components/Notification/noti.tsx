@@ -26,7 +26,7 @@ export default function Notification({ token }: { token: string }) {
 
         const emitterId = token; // JWT 토큰을 emitterId로 사용한다고 가정
         const eventSource = new EventSource(
-            `http://localhost:8080/sse/notifications?emitterId=${emitterId}`
+            `https://localhost:8443/sse/notifications?emitterId=${emitterId}`
         );
 
         eventSource.addEventListener("newPost", (event: MessageEvent) => {

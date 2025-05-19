@@ -55,7 +55,7 @@ export default function ProfileClient({
             // 구독한 ETF의 상세 정보를 가져오는 로직 (예: ETF 이름, 티커 등)
             if (subscribedIds.length > 0) {
                 const etfs = await Promise.all(subscribedIds.map(async (id) => {
-                    const res = await fetch(`http://localhost:8080/api/v1/etfs/${id}`);
+                    const res = await fetch(`https://localhost:8443/api/v1/etfs/${id}`);
                     if (res.ok) {
                         const data = await res.json();
                         return { id: data.etfId, name: data.etfName, ticker: data.etfCode };

@@ -8,7 +8,7 @@ export async function subscribeToEtf(etfId: number) {
     //     throw new Error('로그인이 필요합니다')
     // }
 
-    const res = await fetch(`http://localhost:8080/api/v1/users/etfs/${etfId}/subscription`, {
+    const res = await fetch(`https://localhost:8443/api/v1/etfs/${etfId}/subscription`, {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -32,7 +32,7 @@ export async function unsubscribeFromEtf(etfId: number) {
         throw new Error('로그인이 필요합니다')
     }
 
-    const res = await fetch(`http://localhost:8080/api/v1/users/etf/${etfId}/subscription`, {
+    const res = await fetch(`https://localhost:8443/api/v1/etf/${etfId}/subscription`, {
         method: 'DELETE',
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -53,7 +53,7 @@ export async function getSubscribedEtfIds(): Promise<number[]> {
     const accessToken = cookieStore.get('accessToken')?.value
     if (!accessToken) return []
 
-    const res = await fetch(`http://localhost:8080/api/v1/users/etfs/subscribes`, {
+    const res = await fetch(`https://localhost:8443/api/v1/etfs/subscribes`, {
         headers: { Authorization: `Bearer ${accessToken}` },
     })
     if (!res.ok) return []
