@@ -23,12 +23,13 @@ import LogoutButton from '@/components/ui/LogoutButton';
 import { getSubscribedEtfIds } from '@/app/etf/[id]/action';
 import Link from 'next/link';
 import { fetchEtfDetail } from '@/lib/api/etf';
+import { UserDetailResponse } from '@/lib/api/auth';
 
 export default function ProfileClient({
   initialProfileData,
   loginId,
 }: {
-  initialProfileData: any | null;
+  initialProfileData: UserDetailResponse | null;
   loginId: string;
 }) {
   // 상태 관리
@@ -93,7 +94,7 @@ export default function ProfileClient({
 
     const result = await updateProfileImage(formData); // 서버 액션 호출
     if (result.success) {
-      setAvatarSrc(result.imageUrl);
+      setAvatarSrc(result.imageUrl!);
       alert('프로필 사진이 성공적으로 업데이트되었습니다.');
     } else {
       alert('업로드 실패: ' + result.message);

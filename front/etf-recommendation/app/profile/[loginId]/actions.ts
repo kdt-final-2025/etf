@@ -42,7 +42,11 @@ export async function updateProfile(
   }
 }
 
-export async function updateProfileImage(formData: FormData) {
+export async function updateProfileImage(formData: FormData): Promise<{
+  success: boolean;
+  message?: string;
+  imageUrl?: string;
+}> {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
 
@@ -50,26 +54,19 @@ export async function updateProfileImage(formData: FormData) {
     return { success: false, message: '인증 토큰이 없습니다' };
   }
 
-  try {
-    const { data, error } = await uploadProfileImage(formData, accessToken);
+  const { data, error } = await uploadProfileImage(formData, accessToken);
 
-    if (error || !data) {
-      return {
-        success: false,
-        message: error || '이미지 업로드에 실패했습니다',
-      };
-    }
-
-    return {
-      success: true,
-      imageUrl: data.imageUrl,
-    };
-  } catch (error: any) {
+  if (error || !data) {
     return {
       success: false,
-      message: error.message || '이미지 업로드 중 오류가 발생했습니다',
+      message: error || '이미지 업로드에 실패했습니다',
     };
   }
+
+  return {
+    success: true,
+    imageUrl: data.imageUrl,
+  };
 }
 
 export async function changePassword(
