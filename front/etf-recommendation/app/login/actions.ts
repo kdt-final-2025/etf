@@ -1,4 +1,7 @@
-import {cookies} from "next/headers";
+"use server"
+
+import { cookies }  from "next/headers"
+import { redirect } from "next/navigation"
 
 export async function login(loginId: string, password: string) {
     const res = await fetch("http://localhost:8080/api/v1/login", {
@@ -25,4 +28,5 @@ export async function login(loginId: string, password: string) {
     cookieStore.set({ name: "accessToken", value: accessToken, path: "/", maxAge : 900 })
     cookieStore.set({ name: "refreshToken", value: refreshToken, path: "/", maxAge : 1209600 })
     cookieStore.set("login_id", loginId, { path: "/" })
+    redirect("/")
 }
