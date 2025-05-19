@@ -3,6 +3,9 @@ package EtfRecommendService.ai;
 import EtfRecommendService.ai.dto.RecommendationDTO;
 import EtfRecommendService.ai.dto.RecommendationResponseDTO;
 import EtfRecommendService.ai.dto.UserAnswerDTO;
+import EtfRecommendService.etf.EtfQueryRepository;
+import EtfRecommendService.etf.EtfService;
+import EtfRecommendService.etf.dto.EtfReadResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatModel;
@@ -26,7 +29,7 @@ public class AIService {
             "산업별/섹터", "배당형", "ESG", "AI·데이터", "금", "국채",
             "회사채", "방위", "반도체", "바이오", "신흥국"
     );
-
+    private final EtfService etfService;
     //질문 리스트에 대한 답 해석
     static {
         // 1. 왜 투자하려고 하나요?
@@ -131,9 +134,22 @@ public class AIService {
 
         RecommendationDTO recommendation = parseRecommendation(aiResponse);
 
+        List<String> recommendedThemes = List.of(recommendation.mainRecommendation(),recommendation.subRecommendations().get(0), recommendation.subRecommendations().get(1));
+
+        List<EtfReadResponse> etfReadResponseList = new ArrayList<>();
+
+        for (String theme : recommendedThemes) {
+            etfReadResponseList.add(etfService.findTopByThemeOrderByWeeklyReturn(theme));
+        }
+
+        for (EtfReadResponse etfReadResponse : etfReadResponseList) {
+            System.out.println(etfReadResponse.toString());
+        }
+
         return new RecommendationResponseDTO(
                 ResponseEntity.status(HttpStatus.OK).toString(),
-                recommendation
+                recommendation,
+                etfReadResponseList
             );
     }
 

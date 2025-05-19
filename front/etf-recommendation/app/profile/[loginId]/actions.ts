@@ -9,7 +9,7 @@ export async function updateProfile(loginId: string, nickname: string, isLikePri
     try {
 
 
-        let res = await authFetch("https://localhost:8443/api/v1/users", {
+        let res = await authFetch("http://localhost:8080/api/v1/users", {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -47,7 +47,7 @@ export async function updateProfileImage(formData: FormData) {
         return {success: false, message: "인증 토큰이 없습니다"};
     }
 
-    const res = await fetch("https://localhost:8443/api/v1/users/image", {
+    const res = await fetch("http://localhost:8080/api/v1/users/image", {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -77,7 +77,7 @@ export async function changePassword(
     }
 
     const res = await fetch(
-        "https://localhost:8443/api/v1/users/me/password",
+        "http://localhost:8080/api/v1/users/me/password",
         {
             method: "PATCH",
             headers: {

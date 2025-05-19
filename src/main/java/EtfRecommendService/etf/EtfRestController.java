@@ -19,7 +19,6 @@ public class EtfRestController {
 
     private final EtfService etfService;
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "20") int size,
@@ -31,7 +30,6 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/{etfId}")
     public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId){
         EtfDetailResponse etfDetailResponse = etfService.findById(etfId);
@@ -62,5 +60,8 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 
-
+    @GetMapping("/etfs/recommend")
+    public ResponseEntity<EtfReadResponse> readTopByThemeOrderByWeeklyReturn(@RequestParam String theme){
+        return ResponseEntity.ok(etfService.findTopByThemeOrderByWeeklyReturn(theme));
+    }
 }

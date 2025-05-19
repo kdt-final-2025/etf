@@ -1,5 +1,7 @@
 package EtfRecommendService.etf;
 
+import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.domain.QEtf;
 import EtfRecommendService.etf.domain.QEtfProjection;
 import EtfRecommendService.etf.dto.EtfReturnDto;
@@ -70,6 +72,14 @@ public class EtfQueryRepository {
         }
         return etfProjection.etfName.containsIgnoreCase(keyword)
                 .or(etfProjection.etfCode.containsIgnoreCase(keyword));
+    }
+
+    public EtfProjection findTopByThemeOrderByWeeklyReturn(String theme) {
+        return jpaQueryFactory.selectFrom(etfProjection)
+                .where(etfProjection.theme.eq(Theme.fromDisplayName(theme)))
+                .orderBy(etfProjection.weeklyReturn.desc())
+                .limit(1)
+                .fetchOne();
     }
 }
 

@@ -1,8 +1,12 @@
 package EtfRecommendService.etf.dto;
 
+import lombok.Builder;
+
+@Builder
 public record EtfReadResponse(
         Long etfId,
         String etfName,
-        int etfCode
+        Double weeklyReturn,
+        String etfCode
 ) {
 }
