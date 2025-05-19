@@ -21,10 +21,18 @@ export interface LoginResponse {
 export interface UserResponse {
   id: number;
   loginId: string;
-  username: string;
-  email: string;
-  phone: string;
-  profileImageUrl: string | null;
+  nickName: string;
+  imageUrl: string;
+  isLikePrivate: boolean;
+}
+
+export interface UserDetailResponse {
+  id: number;
+  loginId: string;
+  nickName: string;
+  imageUrl: string;
+  isLikePrivate: boolean;
+  createdAt: string;
 }
 
 export interface RefreshTokenResponse {
@@ -59,7 +67,7 @@ export async function register(
 export async function fetchUserProfile(
   loginId: string,
   accessToken?: string
-): Promise<FetchResult<UserResponse>> {
+): Promise<FetchResult<UserDetailResponse>> {
   return get(`/api/v1/users/${loginId}`, {
     errorMessage: '사용자 정보를 불러오는 데 실패했습니다',
     authToken: accessToken,
