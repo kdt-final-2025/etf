@@ -2,6 +2,7 @@
 
 import { cookies }  from "next/headers"
 import { redirect } from "next/navigation"
+import { get } from ""
 
 export async function login(loginId: string, password: string) {
     const res = await fetch("http://localhost:8080/api/v1/login", {
