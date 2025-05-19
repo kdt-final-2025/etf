@@ -47,6 +47,12 @@ jobs:
         env:
           KEYSTORE_P12_B64: ${{ secrets.KEYSTORE_P12_B64 }}
 
+      - name: Set up Google Cloud credentials
+        run: echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > $HOME/gcp-key.json
+
+      - name: Authenticate to Google Cloud
+        run: gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
+
       - name: Run tests
         run: ./gradlew test --no-daemon
 
