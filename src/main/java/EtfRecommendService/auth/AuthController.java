@@ -30,18 +30,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody UserLoginRequest loginRequest,
-                                      HttpServletResponse response) {
+    public ResponseEntity<JwtTokens> login(@RequestBody UserLoginRequest loginRequest) {
         JwtTokens tokens = authService.login(loginRequest);
 
-        setCookies(tokens, response);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(tokens);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(HttpServletRequest request,
-                                        HttpServletResponse response) {
+    public ResponseEntity<JwtTokens> refresh(HttpServletRequest request) {
         // 쿠키에서 리프레시 토큰 추출
         String refreshToken = null;
         Cookie[] cookies = request.getCookies();
@@ -56,31 +52,6 @@ public class AuthController {
 
         JwtTokens newTokens = authService.refresh(refreshToken);
 
-        setCookies(newTokens, response);
-
-        return ResponseEntity.ok().build();
-    }
-
-    private void setCookies(JwtTokens jwtTokens, HttpServletResponse response){
-        // 액세스 토큰 쿠키
-        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtTokens.accessToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(60 * 15) // 15분
-                .build();
-
-        // 리프레시 토큰 쿠키
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtTokens.refreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .sameSite("None")
-                .maxAge(60 * 60 * 24 * 14) // 2주
-                .build();
-
-        response.addHeader("Set-Cookie", accessTokenCookie.toString());
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+        return ResponseEntity.ok(newTokens);
     }
 }

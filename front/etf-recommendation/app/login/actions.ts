@@ -19,9 +19,10 @@ export async function login(loginId: string, password: string) {
     }// 성공 시 리다이렉트
     // 성공 시 토큰을 리스폰스 바디에서 추출
     const { accessToken, refreshToken } = await res.json();
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     // 쿠키에 저장 (expires 옵션 등 필요에 따라 조정)
-    cookieStore.set('accessToken', accessToken, { path: '/', sameSite: 'None', expires: 1/96 }); // 15분 = 1/96일
-    cookieStore.set('refreshToken', refreshToken, { path: '/', sameSite: 'None', expires: 14 }); // 2주
+    cookieStore.set({ name: "accessToken", value: accessToken, path: "/", maxAge : 900 })
+    cookieStore.set({ name: "refreshToken", value: refreshToken, path: "/", maxAge : 1209600 })
+    cookieStore.set("login_id", loginId, { path: "/" })
 }
