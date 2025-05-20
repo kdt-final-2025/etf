@@ -192,8 +192,8 @@ export default function Home() {
         <div className="mb-8 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-8 text-white">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <h1 className="text-4xl font-bold mb-4">폭삭 벌었수다</h1>
-              <p className="text-xl mb-6">최고의 ETF 추천 서비스로 투자 수익을 극대화하세요</p>
+              <h1 className="text-4xl font-bold mb-4">FIETA</h1>
+              <p className="text-xl mb-6">최고의 AI ETF 추천 서비스로 투자 수익을 극대화하세요</p>
               <div className="flex gap-4">
                 <Button size="lg" className="bg-green-600 hover:bg-green-700">
                   <Link href="/recommendations">맞춤 ETF 추천받기</Link>
