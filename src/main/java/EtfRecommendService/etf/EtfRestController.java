@@ -46,7 +46,7 @@ public class EtfRestController {
 
     @Secured("ROLE_USER")
     @PostMapping("/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId) {
         SubscribeResponse subscribeResponse = etfService.subscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscribeResponse);
     }
@@ -54,8 +54,8 @@ public class EtfRestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/subscribes")
     public ResponseEntity<SubscribeListResponse> subscribeReadAll(@AuthenticationPrincipal UserDetails userDetails,
-                                                  @RequestParam(defaultValue = "1") int page,
-                                                  @RequestParam(defaultValue = "20") int size){
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
@@ -63,33 +63,30 @@ public class EtfRestController {
 
     @Secured("ROLE_USER")
     @DeleteMapping("/etf/{etfId}/subscription")
-    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId) {
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 
     //웹소켓
     //어떤 종목코드를 구독할지
-//    @GetMapping("/stocks")
-//    public List<String> getCodes(@RequestParam int page, @RequestParam int size) throws Exception {
-//        var all = csvLoader.loadCodes("src/main/resources/etf_data_result.csv");
-//        return all.subList(page * size, Math.min(all.size(), (page + 1) * size));
-//    }
-//
-//    //종목 수 반환
-//    @GetMapping("/stocks/count")
-//    public int getTotalStockCount() throws Exception {
-//        return csvLoader.loadCodes("src/main/resources/etf_data_result.csv").size();
-//    }
-
     @GetMapping("/stocks")
     public List<String> getCodes(@RequestParam int page, @RequestParam int size) {
         var all = csvLoader.getCodes();
         return all.subList(page * size, Math.min(all.size(), (page + 1) * size));
     }
 
+    //종목 수 반환
     @GetMapping("/stocks/count")
     public int getTotalStockCount() {
         return csvLoader.getCount();
+    }
+
+    //프론트에서 페이지가 바뀔 때마다 호출
+    //백엔드가 KIS API에 SUBSCRIBE 요청을 다시 보내도록
+    @PostMapping("/stocks/subscribe")
+    public ResponseEntity<Void> subscribeStocks(@RequestBody List<String> stockCodes) {
+        webSocketConnectionService.subscribeNewKeys(stockCodes);
+        return ResponseEntity.ok().build();
     }
 }
