@@ -1,167 +1,222 @@
-'use client';
+"use client"
 
-import React, { useState, useEffect, useRef } from 'react';
-import type { FC } from 'react';
-import Chart from 'chart.js/auto';
-import 'chartjs-adapter-date-fns';
+import { type FC, useState, useEffect, useRef } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Chart, registerables } from "chart.js"
+import "chartjs-adapter-date-fns"
+Chart.register(...registerables)
 
-type RangeKey = '7d' | '30d' | '3mo' | '6mo' | '1y';
-
-interface RangeOption {
-    key: RangeKey;
-    label: string;
-}
-
+type RangeKey = "7d" | "30d" | "3mo" | "6mo" | "1y"
 interface HistoryData {
-    date: string;
-    close: number;
+    date: string
+    close: number
+}
+interface Props {
+    initialSymbol: string
 }
 
-const ranges: RangeOption[] = [
-    { key: '7d', label: '7일' },
-    { key: '30d', label: '30일' },
-    { key: '3mo', label: '3개월' },
-    { key: '6mo', label: '6개월' },
-    { key: '1y', label: '1년' },
-];
+const ranges: { key: RangeKey; label: string }[] = [
+    { key: "7d", label: "7일" },
+    { key: "30d", label: "30일" },
+    { key: "3mo", label: "3개월" },
+    { key: "6mo", label: "6개월" },
+    { key: "1y", label: "1년" },
+]
 
-const fetchHistory = async (sym: string, rng: RangeKey): Promise<HistoryData[]> => {
-    const resp = await fetch(`/api/history/${sym}?range=${rng}`);
-    if (!resp.ok) {
-        throw new Error(await resp.text());
-    }
-    return resp.json();
-};
+const StockHistoryChart: FC<Props> = ({ initialSymbol }) => {
+    const [symbol] = useState(initialSymbol)
+    const [range, setRange] = useState<RangeKey>("30d")
+    const [loading, setLoading] = useState(true)
+    const [hasData, setHasData] = useState(true)
+    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const chartRef = useRef<Chart | null>(null)
+    const chartDataRef = useRef<HistoryData[]>([])
 
-const StockHistoryChart: FC = () => {
-    const [symbol, setSymbol] = useState<string>('069500.KS');
-    const [range, setRange] = useState<RangeKey>('30d');
-    const chartRef = useRef<HTMLCanvasElement | null>(null);
-    const chartInstance = useRef<Chart | null>(null);
+    // 차트 생성 또는 업데이트 함수
+    const updateChart = (data: HistoryData[]) => {
+        if (!canvasRef.current) return
+        const ctx = canvasRef.current.getContext("2d")
+        if (!ctx) return
 
-    useEffect(() => {
-        const updateChart = async () => {
-            if (!chartRef.current) return;
+        const grad = ctx.createLinearGradient(0, 0, 0, 300)
+        grad.addColorStop(0, "rgba(58,123,213,1)")
+        grad.addColorStop(1, "rgba(0,210,255,0.3)")
 
-            try {
-                const data = await fetchHistory(symbol.trim().toUpperCase(), range);
-                const labels = data.map(d => d.date);
-                const closes = data.map(d => d.close);
-
-                const ctx = chartRef.current.getContext('2d');
-                if (!ctx) return;
-
-                const grad = ctx.createLinearGradient(0, 0, 0, 300);
-                grad.addColorStop(0, 'rgba(58, 123, 213, 1)');
-                grad.addColorStop(1, 'rgba(0, 210, 255, 0.3)');
-
-                if (chartInstance.current) {
-                    chartInstance.current.destroy();
-                }
-
-                chartInstance.current = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels,
-                        datasets: [{
-                            label: `${symbol} (${range})`,
-                            data: closes,
+        // 차트가 이미 존재하면 데이터만 업데이트
+        if (chartRef.current) {
+            chartRef.current.data.labels = data.map((d) => d.date)
+            chartRef.current.data.datasets[0].data = data.map((d) => d.close)
+            chartRef.current.update("none") // 애니메이션 없이 업데이트하여 깜빡임 방지
+        } else {
+            // 차트가 없으면 새로 생성
+            chartRef.current = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: data.map((d) => d.date),
+                    datasets: [
+                        {
+                            label: symbol,
+                            data: data.map((d) => d.close),
                             borderColor: grad,
                             borderWidth: 2,
                             pointRadius: 0,
+                            tension: 0.3,
                             fill: false,
-                            tension: 0.4,
-                        }],
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 0, // 초기 렌더링 시 애니메이션 비활성화
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                backgroundColor: '#1F1F28',
-                                titleColor: '#E1E1E6',
-                                bodyColor: '#E1E1E6',
-                                padding: 8,
-                                borderColor: '#3A7BD5',
-                                borderWidth: 1,
+                    scales: {
+                        x: {
+                            type: "time",
+                            time: { parser: "yyyy-MM-dd", unit: "day", displayFormats: { day: "MM-dd" } },
+                            grid: { display: false },
+                        },
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                drawBorder: false,
                             },
                         },
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    parser: 'yyyy-MM-dd',
-                                    unit: 'day',
-                                    displayFormats: { day: 'MM-dd' },
-                                },
-                                grid: { display: false },
-                                ticks: { color: '#888', autoSkip: true, maxTicksLimit: 5 },
-                            },
-                            y: {
-                                grid: { color: 'rgba(100, 100, 110, 0.3)' },
-                                ticks: { color: '#888' },
-                                beginAtZero: false,
-                            },
-                        },
-                        interaction: { mode: 'index', intersect: false },
                     },
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        };
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: "index",
+                            intersect: false,
+                        },
+                    },
+                },
+            })
+        }
+    }
 
-        updateChart();
+    useEffect(() => {
+        let isMounted = true
+
+        const load = async () => {
+            if (!canvasRef.current) return
+
+            setLoading(true)
+
+            try {
+                const res = await fetch(`/api/history/${symbol}?range=${range}`)
+                if (!res.ok) {
+                    console.error(`Error fetching data: ${res.status}`)
+                    if (isMounted) {
+                        setHasData(false)
+                        setLoading(false)
+                    }
+                    return
+                }
+
+                const data: HistoryData[] = await res.json()
+
+                if (!isMounted) return
+
+                if (!data.length) {
+                    console.info("No data available for the selected range")
+                    setHasData(false)
+                    setLoading(false)
+                    return
+                }
+
+                chartDataRef.current = data
+                setHasData(true)
+                updateChart(data)
+                setLoading(false)
+            } catch (error) {
+                console.error("Failed to load stock history data:", error)
+                if (isMounted) {
+                    setHasData(false)
+                    setLoading(false)
+                }
+            }
+        }
+
+        load()
+
         return () => {
-            chartInstance.current?.destroy();
-        };
-    }, [symbol, range]);
+            isMounted = false
+        }
+    }, [symbol, range])
+
+    // 컴포넌트 언마운트 시 차트 정리
+    useEffect(() => {
+        return () => {
+            if (chartRef.current) {
+                chartRef.current.destroy()
+                chartRef.current = null
+            }
+        }
+    }, [])
 
     return (
-        <div
-            className="mx-auto p-4 w-full max-w-[800px]"
-            style={{
-                backgroundColor: '#0A0A11',
-                color: '#E1E1E6',
-                fontFamily: '"Apple SD Gothic Neo", sans-serif',
-            }}
-        >
-            <div className="flex justify-between items-center w-full mb-4">
-                <div className="flex items-center gap-2">
-                    <label className="whitespace-nowrap">심볼:</label>
-                    <input
-                        type="text"
-                        value={symbol}
-                        onChange={e => setSymbol(e.target.value)}
-                        onKeyUp={e => e.key === 'Enter' && setSymbol(e.currentTarget.value)}
-                        className="px-2 py-1 w-32 bg-gray-700 rounded text-gray-200 focus:outline-none"
-                    />
-                </div>
-                <div className="flex gap-4">
-                    {ranges.map(r => (
+        <Card className="w-full h-full">
+            <CardContent className="p-4 h-full flex flex-col">
+                <div className="grid grid-cols-5 gap-2 mb-4">
+                    {ranges.map((r) => (
                         <button
                             key={r.key}
                             onClick={() => setRange(r.key)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none ${
+                            className={`
+        w-full px-4 py-1.5 rounded-full font-medium text-sm transition-all duration-200 
+        ${
                                 range === r.key
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                            }`}
+                                    ? "bg-blue-500 text-white shadow-md hover:bg-blue-600 transform hover:-translate-y-0.5"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-700"
+                            }
+        ${loading ? "opacity-70 cursor-not-allowed" : ""}
+      `}
+                            disabled={loading}
                         >
                             {r.label}
                         </button>
                     ))}
                 </div>
-            </div>
 
-            <div className="w-full h-[300px]">
-                <canvas ref={chartRef} className="w-full h-full" />
-            </div>
-        </div>
-    );
-};
+                <div className="flex-1 w-full min-h-[300px] relative">
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-30 backdrop-blur-sm z-10 transition-opacity duration-300 ${
+                            loading ? "opacity-100" : "opacity-0 pointer-events-none"
+                        }`}
+                    >
+                        <div className="px-4 py-2 rounded-md bg-white bg-opacity-50 shadow-sm text-gray-600 flex items-center gap-2">
+                            <svg
+                                className="animate-spin h-4 w-4 text-blue-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                            </svg>
+                            <span>로딩 중...</span>
+                        </div>
+                    </div>
 
-export default StockHistoryChart;
+                    <div
+                        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                            !loading && !hasData ? "opacity-100" : "opacity-0 pointer-events-none"
+                        }`}
+                    >
+                        <div className="text-gray-500">데이터가 없습니다</div>
+                    </div>
+
+                    <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+export default StockHistoryChart
