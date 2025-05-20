@@ -30,6 +30,9 @@ public class WebSocketConnectionService {
     private final ReactorNettyWebSocketClient client = new ReactorNettyWebSocketClient();
     private Disposable currentConnection;
 
+    // Reactor Netty WebSocket 클라이언트가 가진 세션을 보관할 필드
+    private volatile org.springframework.web.reactive.socket.WebSocketSession kisSession;
+
     private final KisWebSocketHandler kisWebSocketHandler;
     private final StockDataParser stockDataParseUtil;
 
@@ -52,6 +55,9 @@ public class WebSocketConnectionService {
         currentConnection = client.execute(
                         URI.create(apiUrl + "?approval_key=" + approvalKey),
                         session -> {
+                            //세션 참조 저장
+                            this.kisSession = session;
+
                             //여러 종목 구독 요청 20ms 간격으로 전송
                             Flux<WebSocketMessage> sendMessages = Flux.fromIterable(trKeys)
                                     .delayElements(Duration.ofMillis(20))
@@ -67,12 +73,36 @@ public class WebSocketConnectionService {
                                     .then();
 
                             return sendAll.then(receive);
-                        })
+                        }
+                )
                 //연결 실패 시 재시도 : 최대 5회, 5초 고정 대기
                 .retryWhen(Retry.fixedDelay(5, Duration.ofSeconds(5))
                         .doBeforeRetry(retrySignal -> log.warn("웹소켓 연결 재시도", retrySignal.totalRetries())))
                 .doOnError(err -> log.error("웹소켓 에러: ", err))
                 .subscribe();
+    }
+
+    //프론트가 페이지를 바꿔서 호출해 주는 메서드
+    //현재 연결된 KIS WebSocket 세션이 있으면, 새 키들만 KIS API로 SUBSCRIBE 메시지로 보냄
+    public void subscribeNewKeys(List<String> newKeys) {
+        if (kisSession == null || !kisSession.isOpen()) {
+            log.warn("KIS WebSocket 세션이 없습니다. 새로운 구독 요청을 보낼 수 없습니다.");
+            return;
+        }
+
+        log.info("새 구독 요청: {}", newKeys);
+        Flux<WebSocketMessage> extraSubs = Flux.fromIterable(newKeys)
+                .delayElements(Duration.ofMillis(20))
+                .map(key -> buildPayload(/* approvalKey */ null, "H0STCNT0", key))
+                .map(kisSession::textMessage);
+
+        // 보낸 뒤에도 이전 receive 스트림에 계속 붙어있으므로,
+        // 단지 send만 해 주면 됩니다.
+        kisSession.send(extraSubs).subscribe(
+                null,
+                err -> log.error("추가 구독 전송 실패", err),
+                ()  -> log.info("추가 구독 전송 완료")
+        );
     }
 
     //스프링이 종료될 때 WebSocket 연결을 정리하도록 하여 리소스 누수를 방지
