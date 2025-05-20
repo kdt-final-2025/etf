@@ -52,6 +52,7 @@ public class KisWebSocketHandler {
                 log.info("[기타 JSON 데이터] {}", data);
 
                 // STOMP 토픽으로 브로드캐스트 (전체 + 종목별)
+                log.debug("[STOMP BROADCAST] sending to /topic/stocks/" + data.stockCode());
                 stompController.broadcast(data);
             }
         } catch (Exception e) {
