@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import EtfFilters from './EtfFilters'
+import { fetchEtfs } from '@/lib/api/etf'
 
 // ETF 응답 타입 정의
 interface EtfItem {
@@ -53,43 +54,6 @@ function getThemeDisplayName(themeId: string): string {
   }
 
   return themeMap[themeId] || themeId
-}
-
-// 서버 액션: ETF 데이터 가져오기
-async function fetchEtfsByTheme(
-    theme: string,
-    page: number = 1,
-    size: number = 20,
-    keyword: string = ''
-): Promise<EtfResponse> {
-    // API URL - 환경 변수 사용
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8443'
-    // 기본적으로 weekly로 고정
-    const apiUrl = `${baseUrl}/api/v1/etfs?theme=${theme}&page=${page}&size=${size}&period=weekly&keyword=${encodeURIComponent(keyword)}`
-
-    try {
-        const response = await fetch(apiUrl, {
-            next: {
-                revalidate: 3600 // 1시간마다 재검증
-            }
-        })
-
-        if (!response.ok) {
-            throw new Error(`API 요청 실패: ${response.status}`)
-        }
-
-        return await response.json()
-    } catch (error) {
-        console.error('ETF 데이터 가져오기 실패:', error)
-        // 기본값 반환
-        return {
-            totalPage: 0,
-            totalCount: 0,
-            currentPage: 1,
-            pageSize: 20,
-            etfReadResponseList: []
-        }
-    }
 }
 
 // ETF 목록 컴포넌트
@@ -200,7 +164,11 @@ export default async function ThemePage({
     }
 
     // ETF 데이터 가져오기 (기간 파라미터 제거)
-    const etfData = await fetchEtfsByTheme(theme, page, size, keyword)
+    const { data: etfData } = await fetchEtfs({theme, page, size, keyword})
+
+    if (!etfData) {
+        return <div>ETF 데이터가 없습니다</div>;
+    }
 
     return (
         <div className="container mx-auto px-4 py-8">
