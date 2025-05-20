@@ -29,7 +29,7 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
-//    @Cacheable(
+    //    @Cacheable(
 //            cacheNames = "etfPages",
 //            key = "T(java.lang.String).format(" +
 //                    "'%d-%d-%s-%s-%s-%s', " +
@@ -62,9 +62,26 @@ public class EtfService {
         return new EtfResponse(totalPage, totalCount, currentPage, pageSize, etfReturnDtos);
     }
 
+    //페이징 없는 전체조회
+    public EtfAllResponse readAll(Theme theme, String keyword) {
+        long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
+        List<EtfReturnDto> etfReturnDtos = etfQueryRepository
+                .findEtfsByKeyword(theme, keyword)
+                .stream()
+                .map(dto -> new EtfReturnDto(
+                        dto.etfId(),
+                        dto.etfName(),
+                        dto.etfCode(),
+                        dto.theme(),
+                        dto.returnRate()))
+                .toList();
+
+        return new EtfAllResponse(totalCount, etfReturnDtos);
+    }
+
     public EtfDetailResponse findById(Long etfId) {
         Etf etf = etfRepository.findById(etfId)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 etf"));
 
         return new EtfDetailResponse(
                 etf.getId(),
@@ -80,14 +97,14 @@ public class EtfService {
     public SubscribeResponse subscribe(String memberLoginId, Long etfId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
         Etf etf = etfRepository.findById(etfId)
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 etf"));
 
         //중복 구독 확인
-        if (subscribeRepository.existsByUserAndEtfId(user,etfId)){
+        if (subscribeRepository.existsByUserAndEtfId(user, etfId)) {
             Subscribe subscribe = subscribeRepository.findByUserAndEtfId(user, etfId)
                     .orElseThrow(() -> new IllegalArgumentException("구독하지 않은 etf"));
-                subscribeRepository.delete(subscribe);
-            }
+            subscribeRepository.delete(subscribe);
+        }
 
         Subscribe subscribe = Subscribe.builder()
                 .user(user)
@@ -97,7 +114,7 @@ public class EtfService {
                 .build();
         subscribeRepository.save(subscribe);
 
-        return new  SubscribeResponse(
+        return new SubscribeResponse(
                 subscribe.getId(),
                 etf.getId(),
                 subscribe.getStartTime(),
@@ -123,7 +140,7 @@ public class EtfService {
         return new SubscribeListResponse(
                 subscribePage.getTotalPages(),
                 subscribePage.getTotalElements(),
-                subscribePage.getNumber()+1,
+                subscribePage.getNumber() + 1,
                 subscribePage.getSize(),
                 subscribeDTOs
         );
@@ -137,10 +154,12 @@ public class EtfService {
 
         //유저가 해당 etf 구독하고 있는지 확인
         Subscribe subscribe = subscribeRepository.findByUserAndEtfId(user, etfId)
-                .orElseThrow(()-> new IllegalArgumentException("구독하지 않은 etf"));
+                .orElseThrow(() -> new IllegalArgumentException("구독하지 않은 etf"));
 
         subscribeRepository.delete(subscribe);
 
         return new SubscribeDeleteResponse(etfId);
     }
+
+
 }

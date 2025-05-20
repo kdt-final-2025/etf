@@ -45,6 +45,25 @@ public class EtfQueryRepository {
                 .fetch();
     }
 
+    //페이징 없는 전체조회
+    public List<EtfReturnDto> findEtfsByKeyword(
+            Theme theme,
+            String keyword
+    ) {
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        EtfReturnDto.class,
+                        etfProjection.id,
+                        etfProjection.etfName,
+                        etfProjection.etfCode,
+                        etfProjection.theme
+                ))
+                .from(etfProjection)
+                .where(themeEq(theme), keywordContains(keyword))
+                .fetch();
+    }
+
     public Long fetchTotalCount(Theme theme, String keyword){
         Long count = jpaQueryFactory
                 .select(etfProjection.count())
