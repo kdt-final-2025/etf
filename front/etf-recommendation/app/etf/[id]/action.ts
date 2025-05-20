@@ -5,6 +5,8 @@ import {
   unsubscribeFromEtf as apiUnsubscribeFromEtf,
   fetchSubscribedEtfs,
 } from '@/lib/api/subscription';
+import { CommentCreateRequest } from '../../../types';
+import { createComment } from '@/lib/api/comment';
 
 export async function subscribeToEtf(etfId: number) {
   const cookieStore = await cookies();
@@ -57,5 +59,25 @@ export async function getSubscribedEtfIds(): Promise<number[]> {
   } else {
     console.error('Invalid response format or empty subscribes', data);
     return [];
+  }
+}
+export async function createCommentAction(etfId: number, content: string) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
+  if (!accessToken) {
+    throw new Error('로그인이 필요합니다.');
+  }
+
+  const commentData: CommentCreateRequest = {
+    etfId,
+    content,
+  };
+
+  try {
+    const result = await createComment(commentData, accessToken);
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 }

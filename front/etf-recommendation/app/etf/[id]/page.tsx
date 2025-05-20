@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
+  createCommentAction,
   getSubscribedEtfIds,
   subscribeToEtf,
   unsubscribeFromEtf,
@@ -63,6 +64,42 @@ export default function ETFDetailPage() {
   const [subscribed, setSubscribed] = useState(false); // 구독 상태
   const [loading, setLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [comment, setComment] = useState('');
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setComment(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 입력값 유효성 검사
+    if (!comment.trim()) {
+      setError('댓글을 입력해 주세요.');
+      return;
+    }
+
+    try {
+      const { success, message, data } = await createCommentAction(
+        params.id,
+        comment
+      );
+
+      if (!success) {
+        setError(message);
+      } else {
+        setSuccessMessage('댓글이 성공적으로 작성되었습니다!');
+        setComment('');
+        setError('');
+        // 댓글 작성 후 페이지를 새로 고침하거나 다른 페이지로 리다이렉트할 수 있습니다.
+        router.refresh(); // 페이지를 새로 고침
+      }
+    } catch (error) {
+      setError('댓글 작성 중 오류가 발생했습니다.');
+    }
+  };
 
   useEffect(() => {
     if (!etfId) return;
@@ -308,6 +345,36 @@ export default function ETFDetailPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+      <div className="container mx-auto p-4">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label
+              htmlFor="comment"
+              className="block text-sm font-semibold mb-2"
+            >
+              댓글 작성
+            </label>
+            <input
+              type="text"
+              id="comment"
+              value={comment}
+              onChange={handleCommentChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md"
+              placeholder="댓글을 입력해 주세요"
+            />
+          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {successMessage && (
+            <p className="text-green-500 text-sm">{successMessage}</p>
+          )}
+          <button
+            type="submit"
+            className="bg-blue-500 text-white py-2 px-4 rounded-md"
+          >
+            댓글 작성
+          </button>
+        </form>
       </div>
     </div>
   );
