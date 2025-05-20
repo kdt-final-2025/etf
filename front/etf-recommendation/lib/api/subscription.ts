@@ -43,7 +43,7 @@ export async function unsubscribeFromEtf(
   etfId: number,
   accessToken: string
 ): Promise<FetchResult<UnsubscribeResponse>> {
-  return httpDelete(`/api/v1/etf/${etfId}/subscription`, {
+  return httpDelete(`/api/v1/etfs/${etfId}/subscription`, {
     authToken: accessToken,
     errorMessage: 'ETF 구독 취소에 실패했습니다',
   });
