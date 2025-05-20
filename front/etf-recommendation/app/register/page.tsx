@@ -18,7 +18,7 @@ import { register } from '@/lib/api/auth';
 
 export default function RegisterPage() {
   const [loginId, setLoginId] = useState('');
-  const [nickName, setNickname] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [isLikePrivate, setIsLikePrivate] = useState(false);
   const router = useRouter();
@@ -28,10 +28,9 @@ export default function RegisterPage() {
       const { data, error } = await register({
         loginId,
         password,
-        nickName,
+        nickname,
         isLikePrivate,
       });
-      console.log(data);
 
       if (error || !data) {
         alert('회원가입 실패: ' + (error || '알 수 없는 오류'));
@@ -72,7 +71,7 @@ export default function RegisterPage() {
               id="nickname"
               type="text"
               placeholder="닉네임을 입력하세요"
-              value={nickName}
+              value={nickname}
               onChange={(e) => setNickname(e.target.value)}
             />
           </div>
