@@ -8,7 +8,7 @@ export interface EtfResponse {
   etfReadResponseList: EtfReturnDto[];
 }
 
-interface EtfReturnDto {
+export interface EtfReturnDto {
   etfId: number;
   etfName: string;
   etfCode: string;

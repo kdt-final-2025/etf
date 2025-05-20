@@ -4,24 +4,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import EtfFilters from './EtfFilters'
-import { fetchEtfs } from '@/lib/api/etf'
-
-// ETF 응답 타입 정의
-interface EtfItem {
-    etfId: number
-  etfName: string
-  etfCode: string
-  theme: string
-  returnRate: number
-}
-
-interface EtfResponse {
-  totalPage: number
-  totalCount: number
-  currentPage: number
-  pageSize: number
-  etfReadResponseList: EtfItem[]
-}
+import { EtfReturnDto, fetchEtfs } from '@/lib/api/etf'
 
 // 테마 목록 검증
 const validThemes = [
@@ -57,7 +40,7 @@ function getThemeDisplayName(themeId: string): string {
 }
 
 // ETF 목록 컴포넌트
-function EtfTable({ etfs }: { etfs: EtfItem[] }) {
+function EtfTable({ etfs }: { etfs: EtfReturnDto[] }) {
   return (
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="w-full min-w-full divide-y divide-gray-200">
