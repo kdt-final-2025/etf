@@ -26,6 +26,7 @@ import {
   unsubscribeFromEtf,
 } from '@/app/etf/[id]/action';
 import { fetchEtfDetail } from '@/lib/api/etf';
+import { CommentResponse, getComments } from '@/lib/api/comment';
 
 type Holding = {
   name: string;
@@ -62,11 +63,15 @@ export default function ETFDetailPage() {
   const [etf, setEtf] = useState<ETF | null>(null);
   const router = useRouter();
   const [subscribed, setSubscribed] = useState(false); // 구독 상태
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [comment, setComment] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const { id } = useParams<{ id: string }>();
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComment(e.target.value);
@@ -81,23 +86,21 @@ export default function ETFDetailPage() {
       return;
     }
 
-    try {
-      const { success, message, data } = await createCommentAction(
-        params.id,
-        comment
-      );
+    const { data, error, status } = await createCommentAction(
+      params.id,
+      comment
+    );
 
-      if (!success) {
-        setError(message);
-      } else {
-        setSuccessMessage('댓글이 성공적으로 작성되었습니다!');
-        setComment('');
-        setError('');
-        // 댓글 작성 후 페이지를 새로 고침하거나 다른 페이지로 리다이렉트할 수 있습니다.
-        router.refresh(); // 페이지를 새로 고침
-      }
-    } catch (error) {
-      setError('댓글 작성 중 오류가 발생했습니다.');
+    if (status !== 200 && error) {
+      setError(error);
+    }
+    if (data) {
+      setSuccessMessage('댓글이 성공적으로 작성되었습니다!');
+      setComment('');
+      setError('');
+      // 댓글 작성 후 페이지를 새로 고침하거나 다른 페이지로 리다이렉트할 수 있습니다.
+      console.log('댓글 작성 완료');
+      setComments((prev) => [data, ...prev]);
     }
   };
 
@@ -167,6 +170,24 @@ export default function ETFDetailPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!id) return;
+
+    const loadComments = async () => {
+      setLoading(true);
+      const fetchResult = await getComments(Number(id), { page: page });
+      if (fetchResult.data) {
+        setComments(fetchResult.data.commentResponses || []); // 댓글 데이터가 없으면 빈 배열로 설정
+        setTotalPages(fetchResult.data.totalPages);
+      } else {
+        setComments([]); // 데이터가 없으면 빈 배열로 설정
+      }
+      setLoading(false);
+    };
+
+    loadComments();
+  }, [id, page]);
 
   if (!etf) return <div className="p-6">ETF 데이터를 불러오는 중입니다...</div>;
 
@@ -375,6 +396,37 @@ export default function ETFDetailPage() {
             댓글 작성
           </button>
         </form>
+        <div>
+          <h2 className="text-xl font-bold mb-4">댓글</h2>
+          {error && <p className="text-red-500">{error}</p>}
+          <ul className="space-y-4">
+            {comments.map((comment) => (
+              <li key={comment.id} className="p-4 border rounded">
+                <div className="flex items-center mb-2">
+                  {comment.imageUrl ? (
+                    <img
+                      src={comment.imageUrl}
+                      alt="유저 이미지"
+                      className="w-8 h-8 rounded-full mr-2"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-300 rounded-full mr-2" />
+                  )}
+                  <div>
+                    <p className="font-semibold">{comment.nickName}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <p>{comment.content}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  좋아요 {comment.likesCount}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
