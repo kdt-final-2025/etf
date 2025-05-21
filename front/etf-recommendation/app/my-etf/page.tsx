@@ -1,14 +1,14 @@
 'use client'
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button'; // Button 컴포넌트 임포트
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import {Progress} from "@/components/ui/progress"; // Card 컴포넌트 임포트
+import React, {useState} from 'react';
+import {Button} from '@/components/ui/button'; // Button 컴포넌트 임포트
+import {Card, CardHeader, CardContent} from '@/components/ui/card';
+import {Progress} from "@/components/ui/progress";
+import Link from "next/link"; // Card 컴포넌트 임포트
 
 interface EtfDetail {
     etfId: number;
-    theme: string | null;
-    name: string | null;
+    etfName: string | null;
     weeklyReturn: number | null;
 }
 
@@ -21,12 +21,12 @@ interface Recommendation {
 interface ApiResponse {
     status: string;
     recommendation: Recommendation;
-    etfs:EtfDetail[];
+    etfs: EtfDetail[];
 }
 
 const EtfSurvey = () => {
     const [currentQuestion, setCurrentQuestion] = useState(1);
-    const [answers, setAnswers] = useState<{[key: number]: string}>({});
+    const [answers, setAnswers] = useState<{ [key: number]: string }>({});
     const [recommendationResult, setRecommendationResult] = useState<ApiResponse | null>(null);
 
     const questions = {
@@ -143,7 +143,7 @@ const EtfSurvey = () => {
     };
 
     const handleAnswerChange = (questionNumber: number, answer: string) => {
-        setAnswers({ ...answers, [questionNumber]: answer });
+        setAnswers({...answers, [questionNumber]: answer});
     };
 
     const handleNextQuestion = () => {
@@ -166,27 +166,27 @@ const EtfSurvey = () => {
         console.log('설문 결과:', answers);
         alert('설문이 완료되었습니다!');
 
-    const userAnswers = toUserAnswerDTOList();
+        const userAnswers = toUserAnswerDTOList();
 
-    try {
-        const response = await fetch("http://localhost:8080/api/v1/recommendation", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(userAnswers)
-        });
-        if (!response.ok) throw new Error("서버 오류");
-        const data: ApiResponse = await response.json();
-        setRecommendationResult(data);
-    } catch (e) {
-        alert("추천 요청에 실패했습니다.");
-    }
+        try {
+            const response = await fetch("http://localhost:8080/api/v1/recommendation", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(userAnswers)
+            });
+            if (!response.ok) throw new Error("서버 오류");
+            const data: ApiResponse = await response.json();
+            setRecommendationResult(data);
+        } catch (e) {
+            alert("추천 요청에 실패했습니다.");
+        }
     };
 
     const currentQuestionData = questions[currentQuestion as keyof typeof questions];
 
 
     if (recommendationResult) {
-        const { recommendation, etfs } = recommendationResult;
+        const {recommendation, etfs} = recommendationResult;
 
         return (
             <div className="flex items-center justify-center h-screen">
@@ -194,14 +194,15 @@ const EtfSurvey = () => {
                     <h1 className="text-3xl font-bold mb-6">ETF 추천 결과</h1>
                     <div className="mb-6 p-4 border rounded bg-gray-50">
                         <div className="text-lg font-semibold mb-2">
-                            주 추천 테마: <span className="text-blue-600">{r}</span>
+                            주 추천 테마: <span className="text-blue-600">{recommendation.mainRecommendation}</span>
                         </div>
                         <div className="mb-2">
-                            <span className="font-semibold">추천 사유:</span> {reason}
+                            <span className="font-semibold">추천 사유:</span> {recommendation.reason}
                         </div>
-                        {subRecommendations.length > 0 && (
+                        {recommendation.subRecommendations.length > 0 && (
                             <div>
-                                <span className="font-semibold">서브 추천 테마:</span> {subRecommendations.join(", ")}
+                                <span
+                                    className="font-semibold">서브 추천 테마:</span> {recommendation.subRecommendations.join(", ")}
                             </div>
                         )}
                     </div>
@@ -210,23 +211,34 @@ const EtfSurvey = () => {
                         {/* 서브 추천 ETF (왼쪽) */}
                         {etfs[1] && (
                             <div className="border p-3 rounded w-64 bg-white shadow text-center">
-                                <div className="font-medium">{recommendationResult.etfs[1].name} ({recommendationResult.etfs[1].theme})</div>
-                                <div className="text-gray-500 text-sm">수익률: {recommendationResult.etfs[1].weeklyReturn}%</div>
+                                <Link href={`/etf/${recommendationResult.etfs[2].etfId}`}>
+                                    <div
+                                        className="font-medium">{etfs[1].etfName} ({recommendation.subRecommendations[0]})
+                                    </div>
+                                </Link>
+                                <div className="text-gray-500 text-sm">수익률: {etfs[1].weeklyReturn}%</div>
                                 <div className="mt-2 text-xs text-blue-400">서브 추천</div>
                             </div>
                         )}
                         {/* 메인 추천 ETF (가운데) */}
-                        <div className="border-2 border-blue-500 p-4 rounded w-72 bg-blue-50 shadow-lg text-center scale-110">
-                            <div className="font-bold text-lg text-blue-600">
-                                {recommendationResult.etfs[0].name} ({etfs[0].theme})
-                            </div>
+                        <div
+                            className="border-2 border-blue-500 p-4 rounded w-72 bg-blue-50 shadow-lg text-center scale-110">
+                            <Link href={`/etf/${recommendationResult.etfs[2].etfId}`}>
+                                <div className="font-bold text-lg text-blue-600">
+                                    {etfs[0].etfName} ({recommendation.mainRecommendation})
+                                </div>
+                            </Link>
                             <div className="text-gray-700 text-sm mt-1">수익률: {etfs[0].weeklyReturn}%</div>
                             <div className="mt-3 text-sm font-semibold text-blue-700">메인 추천</div>
                         </div>
                         {/* 서브 추천 ETF (오른쪽) */}
                         {recommendationResult.etfs[2] && (
                             <div className="border p-3 rounded w-64 bg-white shadow text-center">
-                                <div className="font-medium">{recommendationResult.etfs[2].name} ({recommendationResult.etfs[2].theme})</div>
+                                <Link href={`/etf/${recommendationResult.etfs[2].etfId}`}>
+                                    <div className="font-medium">
+                                        {recommendationResult.etfs[2].etfName} ({recommendation.subRecommendations[1]})
+                                    </div>
+                                </Link>
                                 <div className="text-gray-500 text-sm">수익률: {etfs[2].weeklyReturn}%</div>
                                 <div className="mt-2 text-xs text-blue-400">서브 추천</div>
                             </div>
@@ -245,7 +257,7 @@ const EtfSurvey = () => {
             <div className="w-full max-w-screen-md py-12 px-4 sm:px-6 lg:px-8">
                 <h1 className="text-4xl font-semibold text-gray-900 mb-4">ETF 추천 설문조사</h1>
 
-                <Progress value={progressValue} className="mb-4" />
+                <Progress value={progressValue} className="mb-4"/>
 
                 {currentQuestionData && (
                     <Card className="mb-8">
@@ -291,7 +303,6 @@ const EtfSurvey = () => {
         </div>
     );
 };
-
 
 
 export default EtfSurvey;
