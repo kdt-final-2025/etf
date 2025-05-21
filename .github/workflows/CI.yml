@@ -10,9 +10,12 @@ env:
   AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
   AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
   JWT_SECRET: ${{secrets.JWT_SECRET}}
+
   JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
   KIS_APPKEY: ${{secrets.KIS_APPKEY}}
   KIS_SECRETKEY: ${{secrets.KIS_SECRETKEY}}
+  SPRING_PROFILES_ACTIVE: test
+
 
 jobs:
   test:
