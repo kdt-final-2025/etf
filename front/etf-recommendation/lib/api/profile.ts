@@ -1,13 +1,13 @@
-import { FetchResult, post, get, patch } from '../http/client';
+import { FetchResult, httpPost, httpGet, httpPatch } from '../http/client';
 
 export interface ProfileUpdateRequest {
-  nickName: string;
+  nickname: string;
   isLikePrivate: boolean;
 }
 
 export interface ProfileResponse {
   id: number;
-  nickName: string;
+  nickname: string;
   isLikePrivate: boolean;
   profileImageUrl?: string;
   loginId: string;
@@ -29,7 +29,7 @@ export interface ImageUploadResponse {
 export async function updateUserProfile(
   userData: ProfileUpdateRequest
 ): Promise<FetchResult<ProfileResponse>> {
-  return patch('/api/v1/users', userData, {
+  return httpPatch('/api/v1/users', userData, {
     errorMessage: '프로필 업데이트에 실패했습니다',
     credentials: 'include',
   });
@@ -44,7 +44,7 @@ export async function uploadProfileImage(
   formData: FormData,
   accessToken: string
 ): Promise<FetchResult<ImageUploadResponse>> {
-  return patch('/api/v1/users/image', formData, {
+  return httpPatch('/api/v1/users/image', formData, {
     errorMessage: '이미지 업로드에 실패했습니다',
     authToken: accessToken,
   });
@@ -59,7 +59,7 @@ export async function changeUserPassword(
   passwordData: PasswordChangeRequest,
   accessToken: string
 ): Promise<FetchResult<void>> {
-  return patch('/api/v1/users/me/password', passwordData, {
+  return httpPatch('/api/v1/users/me/password', passwordData, {
     errorMessage: '비밀번호 변경에 실패했습니다',
     authToken: accessToken,
   });

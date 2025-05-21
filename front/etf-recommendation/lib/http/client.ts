@@ -44,13 +44,14 @@ async function fetchApi<T>(
       method,
       headers,
       body,
+      signal: controller.signal,
       ...restConfig,
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      return await handleErrorResponse(response, url, errorMessage);
+      return handleErrorResponse(response, url, errorMessage);
     }
 
     const contentType = response.headers.get('content-type') || '';
@@ -58,7 +59,7 @@ async function fetchApi<T>(
       return handleNonJsonResponse(response, contentType);
     }
 
-    return await parseJsonResponse<T>(response);
+    return parseJsonResponse<T>(response);
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -107,27 +108,30 @@ function prepareHeaders(
   return headers;
 }
 
-async function handleErrorResponse(
+async function handleErrorResponse<T>(
   response: Response,
   url: string,
   errorMessage?: string
-): Promise<never> {
+): Promise<FetchResult<T>> {
   const status = response.status;
   const errorBody = await response.text().catch(() => '알 수 없는 에러');
 
   console.error(`API 오류: (${status}): ${url}`, errorBody);
 
-  throw new Error(
-    errorMessage ||
+  return {
+    data: null,
+    error:
+      errorMessage ||
       getDefaultErrorMessage(status) ||
-      `HTTP 에러 ${status}: ${errorBody}`
-  );
+      `HTTP 에러 ${status}: ${errorBody}`,
+    status: status,
+  };
 }
 
-function handleNonJsonResponse(
+function handleNonJsonResponse<T>(
   response: Response,
   contentType: string
-): FetchResult<any> {
+): FetchResult<T> {
   console.warn(
     `서버에서 JSON이 아닌 응답을 반환했습니다. Content-Type: ${contentType}`
   );
@@ -174,7 +178,11 @@ export function addQueryParams(
   url: string,
   params: Record<string, any>
 ): string {
-  const urlObj = new URL(url);
+  const isRelativePath = !url.match(/^https?:\/\//);
+
+  const urlObj = isRelativePath
+    ? new URL(url, 'http://dummy.com')
+    : new URL(url);
 
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null) return;
@@ -186,10 +194,12 @@ export function addQueryParams(
     }
   });
 
-  return urlObj.toString();
+  return isRelativePath
+    ? `${urlObj.pathname}${urlObj.search}`
+    : urlObj.toString();
 }
 
-export function get<T>(
+export function httpGet<T>(
   endpoint: string,
   config?: ApiRequestConfig & { params?: Record<string, any> }
 ): Promise<FetchResult<T>> {
@@ -202,47 +212,49 @@ export function get<T>(
   return fetchApi<T>(endpoint, { ...restConfig, method: 'GET' });
 }
 
-export function post<T, U>(
+export function httpPost<T, U>(
   endpoint: string,
   data: T,
   config?: BodyRequestConfig
 ): Promise<FetchResult<U>> {
+  const isFormData =
+    typeof FormData !== 'undefined' && data instanceof FormData;
+
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(config?.headers || {}),
   };
+
   return fetchApi<U>(endpoint, {
     ...config,
     method: 'POST',
     headers,
-    body:
-      typeof data === 'string' || data instanceof FormData
-        ? data
-        : JSON.stringify(data),
+    body: isFormData || typeof data === 'string' ? data : JSON.stringify(data),
   });
 }
 
-export function patch<T, U>(
+export function httpPatch<T, U>(
   endpoint: string,
   data: T,
   config?: BodyRequestConfig
 ): Promise<FetchResult<U>> {
+  const isFormData =
+    typeof FormData !== 'undefined' && data instanceof FormData;
+
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(config?.headers || {}),
   };
+
   return fetchApi<U>(endpoint, {
     ...config,
     method: 'PATCH',
     headers,
-    body:
-      typeof data === 'string' || data instanceof FormData
-        ? data
-        : JSON.stringify(data),
+    body: isFormData || typeof data === 'string' ? data : JSON.stringify(data),
   });
 }
 
-export function deleteRequest<T>(
+export function httpDelete<T>(
   endpoint: string,
   config?: ApiRequestConfig
 ): Promise<FetchResult<T>> {
