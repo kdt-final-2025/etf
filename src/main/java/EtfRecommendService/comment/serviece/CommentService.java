@@ -69,7 +69,7 @@ public class CommentService {
                     .commentResponses(commentResponseList)
                     .build();
         } else {
-            Page<Comment> commentPage = commentRepository.findAllByEtfId(etfId, pageable);
+            Page<Comment> commentPage = commentRepository.findAllByEtfIdAndIsDeletedFalse(etfId, pageable);
             List<Comment> commentList = commentPage.getContent();
             List<CommentResponse> commentResponseList = commentList.stream().map(
                             c -> CommentResponse
