@@ -18,7 +18,7 @@ public class AIController {
     private final VertexAiGeminiChatModel vertexAiGeminiChatModel;
     private final AIService aiService;
 
-    @GetMapping("/chat")
+    @PostMapping("/chat")
     public Map<String, String> chat(@RequestBody String message) {
         InputStream is = getClass().getClassLoader().getResourceAsStream("etfrecommendserviceai.json");
         System.out.println(is != null ? "파일 찾음" : "파일 못 찾음");
