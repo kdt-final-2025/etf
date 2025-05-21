@@ -5,6 +5,7 @@ import EtfRecommendService.ai.dto.RecommendationResponseDTO;
 import EtfRecommendService.ai.dto.UserAnswerDTO;
 import EtfRecommendService.etf.EtfQueryRepository;
 import EtfRecommendService.etf.EtfService;
+import EtfRecommendService.etf.Theme;
 import EtfRecommendService.etf.dto.EtfReadResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,7 +140,7 @@ public class AIService {
         List<EtfReadResponse> etfReadResponseList = new ArrayList<>();
 
         for (String theme : recommendedThemes) {
-            etfReadResponseList.add(etfService.findTopByThemeOrderByWeeklyReturn(theme));
+            etfReadResponseList.add(etfService.findTopByThemeOrderByWeeklyReturn(Theme.fromDisplayName(theme)));
         }
 
         for (EtfReadResponse etfReadResponse : etfReadResponseList) {

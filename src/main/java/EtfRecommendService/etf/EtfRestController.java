@@ -64,6 +64,6 @@ public class EtfRestController {
 
     @GetMapping("/etfs/recommend")
     public ResponseEntity<EtfReadResponse> readTopByThemeOrderByWeeklyReturn(@RequestParam String theme){
-        return ResponseEntity.ok(etfService.findTopByThemeOrderByWeeklyReturn(theme));
+        return ResponseEntity.ok(etfService.findTopByThemeOrderByWeeklyReturn(Theme.fromDisplayName(theme)));
     }
 }

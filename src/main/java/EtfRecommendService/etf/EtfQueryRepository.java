@@ -47,7 +47,7 @@ public class EtfQueryRepository {
                 .fetch();
     }
 
-    public Long fetchTotalCount(Theme theme, String keyword){
+    public Long fetchTotalCount(Theme theme, String keyword) {
         Long count = jpaQueryFactory
                 .select(etfProjection.count())
                 .from(etfProjection)
@@ -74,9 +74,9 @@ public class EtfQueryRepository {
                 .or(etfProjection.etfCode.containsIgnoreCase(keyword));
     }
 
-    public EtfProjection findTopByThemeOrderByWeeklyReturn(String theme) {
+    public EtfProjection findTopByThemeOrderByWeeklyReturn(Theme theme) {
         return jpaQueryFactory.selectFrom(etfProjection)
-                .where(etfProjection.theme.eq(Theme.fromDisplayName(theme)))
+                .where(etfProjection.theme.eq(theme))
                 .orderBy(etfProjection.weeklyReturn.desc())
                 .limit(1)
                 .fetchOne();
