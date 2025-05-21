@@ -44,6 +44,9 @@ jobs:
       - name: Set up Google Cloud credentials
         run: echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > $HOME/gcp-key.json
 
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-key.json" >> $GITHUB_ENV
+
       - name: Authenticate to Google Cloud
         run: gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
@@ -78,6 +81,15 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Set up Google Cloud credentials
+        run: echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > $HOME/gcp-key.json
+
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-key.json" >> $GITHUB_ENV
+
+      - name: Authenticate to Google Cloud
+        run: gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
       - name: Build application
         run: ./gradlew build --no-daemon
