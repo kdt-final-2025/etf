@@ -5,7 +5,12 @@ import {
   unsubscribeFromEtf as apiUnsubscribeFromEtf,
   fetchSubscribedEtfs,
 } from '@/lib/api/subscription';
-import { createComment, CreateCommentRequest } from '@/lib/api/comment';
+import {
+  createComment,
+  CreateCommentRequest,
+  deleteComment,
+  updateComment,
+} from '@/lib/api/comment';
 
 export async function subscribeToEtf(etfId: number) {
   const cookieStore = await cookies();
@@ -75,4 +80,27 @@ export async function createCommentAction(etfId: number, content: string) {
   };
 
   return createComment(commentData, accessToken);
+}
+export async function updateCommentAction(commentId: number, content: string) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
+  // 토큰이 없을 경우 에러 처리
+  if (!accessToken) {
+    throw new Error('로그인이 필요합니다');
+  }
+
+  return await updateComment(commentId, { content: content }, accessToken);
+}
+
+export async function deleteCommentAction(commentId: number) {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
+  // 토큰이 없을 경우 에러 처리
+  if (!accessToken) {
+    throw new Error('로그인이 필요합니다');
+  }
+
+  return await deleteComment(commentId, accessToken);
 }

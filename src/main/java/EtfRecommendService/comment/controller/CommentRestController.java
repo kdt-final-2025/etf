@@ -43,7 +43,7 @@ public class CommentRestController {
 
     //댓글 수정
     @Secured("ROLE_USER")
-    @PutMapping("/{commentId}")
+    @PatchMapping("/{commentId}")
     public void updateComment(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long commentId,

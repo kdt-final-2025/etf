@@ -21,9 +21,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   createCommentAction,
+  deleteCommentAction,
   getSubscribedEtfIds,
   subscribeToEtf,
   unsubscribeFromEtf,
+  updateCommentAction,
 } from '@/app/etf/[id]/action';
 import { fetchEtfDetail } from '@/lib/api/etf';
 import { CommentResponse, getComments } from '@/lib/api/comment';
@@ -72,7 +74,51 @@ export default function ETFDetailPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const { id } = useParams<{ id: string }>();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editedContent, setEditedContent] = useState('');
 
+  const handleEditClick = (commentId: number, currentContent: string) => {
+    setEditingId(commentId);
+    setEditedContent(currentContent);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditedContent('');
+  };
+
+  const handleUpdate = async (commentId: number) => {
+    if (!editedContent.trim()) return;
+
+    try {
+      const { data, error } = await updateCommentAction(
+        commentId,
+        editedContent
+      );
+
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId ? { ...c, content: editedContent } : c
+        )
+      );
+      setEditingId(null);
+      setEditedContent('');
+    } catch (err: any) {
+      alert(err.message || '오류 발생');
+    }
+  };
+
+  const handleDelete = async (commentId: number) => {
+    const confirmed = confirm('댓글을 삭제하시겠습니까?');
+    if (!confirmed) return;
+
+    try {
+      await deleteCommentAction(commentId);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch (err: any) {
+      alert(err.message || '삭제 중 오류 발생');
+    }
+  };
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComment(e.target.value);
   };
@@ -99,7 +145,6 @@ export default function ETFDetailPage() {
       setComment('');
       setError('');
       // 댓글 작성 후 페이지를 새로 고침하거나 다른 페이지로 리다이렉트할 수 있습니다.
-      console.log('댓글 작성 완료');
       setComments((prev) => [data, ...prev]);
     }
   };
@@ -369,13 +414,10 @@ export default function ETFDetailPage() {
       </div>
       <div className="container mx-auto p-4">
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="comment"
-              className="block text-sm font-semibold mb-2"
-            >
-              댓글 작성
-            </label>
+          <label htmlFor="comment" className="block font-semibold mb-2">
+            댓글 작성
+          </label>
+          <div className="mb-4 flex items-center space-x-4">
             <input
               type="text"
               id="comment"
@@ -384,17 +426,17 @@ export default function ETFDetailPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md"
               placeholder="댓글을 입력해 주세요"
             />
+            <button
+              type="submit"
+              className="bg-blue-500 text-white py-2 px-2 rounded-md whitespace-nowrap"
+            >
+              댓글 작성
+            </button>
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           {successMessage && (
             <p className="text-green-500 text-sm">{successMessage}</p>
           )}
-          <button
-            type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded-md"
-          >
-            댓글 작성
-          </button>
         </form>
         <div>
           <h2 className="text-xl font-bold mb-4">댓글</h2>
@@ -419,10 +461,56 @@ export default function ETFDetailPage() {
                     </p>
                   </div>
                 </div>
-                <p>{comment.content}</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  좋아요 {comment.likesCount}
-                </p>
+                {editingId === comment.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editedContent}
+                      onChange={(e) => setEditedContent(e.target.value)}
+                      className="w-full border p-2 rounded mb-2"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleUpdate(comment.id)}
+                        className="bg-blue-500 text-white px-3 py-1 rounded"
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="bg-gray-300 px-3 py-1 rounded"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>{comment.content}</p>
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-sm text-gray-500">
+                        좋아요 {comment.likesCount}
+                      </p>
+                      {/* TODO: 사용자 본인인 경우만 표시 */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            handleEditClick(comment.id, comment.content)
+                          }
+                          className="text-blue-500 text-sm"
+                        >
+                          수정
+                        </button>
+                        <button
+                          onClick={() => handleDelete(comment.id)}
+                          className="text-red-500 text-sm"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>
