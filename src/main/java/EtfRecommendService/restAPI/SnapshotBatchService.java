@@ -21,7 +21,7 @@ public class SnapshotBatchService {
     private final KisRestClient restClient;
     private final SnapshotRepository repo;
     private final CsvLoader csvLoader;
-    private final RedisTemplate<String, Object> redisTemplate; // 캐시용 - 실시간 조회 속도 향상, 장중엔 사용 안함
+    private RedisTemplate<String, Object> redisTemplate; // 캐시용 - 실시간 조회 속도 향상, 장중엔 사용 안함
 
     private final Object lock = new Object();
     private boolean running = false;

@@ -3,6 +3,7 @@ package EtfRecommendService.restAPI;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ import java.util.Map;
 //appKey, appSecret으로 인증 토큰을 발급받고 저장 - 웹소켓 접근 키랑 다름
 //엑세스 토큰 발급 시점부터 24시간 유효, 하루동안 재사용 가능
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class KoreaInvestAuth {
 
     @Value("${kis.appkey}")
