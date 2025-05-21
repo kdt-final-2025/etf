@@ -105,7 +105,7 @@ const StockHistoryChart: FC<Props> = ({ initialSymbol }) => {
             setLoading(true)
 
             try {
-                const res = await fetch(`/api/history/${symbol}?range=${range}`)
+                const res = await fetch(`/api/stock/${symbol}?range=${range}`)
                 if (!res.ok) {
                     console.error(`Error fetching data: ${res.status}`)
                     if (isMounted) {

@@ -27,17 +27,17 @@ public class EtfRestController {
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme, keyword, period);
+        EtfResponse etfResponse = etfService.readAll(theme, keyword, pageable, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
-    //페이징 없는 전체조회
-    @GetMapping("/all")
+    //페이징 없는 전체 조회용. 주간 수익률 반환.
+    @GetMapping("/etfs/search")
     public ResponseEntity<EtfAllResponse> readAll(
             @RequestParam(required = false) Theme theme,
             @RequestParam(defaultValue = "") String keyword) {
 
-        EtfAllResponse etfAllResponse = etfService.readAll(theme, keyword);
+        EtfAllResponse etfAllResponse = etfService.searchAll(theme, keyword);
 
         return ResponseEntity.status(HttpStatus.OK).body(etfAllResponse);
     }

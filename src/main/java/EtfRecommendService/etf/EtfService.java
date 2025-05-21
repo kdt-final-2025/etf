@@ -1,6 +1,7 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.domain.Subscribe;
 import EtfRecommendService.etf.dto.*;
 import EtfRecommendService.user.User;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EtfService {
@@ -29,52 +31,54 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
-    //    @Cacheable(
-//            cacheNames = "etfPages",
-//            key = "T(java.lang.String).format(" +
-//                    "'%d-%d-%s-%s-%s-%s', " +
-//                    "#pageable.pageNumber, " +
-//                    "#pageable.pageSize, " +
-//                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
-//                    "(#theme != null ? #theme.name() : ''), " +
-//                    "#keyword, " +
-//                    "#period" +
-//                    ")"
-//    )
-    public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, String period) {
+    //페이징 있는 전체 etf 조회. 기본값은 주간 수익률 반환.
+    public EtfResponse readAll(
+            Theme theme,
+            String keyword,
+            Pageable pageable,
+            String period
+    ) {
         long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
-        int totalPage = (int) Math.ceil((double) totalCount / pageable.getPageSize());
-        int currentPage = pageable.getPageNumber() + 1;
         int pageSize = pageable.getPageSize();
+        int currentPage = pageable.getPageNumber() + 1; // 0-based index이므로 +1
+        int totalPage = (int) Math.ceil((double) totalCount / pageSize);
 
-        List<EtfReturnDto> etfReturnDtos = etfQueryRepository
-                .findEtfsByPeriod(theme, keyword, pageable, period)
-                .stream()
-                .map(dto -> new EtfReturnDto(
-                        dto.etfId(),
-                        dto.etfName(),
-                        dto.etfCode(),
-                        dto.theme(),
-                        dto.returnRate()
+        List<EtfProjection> etfs = etfQueryRepository.findEtfsByPeriod(theme, keyword, pageable);
+
+        List<EtfReturnDto> dtoList = etfs.stream()
+                .map(etf -> new EtfReturnDto(
+                        etf.getId(),
+                        etf.getEtfName(),
+                        etf.getEtfCode(),
+                        etf.getTheme(),
+                        "monthly".equalsIgnoreCase(period)
+                                ? etf.getMonthlyReturn()
+                                : etf.getWeeklyReturn()
                 ))
-                .toList();
+                .collect(Collectors.toList());
 
-        return new EtfResponse(totalPage, totalCount, currentPage, pageSize, etfReturnDtos);
+        return new EtfResponse(
+                totalPage,
+                totalCount,
+                currentPage,
+                pageSize,
+                dtoList
+        );
     }
 
-    //페이징 없는 전체조회
-    public EtfAllResponse readAll(Theme theme, String keyword) {
+    //페이징 없는 전체 조회용. 주간 수익률 반환.
+    public EtfAllResponse searchAll(Theme theme, String keyword) {
         long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
-        List<EtfReturnDto> etfReturnDtos = etfQueryRepository
-                .findEtfsByKeyword(theme, keyword)
-                .stream()
-                .map(dto -> new EtfReturnDto(
-                        dto.etfId(),
-                        dto.etfName(),
-                        dto.etfCode(),
-                        dto.theme(),
-                        dto.returnRate()))
-                .toList();
+        List<EtfProjection> etfProjections = etfQueryRepository.findEtfsByKeyword(theme, keyword);
+
+        List<EtfReturnDto> etfReturnDtos = etfProjections.stream()
+                .map(etf -> new EtfReturnDto(
+                        etf.getId(),
+                        etf.getEtfName(),
+                        etf.getEtfCode(),
+                        etf.getTheme(),
+                        etf.getWeeklyReturn()))
+                .collect(Collectors.toList());
 
         return new EtfAllResponse(totalCount, etfReturnDtos);
     }
