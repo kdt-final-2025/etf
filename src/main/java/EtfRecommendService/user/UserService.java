@@ -56,12 +56,12 @@ public class UserService {
         User user = getByLoginId(loginId);
 
         user.updateProfile(
-                updateRequest.nickName(),
+                updateRequest.nickname(),
                 updateRequest.isLikePrivate());
 
         return new UserUpdateResponse(
                 user.getId(),
-                user.getNickName(),
+                user.getNickname(),
                 user.getImageUrl(),
                 user.isLikePrivate());
     }
@@ -133,16 +133,16 @@ public class UserService {
         return new UserProfileResponse(user.getId(), user.getImageUrl());
     }
 
-    public UserDetailResponse findByUserId(String loginId, Long userId) {
-        getByLoginId(loginId);
+    public UserDetailResponse findByUserId(String myLoginId, String loginId) {
+        getByLoginId(myLoginId);
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(loginId).orElseThrow(() ->
+                new RuntimeException("존재하지 않는 유저 id : " + loginId));
 
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new RuntimeException("존재하지 않는 유저 id : " + userId));
 
         return new UserDetailResponse(
                 user.getId(),
                 user.getLoginId(),
-                user.getNickName(),
+                user.getNickname(),
                 user.getImageUrl(),
                 user.isLikePrivate(),
                 user.getCreatedAt());
