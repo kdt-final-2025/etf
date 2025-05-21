@@ -1,6 +1,8 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.dto.*;
+import EtfRecommendService.webSocket.CsvLoader;
+import EtfRecommendService.webSocket.WebSocketConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,12 +14,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
 public class EtfRestController {
 
     private final EtfService etfService;
+    private final WebSocketConnectionService webSocketConnectionService;
+    private final CsvLoader csvLoader;
 
 
     @GetMapping("/etfs")
@@ -27,20 +33,20 @@ public class EtfRestController {
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword, period);
+        EtfResponse etfResponse = etfService.readAll(pageable, theme, keyword, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
 
     @GetMapping("/etfs/{etfId}")
-    public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId){
+    public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId) {
         EtfDetailResponse etfDetailResponse = etfService.findById(etfId);
         return ResponseEntity.status(HttpStatus.OK).body(etfDetailResponse);
     }
 
     @Secured("ROLE_USER")
     @PostMapping("/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeResponse> create(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId) {
         SubscribeResponse subscribeResponse = etfService.subscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscribeResponse);
     }
@@ -48,8 +54,8 @@ public class EtfRestController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/etfs/subscribes")
     public ResponseEntity<SubscribeListResponse> subscribeReadAll(@AuthenticationPrincipal UserDetails userDetails,
-                                                  @RequestParam(defaultValue = "1") int page,
-                                                  @RequestParam(defaultValue = "20") int size){
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         SubscribeListResponse subscribeListResponse = etfService.subscribeReadAll(pageable, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(subscribeListResponse);
@@ -62,5 +68,25 @@ public class EtfRestController {
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 
+    //웹소켓
+    //어떤 종목코드를 구독할지
+    @GetMapping("/stocks")
+    public List<String> getCodes(@RequestParam int page, @RequestParam int size) {
+        var all = csvLoader.getCodes();
+        return all.subList(page * size, Math.min(all.size(), (page + 1) * size));
+    }
 
+    //종목 수 반환
+    @GetMapping("/stocks/count")
+    public int getTotalStockCount() {
+        return csvLoader.getCount();
+    }
+
+    //프론트에서 페이지가 바뀔 때마다 호출
+    //백엔드가 KIS API에 SUBSCRIBE 요청을 다시 보내도록
+    @PostMapping("/stocks/subscribe")
+    public ResponseEntity<Void> subscribeStocks(@RequestBody List<String> stockCodes) {
+        webSocketConnectionService.subscribeNewKeys(stockCodes);
+        return ResponseEntity.ok().build();
+    }
 }

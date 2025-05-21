@@ -38,7 +38,9 @@ import {
 } from '@/components/ui/select';
 import EtfCard, { ETF } from '@/components/EtfCard';
 import MarketTickerWidget from '@/components/MarketTickerWidget';
-import { fetchEtfs } from '@/lib/api/etf';
+import { fetchAllEtfs, fetchEtfsPage } from '@/lib/api/etf';
+import Pagination from '@/components/StockPagination';
+import StocksTable from '@/components/StocksTable';
 
 // 시장 요약 데이터
 const marketSummary = {
@@ -75,6 +77,11 @@ export default function Home() {
   const [allEtfData, setAllEtfData] = useState<ETF[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  //웹소켓
+  //서버에서 총 종목 수 받기
+  const [websocketPage, setWebsocketPage] = useState(0);
+  const size = 10; // 한 페이지당 10개
 
   //전체 데이터 (allEtfData) 최초 로딩
   useEffect(() => {
@@ -526,6 +533,14 @@ export default function Home() {
               {/*))}*/}
             </Button>
           </div>
+
+          <section className="mt-12">
+            <h1>ETF 실시간 시세</h1>
+            {/* 페이지네이션 버튼 */}
+            <Pagination size={size} onPageChange={setWebsocketPage} />
+            {/* 실시간 시세 테이블 */}
+            <StocksTable page={websocketPage} size={size} />
+          </section>
         </div>
       </div>
     </div>
