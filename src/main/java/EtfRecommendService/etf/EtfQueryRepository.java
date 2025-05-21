@@ -1,5 +1,8 @@
 package EtfRecommendService.etf;
 
+import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
+import EtfRecommendService.etf.domain.QEtf;
 import EtfRecommendService.etf.domain.QEtfProjection;
 import EtfRecommendService.etf.dto.EtfReturnDto;
 import com.querydsl.core.types.Projections;
@@ -17,6 +20,7 @@ import java.util.List;
 public class EtfQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
     private final QEtfProjection etfProjection = QEtfProjection.etfProjection;
+    private final QEtf etf = QEtf.etf;
 
     public List<EtfReturnDto> findEtfsByPeriod(
             Theme theme,
@@ -30,6 +34,7 @@ public class EtfQueryRepository {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         EtfReturnDto.class,
+                        etfProjection.id,
                         etfProjection.etfName,
                         etfProjection.etfCode,
                         etfProjection.theme,
@@ -42,7 +47,7 @@ public class EtfQueryRepository {
                 .fetch();
     }
 
-    public Long fetchTotalCount(Theme theme, String keyword){
+    public Long fetchTotalCount(Theme theme, String keyword) {
         Long count = jpaQueryFactory
                 .select(etfProjection.count())
                 .from(etfProjection)
@@ -50,7 +55,6 @@ public class EtfQueryRepository {
                         keywordContains(keyword))
                 .fetchOne();
 
-        //null 체크, 조회된거 없으면 0L로 처리
         return count == null ? 0L : count;
     }
 
@@ -66,8 +70,16 @@ public class EtfQueryRepository {
         if (keyword == null || keyword.trim().isEmpty()) {
             return null;
         }
-        return etfProjection.etfName.containsIgnoreCase(keyword)  //대소문자 구분없이 검색
+        return etfProjection.etfName.containsIgnoreCase(keyword)
                 .or(etfProjection.etfCode.containsIgnoreCase(keyword));
+    }
+
+    public EtfProjection findTopByThemeOrderByWeeklyReturn(Theme theme) {
+        return jpaQueryFactory.selectFrom(etfProjection)
+                .where(etfProjection.theme.eq(theme))
+                .orderBy(etfProjection.weeklyReturn.desc())
+                .limit(1)
+                .fetchOne();
     }
 }
 

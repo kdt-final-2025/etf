@@ -1,6 +1,7 @@
 package EtfRecommendService.etf;
 
 import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.domain.Subscribe;
 import EtfRecommendService.etf.dto.*;
 import EtfRecommendService.user.User;
@@ -29,18 +30,18 @@ public class EtfService {
         this.etfQueryRepository = etfQueryRepository;
     }
 
-    @Cacheable(
-            cacheNames = "etfPages",
-            key = "T(java.lang.String).format(" +
-                    "'%d-%d-%s-%s-%s-%s', " +
-                    "#pageable.pageNumber, " +
-                    "#pageable.pageSize, " +
-                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
-                    "(#theme != null ? #theme.name() : ''), " +
-                    "#keyword, " +
-                    "#period" +
-                    ")"
-    )
+//    @Cacheable(
+//            cacheNames = "etfPages",
+//            key = "T(java.lang.String).format(" +
+//                    "'%d-%d-%s-%s-%s-%s', " +
+//                    "#pageable.pageNumber, " +
+//                    "#pageable.pageSize, " +
+//                    "(#pageable.sort == null ? '' : #pageable.sort.toString()), " +
+//                    "(#theme != null ? #theme.name() : ''), " +
+//                    "#keyword, " +
+//                    "#period" +
+//                    ")"
+//    )
     public EtfResponse readAll(Pageable pageable, Theme theme, String keyword, String period) {
         long totalCount = etfQueryRepository.fetchTotalCount(theme, keyword);
         int totalPage = (int) Math.ceil((double) totalCount / pageable.getPageSize());
@@ -51,6 +52,7 @@ public class EtfService {
                 .findEtfsByPeriod(theme, keyword, pageable, period)
                 .stream()
                 .map(dto -> new EtfReturnDto(
+                        dto.etfId(),
                         dto.etfName(),
                         dto.etfCode(),
                         dto.theme(),
@@ -78,14 +80,15 @@ public class EtfService {
     @Transactional
     public SubscribeResponse subscribe(String memberLoginId, Long etfId) {
         User user = userRepository.findByLoginIdAndIsDeletedFalse(memberLoginId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원"));
-
         Etf etf = etfRepository.findById(etfId)
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 etf"));
 
         //중복 구독 확인
         if (subscribeRepository.existsByUserAndEtfId(user,etfId)){
-            throw new IllegalStateException("이미 구독한 etf");
-        }
+            Subscribe subscribe = subscribeRepository.findByUserAndEtfId(user, etfId)
+                    .orElseThrow(() -> new IllegalArgumentException("구독하지 않은 etf"));
+                subscribeRepository.delete(subscribe);
+            }
 
         Subscribe subscribe = Subscribe.builder()
                 .user(user)
@@ -140,5 +143,19 @@ public class EtfService {
         subscribeRepository.delete(subscribe);
 
         return new SubscribeDeleteResponse(etfId);
+    }
+
+
+    public EtfReadResponse findTopByThemeOrderByWeeklyReturn(Theme theme) {
+        EtfProjection etfProjection = etfQueryRepository.findTopByThemeOrderByWeeklyReturn(theme);
+        if (etfProjection == null) {
+            throw new IllegalArgumentException("No ETF found for the given theme: " + theme);
+        }
+        return EtfReadResponse.builder()
+                .etfId(etfProjection.getId())
+                .etfName(etfProjection.getEtfName())
+                .weeklyReturn(etfProjection.getWeeklyReturn())
+                .etfCode(etfProjection.getEtfCode())
+                .build();
     }
 }
