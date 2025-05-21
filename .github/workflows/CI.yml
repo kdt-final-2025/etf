@@ -52,7 +52,7 @@ jobs:
         run: gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
       - name: Run tests
-        run: ./gradlew test --no-daemon
+        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
 
   build:
     name: Build Application
