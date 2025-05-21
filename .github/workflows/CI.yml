@@ -7,11 +7,11 @@ on:
     branches: [ main ]
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
-  SSL_KEY_PASSWORD: ${{ secrets.SSL_KEY_PASSWORD }}
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  JWT_SECRET: ${{secrets.JWT_SECRET}}
+  JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+  SPRING_PROFILES_ACTIVE: test
 
 jobs:
   test:
@@ -41,12 +41,6 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Set up Google Cloud credentials
-        run: echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > $HOME/gcp-key.json
-
-      - name: Authenticate to Google Cloud
-        run: gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
       - name: Run tests
         run: ./gradlew test --no-daemon

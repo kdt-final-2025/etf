@@ -19,6 +19,7 @@ public class EtfRestController {
 
     private final EtfService etfService;
 
+
     @GetMapping("/etfs")
     public ResponseEntity<EtfResponse> read(@RequestParam(defaultValue = "1") int page,
                                             @RequestParam(defaultValue = "20") int size,
@@ -29,6 +30,7 @@ public class EtfRestController {
         EtfResponse etfResponse = etfService.readAll(pageable, theme,keyword, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
+
 
     @GetMapping("/etfs/{etfId}")
     public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId){
@@ -54,7 +56,7 @@ public class EtfRestController {
     }
 
     @Secured("ROLE_USER")
-    @DeleteMapping("/etf/{etfId}/subscription")
+    @DeleteMapping("/etfs/{etfId}/subscription")
     public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
