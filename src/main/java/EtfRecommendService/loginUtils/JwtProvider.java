@@ -119,20 +119,6 @@ public class JwtProvider {
                 .getExpiration();
     }
 
-    public List<String> getRolesFromAccess(String token) {
-        Object ob =  parseToken(token)
-                .get("roles");
-
-        List<String> roles = new ArrayList<>();
-        if (ob instanceof List<?>) {
-            for (Object role : (List<?>) ob) {
-                roles.add(String.valueOf(role));
-            }
-            return roles;
-        }
-        return roles;
-    }
-
     public List<String> getRolesFromRefresh(String token) {
         Object ob =  parseRefreshToken(token)
                 .get("roles");
@@ -162,5 +148,18 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(refreshToken)
                 .getBody();
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = parseToken(token);
+        String username = getSubject(token);
+        @SuppressWarnings("unchecked")
+        List<String> roles = claims.get("roles", List.class);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(roles.get(0).split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
+        UserDetails userDetails = new UserDetail(username, null, authorities);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 }

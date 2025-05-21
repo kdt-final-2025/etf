@@ -5,9 +5,13 @@ import EtfRecommendService.loginUtils.JwtTokens;
 import EtfRecommendService.user.dto.*;
 
 import EtfRecommendService.user.exception.PasswordMismatchException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequestMapping(value = "/api/v1")
 @RequiredArgsConstructor
@@ -26,23 +31,7 @@ public class UserController {
     private final UserService userService;
     private final S3Service s3Service;
 
-    @PostMapping("/join")
-    public ResponseEntity<UserResponse> create(@RequestBody CreateUserRequest userRequest) {
-        UserResponse userResponse = userService.create(userRequest);
-        return ResponseEntity.status(201).body(userResponse);
-    }
 
-    @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest loginRequest) {
-        UserLoginResponse login = userService.login(loginRequest);
-        return ResponseEntity.ok(login);
-    }
-
-    @PostMapping("/refresh")
-    public ResponseEntity<JwtTokens> refresh(@RequestBody RefreshRequest request) {
-        JwtTokens body = userService.refresh(request);
-        return ResponseEntity.ok(body);
-    }
 
     @Secured("ROLE_USER")
     @PatchMapping("/users")
@@ -85,15 +74,15 @@ public class UserController {
     @Secured("ROLE_USER")
     @PatchMapping("/users/image")
     public ResponseEntity<UserProfileResponse> imageUpdate(@AuthenticationPrincipal UserDetails userDetails,
-                                           @RequestPart(value = "images") MultipartFile file) throws IOException {
+                                                           @RequestPart(value = "images") MultipartFile file) throws IOException {
         UserProfileResponse userProfileResponse = userService.imageUpdate(userDetails.getUsername(), file);
         return ResponseEntity.ok(userProfileResponse);
     }
 
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<UserDetailResponse> findByUserId(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long userId) {
-        UserDetailResponse userDetailResponse = userService.findByUserId(userDetails.getUsername(), userId);
+    @GetMapping("/users/{loginId}")
+    public ResponseEntity<UserDetailResponse> findByUserId(@AuthenticationPrincipal UserDetails userDetails, @PathVariable String loginId) {
+        UserDetailResponse userDetailResponse = userService.findByUserId(userDetails.getUsername(), loginId);
         return ResponseEntity.ok(userDetailResponse);
     }
 

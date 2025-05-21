@@ -61,8 +61,8 @@ public class SpringSecurityConfig {
                                 .requestMatchers(HttpMethod.POST,"/api/v1/admin/login").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
                                 .requestMatchers("/api/v1/comments/**").authenticated()
-                                .requestMatchers("/api/v1/etfs/**").authenticated()
-                                .requestMatchers("/api/v1/news/**").permitAll()
+                                .requestMatchers("/api/v1/etfs/**").permitAll()
+                                .requestMatchers("/api/v1/articles/**").permitAll()
                                 .requestMatchers("/api/v1/notifications/**").permitAll()
                                 .requestMatchers("/api/v1/replies/**").authenticated()
                                 .requestMatchers("/api/v1/reports/**").authenticated()
@@ -101,7 +101,7 @@ public class SpringSecurityConfig {
             };
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     // UserService가 AuthenticationManager 타입의 빈을 필요로 하지만,

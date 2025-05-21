@@ -47,7 +47,7 @@ jobs:
 
   build:
     name: Build Application
-    needs: test  # test job 완료 후 실행
+    needs: test
     runs-on: ubuntu-latest
     environment: dev
 

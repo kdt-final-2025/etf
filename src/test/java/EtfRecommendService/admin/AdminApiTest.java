@@ -1,18 +1,12 @@
 package EtfRecommendService.admin;
 
 import EtfRecommendService.AcceptanceTest;
-import EtfRecommendService.admin.dto.AdminLoginRequest;
-import EtfRecommendService.user.Password;
+import EtfRecommendService.user.dto.UserLoginRequest;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 public class AdminApiTest extends AcceptanceTest {
@@ -26,14 +20,14 @@ public class AdminApiTest extends AcceptanceTest {
 
         RestAssured.given().log().all()
                 .contentType(ContentType.JSON)
-                .body(AdminLoginRequest
+                .body(UserLoginRequest
                         .builder()
                         .loginId("admin")
                         .password("password")
-                        .roles("ADMIN")
+                        .role("ADMIN")
                         .build())
                 .when()
-                .post("/api/v1/admin/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(200);
     }
@@ -44,14 +38,14 @@ public class AdminApiTest extends AcceptanceTest {
 
         RestAssured.given().log().all()
                 .contentType(ContentType.JSON)
-                .body(AdminLoginRequest
+                .body(UserLoginRequest
                         .builder()
                         .loginId("admin")
                         .password("password")
-                        .roles("USER")
+                        .role("USER")
                         .build())
                 .when()
-                .post("/api/v1/admin/login")
+                .post("/api/v1/login")
                 .then().log().all()
                 .statusCode(401);
     }
