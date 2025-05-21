@@ -7,10 +7,11 @@ on:
     branches: [ main ]
 
 env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  JWT_SECRET: ${{ secrets.JWT_SECRET }}
-  JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  JWT_SECRET: ${{secrets.JWT_SECRET}}
+  JWT_REFRESH_SECRET: ${{secrets.JWT_REFRESH_SECRET}}
+  SPRING_PROFILES_ACTIVE: test
   GOOGLE_APPLICATION_CREDENTIALS: $HOME/gcp-key.json
 
 jobs:
@@ -52,7 +53,7 @@ jobs:
         run: gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
 
       - name: Run tests
-        run: ./gradlew test --no-daemon -Dspring.profiles.active=test
+        run: ./gradlew test --no-daemon
 
   build:
     name: Build Application
