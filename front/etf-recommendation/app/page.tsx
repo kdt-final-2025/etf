@@ -12,17 +12,13 @@ import {
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
-  Search,
   TrendingUp,
   BarChart3,
   ArrowUpRight,
@@ -36,9 +32,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import EtfCard, { ETF } from '@/components/EtfCard';
+import EtfCard, { type ETF } from '@/components/EtfCard';
 import MarketTickerWidget from '@/components/MarketTickerWidget';
 import { fetchEtfs } from '@/lib/api/etf';
+import EnhancedSearchDropdown from '@/components/enhanced-search-dropdown';
 
 // 시장 요약 데이터
 const marketSummary = {
@@ -98,7 +95,7 @@ export default function Home() {
             theme: etf.theme,
             price: 10000 + index * 100,
             change:
-              parseFloat((Math.random() * 5).toFixed(2)) *
+              Number.parseFloat((Math.random() * 5).toFixed(2)) *
               (Math.random() > 0.5 ? 1 : -1),
             volume: Math.floor(Math.random() * 100000),
             returnRate: etf.returnRate,
@@ -137,7 +134,7 @@ export default function Home() {
             theme: etf.theme,
             price: 10000 + index * 100,
             change:
-              parseFloat((Math.random() * 5).toFixed(2)) *
+              Number.parseFloat((Math.random() * 5).toFixed(2)) *
               (Math.random() > 0.5 ? 1 : -1),
             volume: Math.floor(Math.random() * 100000),
             returnRate: etf.returnRate,
@@ -226,15 +223,21 @@ export default function Home() {
     }
   };
 
+  // ETF 선택 핸들러
+  const handleEtfSelect = (item: ETF) => {
+    setSearchQuery(item.name);
+    // 여기서 필요한 경우 다른 상태 업데이트나 라우팅 처리 가능
+  };
+
   return (
     <div className="container mx-auto py-6 px-4">
       {/* 히어로 섹션 */}
       <div className="mb-8 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-8 text-white">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h1 className="text-4xl font-bold mb-4">폭삭 벌었수다</h1>
+            <h1 className="text-4xl font-bold mb-4">FIETA</h1>
             <p className="text-xl mb-6">
-              최고의 ETF 추천 서비스로 투자 수익을 극대화하세요
+              최고의 AI ETF 추천 서비스로 투자 수익을 극대화하세요
             </p>
             <div className="flex gap-4">
               <Button size="lg" className="bg-green-600 hover:bg-green-700">
@@ -260,9 +263,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-3xl font-bold text-green-400">
                   {allEtfData.length > 0
-                    ? `+${Math.max(
-                        ...allEtfData.map((etf) => etf.returnRate)
-                      ).toFixed(1)}%`
+                    ? `+${Math.max(...allEtfData.map((etf) => etf.returnRate)).toFixed(1)}%`
                     : '...'}
                 </div>
                 <p className="text-sm text-white/70">
@@ -288,12 +289,7 @@ export default function Home() {
               <CardContent>
                 <div className="text-3xl font-bold text-green-400">
                   {allEtfData.length > 0
-                    ? `+${(
-                        allEtfData.reduce(
-                          (sum, etf) => sum + etf.returnRate,
-                          0
-                        ) / allEtfData.length
-                      ).toFixed(1)}%`
+                    ? `+${(allEtfData.reduce((sum, etf) => sum + etf.returnRate, 0) / allEtfData.length).toFixed(1)}%`
                     : '...'}
                 </div>
                 <p className="text-sm text-white/70">전체 ETF 기준</p>
@@ -316,13 +312,12 @@ export default function Home() {
 
       {/* 검색 및 필터 */}
       <div className="mb-8 flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <Input
+        <div className="flex-1">
+          <EnhancedSearchDropdown
+            items={allEtfData}
+            onSelect={handleEtfSelect}
             placeholder="ETF 이름 또는 종목코드 검색"
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            showRecent={true}
           />
         </div>
         <div className="flex gap-2">
@@ -521,9 +516,6 @@ export default function Home() {
               className="bg-white text-slate-900 border-slate-300 hover:bg-slate-100"
             >
               <Link href="/register">무료 회원가입</Link>
-              {/*{filteredEtfs.map((etf) => (*/}
-              {/*    <EtfCard key={etf.id} etf={etf} />*/}
-              {/*))}*/}
             </Button>
           </div>
         </div>
