@@ -19,7 +19,7 @@ interface Props {
   etfs: ETF[];
 }
 
-export default function EtfTableBody({ etfs }: Props) {
+export function EtfTableBody({ etfs }: Props) {
   return (
     <>
       {etfs.map((etf, index) => (

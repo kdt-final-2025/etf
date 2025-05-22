@@ -1,16 +1,17 @@
 "use client"
+
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Filter } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import EtfCard, { type ETF } from "@/components/EtfCard"
+import { type ETF } from "@/components/etf-table-body"
 import MarketTickerWidget from "@/components/MarketTickerWidget"
 import { fetchEtfs } from "@/lib/api/etf"
 import EnhancedSearchDropdown from "@/components/enhanced-search-dropdown"
+import { EtfRankingTable } from "@/components/etf-ranking-table"
+
 
 // 시장 요약 데이터
 const marketSummary = {
@@ -385,45 +386,11 @@ export default function Home() {
         </div>
 
         {/* ETF 랭킹 테이블 */}
-        <div className="mb-8">
-          <Tabs defaultValue="all">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">ETF 수익 랭킹</h2>
-            </div>
-
-            <TabsContent value="all">
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>순위</TableHead>
-                        <TableHead>ETF명</TableHead>
-                        <TableHead>종목코드</TableHead>
-                        <TableHead>테마</TableHead>
-                        <TableHead className="text-right">현재가</TableHead>
-                        <TableHead className="text-right">등락률</TableHead>
-                        <TableHead className="text-right">거래량</TableHead>
-                        <TableHead className="text-right">수익률</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <EtfCard etfs={filteredEtfs} />
-                    </TableBody>
-                  </Table>
-                </CardContent>
-
-                <CardFooter className="flex justify-center py-4">
-                  {hasMore && (
-                      <Button variant="outline" onClick={handleLoadMore}>
-                        더 보기
-                      </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+        <EtfRankingTable
+          filteredEtfs={filteredEtfs}
+          hasMore={hasMore}
+          onLoadMore={handleLoadMore}
+        />
 
         {/* 추천 섹션 */}
         <div className="mb-8">
