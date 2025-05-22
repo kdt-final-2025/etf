@@ -1,30 +1,66 @@
 package EtfRecommendService.webSocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
+@RequiredArgsConstructor
 @Component
 public class StockDataParser {
+    private final ObjectMapper objectMapper;
 
-    //실시간 데이터 문자열 배열로 들어올 경우 stockpricedata 객체로 변환
-    //역직렬화 (문자열을 java 객체로)
-    public StockPriceData parseFromDelimitedFields(String[] field){
-        if (field.length < 14){
-            throw new IllegalArgumentException("필드 부족");
+    public static class WebSocketMessage {
+        public WebSocketMessageType type;
+        public JsonNode root;         // PINGPONG, SUBSCRIBE_SUCCESS, STOCK_PRICE_DATA(JSON)일 때 사용
+        public StockPriceData stockPriceData; // STOCK_PRICE_DATA(PIPE, JSON)일 때 사용
+
+        public WebSocketMessage(WebSocketMessageType type, JsonNode root, StockPriceData stockPriceData) {
+            this.type = type;
+            this.root = root;
+            this.stockPriceData = stockPriceData;
         }
-        return StockPriceData.builder()
-                .stockCode(field[0])
-                .currentPrice(Double.parseDouble(field[2]))
-                .dayOverDaySign(field[3])
-                .dayOverDayChange(Integer.parseInt(field[4]))
-                .dayOverDayRate(Double.parseDouble(field[5]))
-                .accumulatedVolume(Long.parseLong(field[13]))
-                .build();
     }
 
+    public WebSocketMessage parseAndClassify(String payload) throws Exception {
+        if (payload.startsWith("{")) {
+            JsonNode root = objectMapper.readTree(payload);
+            String trId = root.path("header").path("tr_id").asText();
 
-    //json 형태 데이터를 stockpricedata로 변환
-    public StockPriceData parseFromJson(JsonNode json){
+            if ("PINGPONG".equals(trId)) {
+                return new WebSocketMessage(WebSocketMessageType.PINGPONG, root, null);
+            } else if ("H0STCNT0".equals(trId)) {
+                return new WebSocketMessage(WebSocketMessageType.SUBSCRIBE_SUCCESS, root, null);
+            } else {
+                JsonNode output = root.path("body").path("output");
+                StockPriceData data = parseFromJson(output);
+                return new WebSocketMessage(WebSocketMessageType.STOCK_PRICE_DATA, root, data);
+            }
+        } else if (payload.contains("|")) {
+            StockPriceData data = parseFromPipe(payload);
+            return new WebSocketMessage(WebSocketMessageType.STOCK_PRICE_DATA, null, data);
+        } else {
+            return new WebSocketMessage(WebSocketMessageType.UNKNOWN, null, null);
+        }
+    }
+
+    // 원시 JSON 문자열 → JsonNode → parseFromJson 호출
+    // jsonnode : JSON 데이터를 Java에서 다루기 쉽게 구조화
+    //objectMapper.readTree()로 파싱하면 JsonNode 객체
+    public StockPriceData parseFromJsonString(String jsonStr) throws Exception {
+        JsonNode root = objectMapper.readTree(jsonStr);
+        //json 문자열에서 body.output 부분을 추출
+        JsonNode output = root.path("body").path("output");
+        return parseFromJson(output);
+    }
+
+    //json node로 들어왔을때 사용
+    //stockpricedata로 변환
+    public StockPriceData parseFromJson(JsonNode json) {
         return StockPriceData.builder()
                 .stockCode(json.path("stockCode").asText())
                 .currentPrice(json.path("currentPrice").asDouble())
@@ -34,4 +70,66 @@ public class StockDataParser {
                 .accumulatedVolume(json.path("accumulatedVolume").asLong())
                 .build();
     }
+
+    //파이프(|)로 구분된 원시 문자열에서 바로 객체로 변환
+    public StockPriceData parseFromPipe(String pipe) throws Exception {
+        String[] parts = pipe.split("\\|");
+        if (parts.length < 4 || !parts[3].contains("^")) {
+            throw new IllegalArgumentException("Invalid pipe message");
+        }
+        String[] fields = parts[3].split("\\^");
+        if (fields.length < 14) {
+            throw new IllegalArgumentException("필드 부족");
+        }
+        return StockPriceData.builder()
+                .stockCode(fields[0])
+                .currentPrice(Double.parseDouble(fields[2]))
+                .dayOverDaySign(fields[3])
+                .dayOverDayChange(Integer.parseInt(fields[4]))
+                .dayOverDayRate(Double.parseDouble(fields[5]))
+                .accumulatedVolume(Long.parseLong(fields[13]))
+                .build();
+    }
 }
+//TODO : ParseFromPipe 가 대체
+
+//    //실시간 데이터 문자열 배열로 들어올 경우 stockpricedata 객체로 변환
+//    //역직렬화 (문자열을 java 객체로)
+//    public StockPriceData parseFromDelimitedFields(String[] field) {
+//        if (field.length < 14) {
+//            throw new IllegalArgumentException("필드 부족");
+//        }
+//        return StockPriceData.builder()
+//                .stockCode(field[0])
+//                .currentPrice(Double.parseDouble(field[2]))
+//                .dayOverDaySign(field[3])
+//                .dayOverDayChange(Integer.parseInt(field[4]))
+//                .dayOverDayRate(Double.parseDouble(field[5]))
+//                .accumulatedVolume(Long.parseLong(field[13]))
+//                .build();
+//    }
+
+//    public StockPriceData handleJsonMessage(String json) {
+//        log.info("[JSON 메시지] {}", json);
+//        try {
+//            JsonNode root = objectMapper.readTree(json);
+//            String trId = root.path("header").path("tr_id").asText();
+//
+//            if ("PINGPONG".equals(trId)) {
+//                log.info("[PINGPONG] {}", root.path("header").path("datetime").asText());
+//            } else if ("H0STCNT0".equals(trId)) {
+//                log.info("[SUBSCRIBE SUCCESS] {}", root.path("header").path("tr_key").asText());
+//            } else {
+//                // 파서에게 파싱 위임
+//                StockPriceData data = this.parseFromJsonString(json);
+//                log.info("[기타 JSON 데이터] {}", data);
+//                log.debug("[STOMP BROADCAST] sending to /topic/stocks/" + data.stockCode());
+//
+//                return data;
+//            }
+//        } catch (Exception e) {
+//            log.error("[JSON 파싱 오류] payload={}", json, e);
+//            throw new RuntimeException(e);
+//        }
+//    }
+
