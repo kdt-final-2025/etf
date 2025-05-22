@@ -15,43 +15,45 @@ import java.util.Arrays;
 @Slf4j
 @Component
 public class KisWebSocketHandler {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     private final StockDataParser stockDataParser;
     private final StockStompController stompController;
+    private final MessageTypeClassifier classifier;
+    private final RedisService redisService;
 
-    public KisWebSocketHandler(StockDataParser stockDataParser, StockStompController stompController) {
+    public KisWebSocketHandler(StockDataParser stockDataParser, StockStompController stompController, MessageTypeClassifier classifier, RedisService redisService) {
         this.stockDataParser = stockDataParser;
         this.stompController = stompController;
+        this.classifier = classifier;
+        this.redisService = redisService;
     }
 
-    //핸들러는 로깅만 남기고, 모든 메시지를 파서로 넘김
+    //핸들러는 로깅만 남김
+    // classifier 가 어떤 유형의 메시지인지 확인 후 파서로 넘김
     //파서의 결과를 받아서 브로드캐스트
     public void handleText(String payload) {
-        log.info("[WebSocket 메시지] {}", payload);
-        try {
-            StockDataParser.WebSocketMessage message = stockDataParser.parseAndClassify(payload);
-            switch (message.type) {
-                case PINGPONG:
-                    log.info("[PINGPONG] {}", message.root.path("header").path("datetime").asText());
-                    break;
-                case SUBSCRIBE_SUCCESS:
-                    log.info("[SUBSCRIBE SUCCESS] {}", message.root.path("header").path("tr_key").asText());
-                    break;
-                case STOCK_PRICE_DATA:
-                    log.info("[시세 데이터] {}", message.stockPriceData);
-                    log.debug("[STOMP BROADCAST] sending to /topic/stocks/" + message.stockPriceData.stockCode());
-                    stompController.broadcast(message.stockPriceData); //브로드캐스트
-                    break;
-                case UNKNOWN:
-                    log.info("[기타 메시지] {}", payload);
-                    break;
+        WebSocketMessageType type = classifier.classify(payload);
+
+        switch (type) {
+            case PINGPONG -> log.info("[PINGPONG] ...");
+            case SUBSCRIBE_SUCCESS -> log.info("[SUBSCRIBE SUCCESS] ...");
+            case STOCK_PRICE_DATA -> {
+                try {
+                    StockPriceData data;
+                    if (payload.startsWith("{")) {
+                        data = stockDataParser.parseFromJsonString(payload);
+                    } else {
+                        data = stockDataParser.parseFromPipe(payload);
+                    }
+                    //Redis에 저장
+                    redisService.saveStockPriceData(data);
+                    stompController.broadcast(data);
+                } catch (Exception e) {
+                    log.error("[파싱 오류] payload={}", payload, e);
+                }
             }
-        } catch (Exception e) {
-            log.error("[메시지 파싱 오류] payload={}", payload, e);
+            case UNKNOWN -> log.info("[기타 메시지] {}", payload);
         }
     }
-
 
 //    // WebSocketConnectionService 에서 호출됨
 //    public void handleText(String payload) {

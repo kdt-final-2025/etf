@@ -14,40 +14,6 @@ import org.springframework.stereotype.Component;
 public class StockDataParser {
     private final ObjectMapper objectMapper;
 
-    public static class WebSocketMessage {
-        public WebSocketMessageType type;
-        public JsonNode root;         // PINGPONG, SUBSCRIBE_SUCCESS, STOCK_PRICE_DATA(JSON)일 때 사용
-        public StockPriceData stockPriceData; // STOCK_PRICE_DATA(PIPE, JSON)일 때 사용
-
-        public WebSocketMessage(WebSocketMessageType type, JsonNode root, StockPriceData stockPriceData) {
-            this.type = type;
-            this.root = root;
-            this.stockPriceData = stockPriceData;
-        }
-    }
-
-    public WebSocketMessage parseAndClassify(String payload) throws Exception {
-        if (payload.startsWith("{")) {
-            JsonNode root = objectMapper.readTree(payload);
-            String trId = root.path("header").path("tr_id").asText();
-
-            if ("PINGPONG".equals(trId)) {
-                return new WebSocketMessage(WebSocketMessageType.PINGPONG, root, null);
-            } else if ("H0STCNT0".equals(trId)) {
-                return new WebSocketMessage(WebSocketMessageType.SUBSCRIBE_SUCCESS, root, null);
-            } else {
-                JsonNode output = root.path("body").path("output");
-                StockPriceData data = parseFromJson(output);
-                return new WebSocketMessage(WebSocketMessageType.STOCK_PRICE_DATA, root, data);
-            }
-        } else if (payload.contains("|")) {
-            StockPriceData data = parseFromPipe(payload);
-            return new WebSocketMessage(WebSocketMessageType.STOCK_PRICE_DATA, null, data);
-        } else {
-            return new WebSocketMessage(WebSocketMessageType.UNKNOWN, null, null);
-        }
-    }
-
     // 원시 JSON 문자열 → JsonNode → parseFromJson 호출
     // jsonnode : JSON 데이터를 Java에서 다루기 쉽게 구조화
     //objectMapper.readTree()로 파싱하면 JsonNode 객체
