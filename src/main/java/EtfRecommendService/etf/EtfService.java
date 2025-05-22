@@ -166,4 +166,16 @@ public class EtfService {
     }
 
 
+    public EtfReadResponse findTopByThemeOrderByWeeklyReturn(Theme theme) {
+        EtfProjection etfProjection = etfQueryRepository.findTopByThemeOrderByWeeklyReturn(theme);
+        if (etfProjection == null) {
+            throw new IllegalArgumentException("No ETF found for the given theme: " + theme);
+        }
+        return EtfReadResponse.builder()
+                .etfId(etfProjection.getId())
+                .etfName(etfProjection.getEtfName())
+                .weeklyReturn(etfProjection.getWeeklyReturn())
+                .etfCode(etfProjection.getEtfCode())
+                .build();
+    }
 }
