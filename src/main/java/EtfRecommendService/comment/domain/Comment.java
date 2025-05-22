@@ -54,7 +54,7 @@ public class Comment extends BaseEntity {
     @ToString.Exclude
     private List<Reply> replyList = new ArrayList<>();
 
-    public void setDeleted(boolean b) {
+    public void setDeleted() {
         isDeleted = true;
     }
 

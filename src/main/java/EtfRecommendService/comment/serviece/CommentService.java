@@ -174,7 +174,7 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
 
-        comment.setDeleted(true); // isDeleted = true 로 표시
+        comment.setDeleted(); // isDeleted = true 로 표시
 
         // sysout 으로 확인
         System.out.println(">> [Soft Delete] comment.id=" + comment.getId()
