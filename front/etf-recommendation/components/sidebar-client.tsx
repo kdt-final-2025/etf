@@ -55,6 +55,10 @@ export default function SidebarClient({
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+  const handleLogout = async () => {
+    await logout();
+    window.location.replace('/');
+  };
 
   return (
     <>
@@ -194,14 +198,13 @@ export default function SidebarClient({
         ) : (
           <div className="p-4 border-t border-slate-700">
             <div className="flex gap-2">
-              <form action={logout}>
-                <Button
-                  variant="outline"
-                  className="flex-1 bg-red-500 text-white hover:bg-red-700"
-                >
-                  로그아웃
-                </Button>
-              </form>
+              <Button
+                variant="outline"
+                className="flex-1 bg-red-500 text-white hover:bg-red-700"
+                onClick={handleLogout}
+              >
+                로그아웃
+              </Button>
             </div>
           </div>
         )}
