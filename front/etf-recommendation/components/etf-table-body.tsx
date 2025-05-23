@@ -59,7 +59,7 @@ export function EtfTableBody({ etfs, onPriceUpdate }: Props) {
         cleanupEtfPriceMonitoring(watchId, etfCodes, unsubscribe);
       }
     };
-  }, [etfs]);
+  }, []);
 
   return (
     <>

@@ -98,7 +98,7 @@ export async function fetchEtfDetail(
 async function watchRealtimePrices(
   body: WatchPriceRequest
 ): Promise<FetchResult<WatchResponse>> {
-  return httpPost('/etfs/realtime-prices', body);
+  return httpPost('/api/v1/etfs/realtime-prices', body);
 }
 
 export async function setupEtfPriceMonitoring(
@@ -126,7 +126,7 @@ export async function setupEtfPriceMonitoring(
 }
 
 async function unwatchRealtimePrices(watchId: string) {
-  return httpDelete(`/etfs/realtime-prices/${watchId}`);
+  return httpDelete(`/api/v1/etfs/realtime-prices/${watchId}`);
 }
 
 export async function cleanupEtfPriceMonitoring(
