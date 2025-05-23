@@ -245,44 +245,40 @@ const EtfSurvey = () => {
   return (
     <div className="flex items-center justify-center h-screen">
       <div className="w-full max-w-screen-md py-12 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-semibold text-gray-900 mb-4">
-          ETF 추천 설문조사
+        <h1 className="text-4xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          AI ETF 추천 설문조사
         </h1>
 
-        <Progress value={progressValue} className="mb-4" />
-
-        {currentQuestionData && (
-          <Card className="mb-8">
-            <CardHeader>
-              <h2 className="text-xl font-semibold">
-                {currentQuestionData.question}
-              </h2>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid gap-6">
-                {Object.entries(currentQuestionData.options).map(
-                  ([key, value]) => (
-                    <label key={key} className="flex items-center space-x-3">
-                      <input
+        <Card className="mb-8 shadow-sm border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+          <CardHeader>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+              {currentQuestionData.question}
+            </h2>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid gap-6">
+              {Object.entries(currentQuestionData.options).map(([key, value]) => (
+                  <label
+                      key={key}
+                      className="flex items-center space-x-3 cursor-pointer select-none"
+                  >
+                    <input
                         type="radio"
                         name={`question-${currentQuestion}`}
                         value={key}
                         checked={answers[currentQuestion] === key}
-                        onChange={() =>
-                          handleAnswerChange(currentQuestion, key)
-                        }
-                        className="h-5 w-5"
-                      />
-                      <span className="text-lg font-medium leading-none">
-                        {value}
-                      </span>
-                    </label>
-                  )
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                        onChange={() => handleAnswerChange(currentQuestion, key)}
+                        className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-lg font-medium leading-none text-gray-900 dark:text-gray-100">
+            {value}
+          </span>
+                  </label>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
 
         <div className="flex justify-between">
           {currentQuestion > 1 && (
