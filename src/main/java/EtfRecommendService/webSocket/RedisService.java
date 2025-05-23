@@ -2,9 +2,18 @@ package EtfRecommendService.webSocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 public class RedisService {
     private final StringRedisTemplate redisTemplate;
@@ -33,6 +42,43 @@ public class RedisService {
             return objectMapper.readValue(value, StockPriceData.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<StockPriceData> getAllStockPriceData() {
+        saveStockPriceData(StockPriceData.builder().stockCode("360750").currentPrice((new Random()).nextDouble(100, 200)).build());
+        saveStockPriceData(StockPriceData.builder().stockCode("455890").currentPrice((new Random()).nextDouble(100, 200)).build());
+        try {
+            Set<String> keys = redisTemplate.keys("stock:" + "*");
+            if (keys == null || keys.isEmpty()) {
+                log.debug("No stock data keys found in Redis");
+                return Collections.emptyList();
+            }
+
+            List<String> values = redisTemplate.opsForValue().multiGet(keys);
+            if (values == null) {
+                log.warn("Failed to retrieve values for stock keys");
+                return Collections.emptyList();
+            }
+
+            return values.stream()
+                    .filter(Objects::nonNull)
+                    .map(this::deserializeStockData)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Failed to retrieve all stock data from Redis", e);
+            return Collections.emptyList();
+        }
+    }
+
+    private StockPriceData deserializeStockData(String value) {
+        try {
+            return objectMapper.readValue(value, StockPriceData.class);
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to deserialize stock data: {}", value, e);
             return null;
         }
     }
