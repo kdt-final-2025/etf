@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,8 +46,6 @@ public class RedisService {
     }
 
     public List<StockPriceData> getAllStockPriceData() {
-        saveStockPriceData(StockPriceData.builder().stockCode("360750").currentPrice((new Random()).nextDouble(100, 200)).build());
-        saveStockPriceData(StockPriceData.builder().stockCode("455890").currentPrice((new Random()).nextDouble(100, 200)).build());
         try {
             Set<String> keys = redisTemplate.keys("stock:" + "*");
             if (keys == null || keys.isEmpty()) {

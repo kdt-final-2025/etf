@@ -25,7 +25,15 @@ public class EtfPriceService {
                 .forEach(stockPriceData -> {
                     String topic = String.format("/topic/etf/%s/price", stockPriceData.stockCode());
                     log.info("Publishing price to {}: {}", topic, stockPriceData.currentPrice());
-                    messagingTemplate.convertAndSend(topic, new RealtimePrice(stockPriceData.stockCode(), (int) stockPriceData.currentPrice()));
+                    messagingTemplate.convertAndSend(
+                            topic,
+                            new RealtimePrice(
+                                    stockPriceData.stockCode(),
+                                    (int) stockPriceData.currentPrice(),
+                                    stockPriceData.dayOverDayRate(),
+                                    stockPriceData.accumulatedVolume()
+                            )
+                    );
                 });
     }
 }
