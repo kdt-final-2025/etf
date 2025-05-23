@@ -107,9 +107,9 @@ export default function StocksTable({ page, size }: StocksTableProps) {
   return (
     <section style={{ marginTop: 20 }}>
       <h2>실시간 ETF 시세 (페이지 {page + 1})</h2>
-      <div style={{ marginBottom: 10 }}>
-        상태: {isConnected ? '🟢 연결됨' : '🟡 연결 중/끊김'}
-      </div>
+      {/*<div style={{ marginBottom: 10 }}>*/}
+      {/*  상태: {isConnected ? '🟢 연결됨' : '🟡 연결 중/끊김'}*/}
+      {/*</div>*/}
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
