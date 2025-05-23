@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useWebSocket } from '@/lib/websocket/useWebSocket';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   cleanupEtfPriceMonitoring,
   setupEtfPriceMonitoring,
@@ -28,7 +28,6 @@ interface Props {
 }
 
 export function EtfTableBody({ etfs, onPriceUpdate }: Props) {
-  const tickerCodes = etfs.map((etf) => etf.ticker);
   const {
     connectionStatus,
     error,
@@ -39,8 +38,12 @@ export function EtfTableBody({ etfs, onPriceUpdate }: Props) {
     disconnect,
   } = useWebSocket('http://localhost:8080/ws');
 
+  const etfCodes = useMemo(() => etfs.map((etf) => etf.ticker), [etfs]);
+
   useEffect(() => {
-    const etfCodes = etfs.map((etf) => etf.ticker);
+    if (!etfCodes || etfCodes.length === 0) {
+      return;
+    }
 
     let watchId: string | null = null;
 
@@ -59,7 +62,7 @@ export function EtfTableBody({ etfs, onPriceUpdate }: Props) {
         cleanupEtfPriceMonitoring(watchId, etfCodes, unsubscribe);
       }
     };
-  }, []);
+  }, [etfCodes]);
 
   return (
     <>

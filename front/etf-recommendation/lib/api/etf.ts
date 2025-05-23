@@ -107,15 +107,13 @@ export async function setupEtfPriceMonitoring(
   onPriceUpdate: (message: IMessage) => void
 ) {
   const { data, error } = await watchRealtimePrices({ etfCodes });
-
   if (data === null || error) {
     throw new Error('watchId를 받아오는 데 실패했습니다');
   }
 
   // 각 ETF 코드에 대해 웹소켓 구독 설정
   etfCodes.forEach((etfCode) => {
-    subscribe(`/etf/${etfCode}/price`, (message) => {
-      console.log(message.body);
+    subscribe(`/topic/etf/${etfCode}/price`, (message) => {
       if (onPriceUpdate) {
         onPriceUpdate(message);
       }
