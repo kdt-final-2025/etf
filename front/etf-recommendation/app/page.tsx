@@ -28,7 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import {
-    Search,
+
     TrendingUp,
     BarChart3,
     ArrowUpRight,
@@ -43,14 +43,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { type ETF } from '@/components/etf-table-body';
 
 import EtfCard, { type ETF } from '@/components/EtfCard';
 import MarketTickerWidget from '@/components/MarketTickerWidget';
 
-import { fetchAllEtfs, fetchEtfsPage } from '@/lib/api/etf';
+import { fetchEtfs } from '@/lib/api/etf';
 
-import Pagination from '@/components/StockPagination';
-import StocksTable from '@/components/StocksTable';
+import EnhancedSearchDropdown from '@/components/enhanced-search-dropdown';
+import { EtfRankingTable } from '@/components/etf-ranking-table';
+import { IMessage } from '@stomp/stompjs';
+
+interface EtfPriceUpdateMessage {
+  etfCode: string;
+  price: number;
+  dayOverDayRate: number;
+  volume: number;
+}
 
 import EnhancedSearchDropdown from '@/components/enhanced-search-dropdown';
 
@@ -61,30 +70,37 @@ const marketSummary = {
     nasdaq: { value: 16250.8, change: 0.8 },
     sp500: { value: 5120.35, change: 0.6 },
 }
-
+;
 const themeNameMap: Record<string, string> = {
-    AI_DATA: "AI 데이터",
-    USA: "미국",
-    KOREA: "한국",
-    REITS: "리츠",
-    MULTI_ASSET: "멀티에셋",
-    COMMODITIES: "원자재",
-    HIGH_RISK: "고위험",
-    SECTOR: "섹터",
-    DIVIDEND: "배당",
-    ESG: "ESG",
-    GOLD: "금",
-    GOVERNMENT_BOND: "국채",
-    CORPORATE_BOND: "회사채",
-    DEFENSE: "방위산업",
-    SEMICONDUCTOR: "반도체",
-    BIO: "바이오",
-    EMERGING_MARKETS: "신흥시장",
-}
+    AI_DATA: 'AI 데이터',
+    USA: '미국',
+    KOREA: '한국',
+    REITS: '리츠',
+    MULTI_ASSET: '멀티에셋',
+    COMMODITIES: '원자재',
+    HIGH_RISK: '고위험',
+    SECTOR: '섹터',
+    DIVIDEND: '배당',
+    ESG: 'ESG',
+    GOLD: '금',
+    GOVERNMENT_BOND: '국채',
+    CORPORATE_BOND: '회사채',
+    DEFENSE: '방위산업',
+    SEMICONDUCTOR: '반도체',
+    BIO: '바이오',
+    EMERGING_MARKETS: '신흥시장',
+};
 
 const ITEMS_PER_PAGE = 20;
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('all');
+  const [sortKey, setSortKey] = useState('returnRate');
+  const [etfData, setEtfData] = useState<ETF[]>([]);
+  const [allEtfData, setAllEtfData] = useState<ETF[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedTheme, setSelectedTheme] = useState("all")
     const [sortKey, setSortKey] = useState("returnRate")
@@ -107,12 +123,12 @@ export default function Home() {
             try {
                 const { data, error } = await fetchAllEtfs({
                     size: 10000,
-                    period: "weekly",
-                })
+                    period: 'weekly',
+                });
 
                 if (error || !data) {
-                    console.error("전체 ETF 로딩 실패", error)
-                    return
+                    console.error('전체 ETF 로딩 실패', error);
+                    return;
                 }
 
                 const allEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
@@ -124,19 +140,33 @@ export default function Home() {
                     change: Number.parseFloat((Math.random() * 5).toFixed(2)) * (Math.random() > 0.5 ? 1 : -1),
                     volume: Math.floor(Math.random() * 100000),
                     returnRate: etf.returnRate,
-                }))
+                }));
 
-                setAllEtfData(allEtfs)
+                setAllEtfData(allEtfs);
             } catch (error) {
-                console.error("전체 ETF 로딩 실패", error)
+                console.error('전체 ETF 로딩 실패', error);
             } finally {
                 setLoading(false)
             }
+        };
+
+        fetchAllEtfsData();
+    }, []);
+
+  //페이지네이션 로딩
+  useEffect(() => {
+    const fetchEtfPageData = async () => {
+      try {
+        const { data, error } = await fetchEtfs({
+          page,
+          size: 20,
+          period: 'weekly',
+        });
+
+        if (error || !data) {
+          console.error('ETF 페이지 로딩 실패', error);
+          return;
         }
-
-        fetchAllEtfsData()
-    }, [])
-
     // 필터링된 데이터 계산
     const filteredAndSortedEtfs = useMemo(() => {
         let result = [...allEtfData]
@@ -178,12 +208,17 @@ export default function Home() {
 
         setDisplayedEtfs(newDisplayedEtfs)
         setHasMore(endIndex < filteredAndSortedEtfs.length)
-    }, [filteredAndSortedEtfs, currentPage])
+    }, [filteredAndSortedEtfs, currentPage]
+        );
 
     // 필터나 검색이 변경될 때 페이지 초기화
     useEffect(() => {
         setCurrentPage(1)
     }, [selectedTheme, searchQuery, sortKey])
+        setEtfData((prev) => {
+          const ids = new Set(prev.map((etf) => etf.id));
+          return [...prev, ...pageEtfs.filter((etf) => !ids.has(etf.id))];
+        });
 
     // 더보기 핸들러
     const handleLoadMore = useCallback(() => {
@@ -191,35 +226,50 @@ export default function Home() {
             setCurrentPage(prev => prev + 1)
         }
     }, [hasMore, loading])
+        if (pageEtfs.length < 20) setHasMore(false);
+      } catch (error) {
+        console.error('ETF 페이지 로딩 실패', error);
+      }
+    };
 
     // 상위/하위 ETF 계산
     const sortedByChange = useMemo(() => {
         return allEtfData
-            .filter((etf) => typeof etf.change === "number" && !isNaN(etf.change))
+            .filter((etf) => typeof etf.change === "number" && !isNaN(etf.change));
             .slice()
-    }, [allEtfData])
+    }, [allEtfData]);
 
     const topGainers = useMemo(() => {
         return sortedByChange
             .sort((a, b) => b.change - a.change)
             .slice(0, 5)
     }, [sortedByChange])
+  const sortedByChange = allEtfData
+    .filter((etf) => typeof etf.change === 'number' && !isNaN(etf.change))
+    .slice();
 
     const topLosers = useMemo(() => {
         return sortedByChange
             .sort((a, b) => a.change - b.change)
             .slice(0, 5)
     }, [sortedByChange])
+  const topGainers = sortedByChange
+    .sort((a, b) => b.change - a.change)
+    .slice(0, 5);
+
+  const topLosers = sortedByChange
+    .sort((a, b) => a.change - b.change)
+    .slice(0, 5);
 
     // 테마별 데이터 분류 및 평균 수익률 계산
     const topThemes = useMemo(() => {
-        const map: Record<string, { total: number; count: number }> = {}
+        const map: Record<string, { total: number; count: number }> = {};
 
         allEtfData.forEach((etf) => {
-            if (!map[etf.theme]) map[etf.theme] = { total: 0, count: 0 }
-            map[etf.theme].total += etf.returnRate
-            map[etf.theme].count += 1
-        })
+            if (!map[etf.theme]) map[etf.theme] = { total: 0, count: 0 };
+            map[etf.theme].total += etf.returnRate;
+            map[etf.theme].count += 1;
+        });
 
         return Object.entries(map)
             .map(([theme, { total, count }]) => ({
@@ -229,13 +279,73 @@ export default function Home() {
                 etfCount: count,
             }))
             .sort((a, b) => b.returnRate - a.returnRate)
-            .slice(0, 4)
-    }, [allEtfData])
+            .slice(0, 4);
+    }, [allEtfData]);
 
     // ETF 선택 핸들러
     const handleEtfSelect = useCallback((item: ETF) => {
         setSearchQuery(item.name)
     }, [])
+  //ETF 랭킹 테이블
+  const filteredEtfs = useMemo(() => {
+    let result = [...etfData];
+
+    if (selectedTheme !== 'all') {
+      result = result.filter((e) => e.theme === selectedTheme);
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (e) =>
+          e.name.toLowerCase().includes(query) ||
+          e.ticker.toLowerCase().includes(query)
+      );
+    }
+
+    return result.sort((a, b) => {
+      const valueA = a[sortKey as keyof ETF];
+      const valueB = b[sortKey as keyof ETF];
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return valueB - valueA;
+      }
+
+      return String(valueB).localeCompare(String(valueA));
+    });
+  }, [etfData, selectedTheme, searchQuery, sortKey]);
+
+  const handleLoadMore = () => {
+    if (hasMore) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const onPriceUpdate = (message: IMessage) => {
+    try {
+      const parsedBody: EtfPriceUpdateMessage = JSON.parse(message.body);
+      setEtfData((prev) =>
+        prev.map((etf) =>
+          etf.ticker === parsedBody.etfCode
+            ? {
+                ...etf,
+                price: parsedBody.price,
+                change: parsedBody.dayOverDayRate,
+                volume: parsedBody.volume,
+              }
+            : etf
+        )
+      );
+    } catch (error) {
+      console.error('Failed to parse message body:', error);
+    }
+  };
+
+  // ETF 선택 핸들러
+  const handleEtfSelect = (item: ETF) => {
+    setSearchQuery(item.name);
+    // 여기서 필요한 경우 다른 상태 업데이트나 라우팅 처리 가능
+  };
 
     return (
         <div className="container mx-auto py-6 px-4">
@@ -298,6 +408,55 @@ export default function Home() {
                                 )}
                             </CardContent>
                         </Card>
+  return (
+    <div className="container mx-auto py-6 px-4">
+      {/* 히어로 섹션 */}
+      <div className="mb-8 bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-8 text-white">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h1 className="text-4xl font-bold mb-4">FIETA</h1>
+            <p className="text-xl mb-6">
+              최고의 AI ETF 추천 서비스로 투자 수익을 극대화하세요
+            </p>
+            <div className="flex gap-4">
+              <Button size="lg" className="bg-green-600 hover:bg-green-700">
+                <Link href="/recommendations">맞춤 ETF 추천받기</Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white text-slate-900 border-white hover:bg-slate-100"
+              >
+                <Link href="/register">무료 회원가입</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="bg-white/10 border-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  최고 수익률
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-400">
+                  {allEtfData.length > 0
+                    ? `+${Math.max(...allEtfData.map((etf) => etf.returnRate)).toFixed(1)}%`
+                    : '...'}
+                </div>
+                <p className="text-sm text-white/70">
+                  {allEtfData.length > 0
+                    ? allEtfData.reduce((prev, curr) =>
+                        curr.returnRate ===
+                        Math.max(...allEtfData.map((e) => e.returnRate))
+                          ? curr
+                          : prev
+                      ).name
+                    : ''}
+                </p>
+              </CardContent>
+            </Card>
 
                         {/* 평균 수익률 카드 */}
                         <Card className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
@@ -322,7 +481,7 @@ export default function Home() {
 
                                             return `${averageReturnRate >= 0 ? '+' : ''}${displayAvgReturn}%`;
                                         })()
-                                        : "..."}
+                                        : '...'}
                                 </div>
                                 <p className="text-sm text-gray-700 dark:text-gray-300">전체 ETF 기준</p>
                             </CardContent>
@@ -371,6 +530,35 @@ export default function Home() {
                             ))}
                         </SelectContent>
                     </Select>
+      {/* 검색 및 필터 */}
+      <div className="mb-8 flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <EnhancedSearchDropdown
+            items={allEtfData}
+            onSelect={handleEtfSelect}
+            placeholder="ETF 이름 또는 종목코드 검색"
+            showRecent={true}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Select
+            value={selectedTheme}
+            onValueChange={(val) => setSelectedTheme(val)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="테마 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              {Array.from(new Set(allEtfData.map((etf) => etf.theme))).map(
+                (theme) => (
+                  <SelectItem key={theme} value={theme}>
+                    {themeNameMap[theme] ?? theme}
+                  </SelectItem>
+                )
+              )}
+            </SelectContent>
+          </Select>
 
                     <Select
                         value={sortKey}
@@ -460,6 +648,74 @@ export default function Home() {
                     </CardContent>
                 </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowDownRight className="h-5 w-5 text-red-600" />
+              하락률 상위 ETF
+            </CardTitle>
+            <CardDescription>오늘 가장 많이 하락한 ETF</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topLosers.map((etf) => (
+                <Link href={`/etf/${etf.id}`} key={etf.id}>
+                  <div className="flex justify-between items-center p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <div>
+                      <div className="font-medium">{etf.name}</div>
+                      <div className="text-sm text-slate-500">
+                        {etf.ticker} | {etf.theme}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-red-600 font-bold">
+                        {etf.change}%
+                      </div>
+                      <div className="text-sm">
+                        {etf.price.toLocaleString()}원
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ETF 랭킹 테이블 */}
+      <EtfRankingTable
+        filteredEtfs={filteredEtfs}
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        onPriceUpdate={onPriceUpdate}
+      />
+
+      {/* 추천 섹션 */}
+      <div className="mb-8">
+        <div className="bg-slate-50 rounded-xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold mb-2">나만의 맞춤 ETF 추천</h2>
+            <p className="text-slate-500 max-w-2xl mx-auto">
+              투자 성향과 목표에 맞는 ETF를 추천받아 더 효율적인 투자를
+              시작하세요. 회원가입 후 무료로 이용 가능합니다.
+            </p>
+          </div>
+          <div className="flex justify-center gap-4">
+            <Button size="lg" className="bg-green-600 hover:bg-green-700">
+              <Link href="/recommendations">맞춤 ETF 추천받기</Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-white text-slate-900 border-slate-300 hover:bg-slate-100"
+            >
+              <Link href="/register">무료 회원가입</Link>
+              {/*{filteredEtfs.map((etf) => (*/}
+              {/*    <EtfCard key={etf.id} etf={etf} />*/}
+              {/*))}*/}
+            </Button>
+          </div>
                 <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">

@@ -6,7 +6,7 @@ import { Search, Clock } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import type { ETF } from "@/components/EtfCard"
+import type { ETF } from "@/components/etf-table-body"
 import { useRouter } from "next/navigation"
 
 const RECENT_SEARCHES_KEY = "recent-etf-searches"
