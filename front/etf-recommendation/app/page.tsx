@@ -35,6 +35,8 @@ import { IMessage } from '@stomp/stompjs';
 interface EtfPriceUpdateMessage {
   etfCode: string;
   price: number;
+  dayOverDayRate: number;
+  volume: number;
 }
 
 // 시장 요약 데이터
@@ -229,7 +231,12 @@ export default function Home() {
       setEtfData((prev) =>
         prev.map((etf) =>
           etf.ticker === parsedBody.etfCode
-            ? { ...etf, price: parsedBody.price }
+            ? {
+                ...etf,
+                price: parsedBody.price,
+                change: parsedBody.dayOverDayRate,
+                volume: parsedBody.volume,
+              }
             : etf
         )
       );
