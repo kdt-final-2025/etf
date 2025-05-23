@@ -57,45 +57,5 @@ public class StockDataParser {
                 .build();
     }
 }
-//TODO : ParseFromPipe 가 대체
 
-//    //실시간 데이터 문자열 배열로 들어올 경우 stockpricedata 객체로 변환
-//    //역직렬화 (문자열을 java 객체로)
-//    public StockPriceData parseFromDelimitedFields(String[] field) {
-//        if (field.length < 14) {
-//            throw new IllegalArgumentException("필드 부족");
-//        }
-//        return StockPriceData.builder()
-//                .stockCode(field[0])
-//                .currentPrice(Double.parseDouble(field[2]))
-//                .dayOverDaySign(field[3])
-//                .dayOverDayChange(Integer.parseInt(field[4]))
-//                .dayOverDayRate(Double.parseDouble(field[5]))
-//                .accumulatedVolume(Long.parseLong(field[13]))
-//                .build();
-//    }
-
-//    public StockPriceData handleJsonMessage(String json) {
-//        log.info("[JSON 메시지] {}", json);
-//        try {
-//            JsonNode root = objectMapper.readTree(json);
-//            String trId = root.path("header").path("tr_id").asText();
-//
-//            if ("PINGPONG".equals(trId)) {
-//                log.info("[PINGPONG] {}", root.path("header").path("datetime").asText());
-//            } else if ("H0STCNT0".equals(trId)) {
-//                log.info("[SUBSCRIBE SUCCESS] {}", root.path("header").path("tr_key").asText());
-//            } else {
-//                // 파서에게 파싱 위임
-//                StockPriceData data = this.parseFromJsonString(json);
-//                log.info("[기타 JSON 데이터] {}", data);
-//                log.debug("[STOMP BROADCAST] sending to /topic/stocks/" + data.stockCode());
-//
-//                return data;
-//            }
-//        } catch (Exception e) {
-//            log.error("[JSON 파싱 오류] payload={}", json, e);
-//            throw new RuntimeException(e);
-//        }
-//    }
 
