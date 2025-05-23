@@ -132,11 +132,11 @@ export default function SidebarClient({
 
             <li>
               <Link
-                href="/recommendations"
+                href="/my-etf"
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
               >
                 <Star className="h-5 w-5" />
-                <span>추천받기</span>
+                <span>나만의 ETF 추천</span>
               </Link>
             </li>
 
@@ -157,16 +157,6 @@ export default function SidebarClient({
               >
                 <User className="h-5 w-5" />
                 <span>내 프로필</span>
-              </Link>
-            </li>
-
-            <li>
-              <Link
-                href="/my-etf"
-                className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
-              >
-                <Star className="h-5 w-5" />
-                <span>나만의 ETF 추천</span>
               </Link>
             </li>
           </ul>
