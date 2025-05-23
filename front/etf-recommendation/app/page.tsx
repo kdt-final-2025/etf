@@ -1,23 +1,65 @@
-"use client"
-import {useEffect, useMemo, useState, useCallback} from "react"
-import Link from "next/link"
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
-import {Table, TableBody, TableHead, TableHeader, TableRow} from "@/components/ui/table"
-import {Button} from "@/components/ui/button"
-import {Tabs, TabsContent} from "@/components/ui/tabs"
-import {TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Filter} from "lucide-react"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
-import EtfCard, {type ETF} from "@/components/EtfCard"
-import MarketTickerWidget from "@/components/MarketTickerWidget"
-import {fetchEtfs} from "@/lib/api/etf"
-import EnhancedSearchDropdown from "@/components/enhanced-search-dropdown"
+'use client';
+
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import Link from 'next/link';
+
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+import {
+    Search,
+    TrendingUp,
+    BarChart3,
+    ArrowUpRight,
+    ArrowDownRight,
+    Filter,
+} from 'lucide-react';
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+
+import EtfCard, { type ETF } from '@/components/EtfCard';
+import MarketTickerWidget from '@/components/MarketTickerWidget';
+
+import { fetchAllEtfs, fetchEtfsPage } from '@/lib/api/etf';
+
+import Pagination from '@/components/StockPagination';
+import StocksTable from '@/components/StocksTable';
+
+import EnhancedSearchDropdown from '@/components/enhanced-search-dropdown';
 
 // 시장 요약 데이터
 const marketSummary = {
-    kospi: {value: 2850.12, change: 1.2},
-    kosdaq: {value: 920.45, change: -0.5},
-    nasdaq: {value: 16250.8, change: 0.8},
-    sp500: {value: 5120.35, change: 0.6},
+    kospi: { value: 2850.12, change: 1.2 },
+    kosdaq: { value: 920.45, change: -0.5 },
+    nasdaq: { value: 16250.8, change: 0.8 },
+    sp500: { value: 5120.35, change: 0.6 },
 }
 
 const themeNameMap: Record<string, string> = {
@@ -40,6 +82,8 @@ const themeNameMap: Record<string, string> = {
     EMERGING_MARKETS: "신흥시장",
 }
 
+const ITEMS_PER_PAGE = 20;
+
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState("")
     const [selectedTheme, setSelectedTheme] = useState("all")
@@ -52,14 +96,16 @@ export default function Home() {
     const [loading, setLoading] = useState(false)
     const [hasMore, setHasMore] = useState(true)
 
-    const ITEMS_PER_PAGE = 20
+    // 웹소켓
+    const [websocketPage, setWebsocketPage] = useState(0);
+    const size = 10; // 한 페이지당 10개
 
-    // 전체 데이터 로딩 (한 번만)
+    // 전체 데이터 (allEtfData) 최초 로딩
     useEffect(() => {
         const fetchAllEtfsData = async () => {
             setLoading(true)
             try {
-                const {data, error} = await fetchEtfs({
+                const { data, error } = await fetchAllEtfs({
                     size: 10000,
                     period: "weekly",
                 })
@@ -170,13 +216,13 @@ export default function Home() {
         const map: Record<string, { total: number; count: number }> = {}
 
         allEtfData.forEach((etf) => {
-            if (!map[etf.theme]) map[etf.theme] = {total: 0, count: 0}
+            if (!map[etf.theme]) map[etf.theme] = { total: 0, count: 0 }
             map[etf.theme].total += etf.returnRate
             map[etf.theme].count += 1
         })
 
         return Object.entries(map)
-            .map(([theme, {total, count}]) => ({
+            .map(([theme, { total, count }]) => ({
                 id: theme,
                 name: theme,
                 returnRate: total / count,
@@ -193,10 +239,8 @@ export default function Home() {
 
     return (
         <div className="container mx-auto py-6 px-4">
-
             {/* 히어로 섹션 */}
-            <div
-                className="mb-8 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-8 text-gray-900 dark:from-slate-900 dark:to-slate-800 dark:text-white">
+            <div className="mb-8 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-8 text-gray-900 dark:from-slate-900 dark:to-slate-800 dark:text-white">
                 <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div>
                         <h1 className="text-4xl font-bold mb-4">FIETA</h1>
@@ -215,32 +259,26 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-
                         {/* 최고 수익률 카드 */}
-                        <Card
-                            className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        <Card className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                                    <TrendingUp className="h-5 w-5"/>
+                                    <TrendingUp className="h-5 w-5" />
                                     주간 최고 수익률 ETF
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {allEtfData.length > 0 ? (() => {
-                                    // allEtfData를 복사하여 원본을 변경하지 않고, returnRate 기준으로 정렬
                                     const sortedEtfs = [...allEtfData].sort((a, b) => {
-                                        // 안전하게 유효한 숫자만 비교하도록 합니다.
                                         const valA = typeof a.returnRate === 'number' && !isNaN(a.returnRate) ? a.returnRate : -Infinity;
                                         const valB = typeof b.returnRate === 'number' && !isNaN(b.returnRate) ? b.returnRate : -Infinity;
-                                        return valB - valA; // 내림차순 정렬
+                                        return valB - valA;
                                     });
 
-                                    const topEtf = sortedEtfs[0]; // 가장 높은 수익률을 가진 ETF
-
-                                    // 표시될 수익률 값과 이름 결정
+                                    const topEtf = sortedEtfs[0];
                                     const displayReturnRate = topEtf && typeof topEtf.returnRate === 'number' && !isNaN(topEtf.returnRate)
-                                        ? topEtf.returnRate.toFixed(2) // 소수점 둘째 자리까지 표시
-                                        : "0.00"; // 기본값 설정
+                                        ? topEtf.returnRate.toFixed(2)
+                                        : "0.00";
 
                                     return (
                                         <>
@@ -253,7 +291,6 @@ export default function Home() {
                                         </>
                                     );
                                 })() : (
-                                    // 데이터 로딩 중이거나 없을 때
                                     <>
                                         <div className="text-3xl font-bold text-green-700 dark:text-green-400">...</div>
                                         <p className="text-sm text-gray-700 dark:text-gray-300">데이터 로딩 중</p>
@@ -263,11 +300,10 @@ export default function Home() {
                         </Card>
 
                         {/* 평균 수익률 카드 */}
-                        <Card
-                            className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        <Card className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                                    <BarChart3 className="h-5 w-5"/>
+                                    <BarChart3 className="h-5 w-5" />
                                     주간 평균 수익률
                                 </CardTitle>
                             </CardHeader>
@@ -275,15 +311,11 @@ export default function Home() {
                                 <div className="text-3xl font-bold text-green-700 dark:text-green-400">
                                     {allEtfData.length > 0
                                         ? (() => {
-                                            // 유효한 returnRate만 필터링하여 합산
                                             const validEtfs = allEtfData.filter(etf => typeof etf.returnRate === 'number' && !isNaN(etf.returnRate));
                                             const sumReturnRate = validEtfs.reduce((sum, etf) => sum + etf.returnRate, 0);
                                             const averageReturnRate = validEtfs.length > 0 ? sumReturnRate / validEtfs.length : 0;
-
-                                            // 소수점 둘째 자리까지 표시
                                             const displayAvgReturn = averageReturnRate.toFixed(2);
 
-                                            // 계산된 평균이 0.00%일 경우 부호 없이 표시
                                             if (parseFloat(displayAvgReturn) === 0) {
                                                 return `0.00%`;
                                             }
@@ -296,23 +328,20 @@ export default function Home() {
                             </CardContent>
                         </Card>
 
-
                         {/* 시장 요약 카드 */}
-                        <Card
-                            className="bg-white shadow-md border border-gray-200 col-span-2 dark:bg-gray-800 dark:border-gray-700">
+                        <Card className="bg-white shadow-md border border-gray-200 col-span-2 dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg text-gray-900 dark:text-gray-100">시장 요약</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div>
-                                    <MarketTickerWidget/>
+                                    <MarketTickerWidget />
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
                 </div>
             </div>
-
 
             {/* 검색 및 필터 */}
             <div className="mb-8 flex flex-col md:flex-row gap-4">
@@ -329,10 +358,9 @@ export default function Home() {
                     <Select
                         value={selectedTheme}
                         onValueChange={setSelectedTheme}
-                        className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md"
                     >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="테마 선택"/>
+                        <SelectTrigger className="w-[180px] bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700">
+                            <SelectValue placeholder="테마 선택" />
                         </SelectTrigger>
                         <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <SelectItem value="all">전체</SelectItem>
@@ -347,10 +375,9 @@ export default function Home() {
                     <Select
                         value={sortKey}
                         onValueChange={setSortKey}
-                        className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md"
                     >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="정렬 기준"/>
+                        <SelectTrigger className="w-[180px] bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700">
+                            <SelectValue placeholder="정렬 기준" />
                         </SelectTrigger>
                         <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <SelectItem value="returnRate">수익률 순</SelectItem>
@@ -365,11 +392,10 @@ export default function Home() {
                         size="icon"
                         className="border-gray-300 text-gray-900 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-700"
                     >
-                        <Filter className="h-4 w-4"/>
+                        <Filter className="h-4 w-4" />
                     </Button>
                 </div>
             </div>
-
 
             {/* 인기 테마 */}
             <div className="mb-8">
@@ -377,8 +403,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     {topThemes.map((theme) => (
                         <Link href={`/themes/${theme.id}`} key={theme.id}>
-                            <Card
-                                className="p-4 bg-white dark:bg-gray-800 shadow-sm rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
+                            <Card className="p-4 bg-white dark:bg-gray-800 shadow-sm rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                         {themeNameMap[theme.id] ?? theme.id}
@@ -404,7 +429,7 @@ export default function Home() {
                 <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <ArrowUpRight className="h-5 w-5 text-green-600"/>
+                            <ArrowUpRight className="h-5 w-5 text-green-600" />
                             실시간 상승률 상위 ETF
                         </CardTitle>
                         <CardDescription className="text-gray-500 dark:text-gray-400">
@@ -415,8 +440,7 @@ export default function Home() {
                         <div className="space-y-4">
                             {topGainers.map((etf) => (
                                 <Link href={`/etf/${etf.id}`} key={etf.id}>
-                                    <div
-                                        className="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <div className="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
                                         <div>
                                             <div className="font-medium text-gray-900 dark:text-white">{etf.name}</div>
                                             <div className="text-sm text-slate-500 dark:text-gray-400">
@@ -425,8 +449,8 @@ export default function Home() {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-green-600 font-bold">+{etf.change}%</div>
-                                            <div
-                                                className="text-sm text-gray-600 dark:text-gray-300">{etf.price.toLocaleString()}원
+                                            <div className="text-sm text-gray-600 dark:text-gray-300">
+                                                {etf.price.toLocaleString()}원
                                             </div>
                                         </div>
                                     </div>
@@ -439,7 +463,7 @@ export default function Home() {
                 <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                            <ArrowDownRight className="h-5 w-5 text-red-600"/>
+                            <ArrowDownRight className="h-5 w-5 text-red-600" />
                             실시간 하락률 상위 ETF
                         </CardTitle>
                         <CardDescription className="text-gray-500 dark:text-gray-400">
@@ -450,8 +474,7 @@ export default function Home() {
                         <div className="space-y-4">
                             {topLosers.map((etf) => (
                                 <Link href={`/etf/${etf.id}`} key={etf.id}>
-                                    <div
-                                        className="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <div className="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-slate-50 dark:hover:bg-gray-700 cursor-pointer">
                                         <div>
                                             <div className="font-medium text-gray-900 dark:text-white">{etf.name}</div>
                                             <div className="text-sm text-slate-500 dark:text-gray-400">
@@ -460,8 +483,8 @@ export default function Home() {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-red-600 font-bold">{etf.change}%</div>
-                                            <div
-                                                className="text-sm text-gray-600 dark:text-gray-300">{etf.price.toLocaleString()}원
+                                            <div className="text-sm text-gray-600 dark:text-gray-300">
+                                                {etf.price.toLocaleString()}원
                                             </div>
                                         </div>
                                     </div>
@@ -499,7 +522,7 @@ export default function Home() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <EtfCard etfs={displayedEtfs}/>
+                                        <EtfCard etfs={displayedEtfs} />
                                     </TableBody>
                                 </Table>
                             </CardContent>
@@ -523,7 +546,6 @@ export default function Home() {
                     </TabsContent>
                 </Tabs>
             </div>
-
         </div>
     )
 }
