@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useCallback } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -19,6 +19,7 @@ const marketSummary = {
   nasdaq: { value: 16250.8, change: 0.8 },
   sp500: { value: 5120.35, change: 0.6 },
 }
+
 const themeNameMap: Record<string, string> = {
   AI_DATA: "AI 데이터",
   USA: "미국",
@@ -43,14 +44,20 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTheme, setSelectedTheme] = useState("all")
   const [sortKey, setSortKey] = useState("returnRate")
-  const [etfData, setEtfData] = useState<ETF[]>([])
+
+  // 단일 데이터 소스로 통합
   const [allEtfData, setAllEtfData] = useState<ETF[]>([])
-  const [page, setPage] = useState(1)
+  const [displayedEtfs, setDisplayedEtfs] = useState<ETF[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
 
-  //전체 데이터 (allEtfData) 최초 로딩
+  const ITEMS_PER_PAGE = 20
+
+  // 전체 데이터 로딩 (한 번만)
   useEffect(() => {
     const fetchAllEtfsData = async () => {
+      setLoading(true)
       try {
         const { data, error } = await fetchEtfs({
           size: 10000,
@@ -76,57 +83,87 @@ export default function Home() {
         setAllEtfData(allEtfs)
       } catch (error) {
         console.error("전체 ETF 로딩 실패", error)
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchAllEtfsData()
   }, [])
 
-  //페이지네이션 로딩
-  useEffect(() => {
-    const fetchEtfPageData = async () => {
-      try {
-        const { data, error } = await fetchEtfs({
-          page,
-          size: 20,
-          period: "weekly",
-        })
+  // 필터링된 데이터 계산
+  const filteredAndSortedEtfs = useMemo(() => {
+    let result = [...allEtfData]
 
-        if (error || !data) {
-          console.error("ETF 페이지 로딩 실패", error)
-          return
-        }
-
-        const pageEtfs: ETF[] = data.etfReadResponseList.map((etf: any, index: number) => ({
-          id: etf.etfId,
-          name: etf.etfName,
-          ticker: etf.etfCode,
-          theme: etf.theme,
-          price: 10000 + index * 100,
-          change: Number.parseFloat((Math.random() * 5).toFixed(2)) * (Math.random() > 0.5 ? 1 : -1),
-          volume: Math.floor(Math.random() * 100000),
-          returnRate: etf.returnRate,
-        }))
-
-        setEtfData((prev) => {
-          const ids = new Set(prev.map((etf) => etf.id))
-          return [...prev, ...pageEtfs.filter((etf) => !ids.has(etf.id))]
-        })
-
-        if (pageEtfs.length < 20) setHasMore(false)
-      } catch (error) {
-        console.error("ETF 페이지 로딩 실패", error)
-      }
+    // 테마 필터링
+    if (selectedTheme !== "all") {
+      result = result.filter((e) => e.theme === selectedTheme)
     }
 
-    fetchEtfPageData()
-  }, [page])
+    // 검색 필터링
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter((e) =>
+          e.name.toLowerCase().includes(query) ||
+          e.ticker.toLowerCase().includes(query)
+      )
+    }
 
-  const sortedByChange = allEtfData.filter((etf) => typeof etf.change === "number" && !isNaN(etf.change)).slice()
+    // 정렬
+    result.sort((a, b) => {
+      const valueA = a[sortKey as keyof ETF]
+      const valueB = b[sortKey as keyof ETF]
 
-  const topGainers = sortedByChange.sort((a, b) => b.change - a.change).slice(0, 5)
+      if (typeof valueA === "number" && typeof valueB === "number") {
+        return valueB - valueA
+      }
 
-  const topLosers = sortedByChange.sort((a, b) => a.change - b.change).slice(0, 5)
+      return String(valueB).localeCompare(String(valueA))
+    })
+
+    return result
+  }, [allEtfData, selectedTheme, searchQuery, sortKey])
+
+  // 현재 표시할 데이터 업데이트
+  useEffect(() => {
+    const startIndex = 0
+    const endIndex = currentPage * ITEMS_PER_PAGE
+    const newDisplayedEtfs = filteredAndSortedEtfs.slice(startIndex, endIndex)
+
+    setDisplayedEtfs(newDisplayedEtfs)
+    setHasMore(endIndex < filteredAndSortedEtfs.length)
+  }, [filteredAndSortedEtfs, currentPage])
+
+  // 필터나 검색이 변경될 때 페이지 초기화
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedTheme, searchQuery, sortKey])
+
+  // 더보기 핸들러
+  const handleLoadMore = useCallback(() => {
+    if (hasMore && !loading) {
+      setCurrentPage(prev => prev + 1)
+    }
+  }, [hasMore, loading])
+
+  // 상위/하위 ETF 계산
+  const sortedByChange = useMemo(() => {
+    return allEtfData
+        .filter((etf) => typeof etf.change === "number" && !isNaN(etf.change))
+        .slice()
+  }, [allEtfData])
+
+  const topGainers = useMemo(() => {
+    return sortedByChange
+        .sort((a, b) => b.change - a.change)
+        .slice(0, 5)
+  }, [sortedByChange])
+
+  const topLosers = useMemo(() => {
+    return sortedByChange
+        .sort((a, b) => a.change - b.change)
+        .slice(0, 5)
+  }, [sortedByChange])
 
   // 테마별 데이터 분류 및 평균 수익률 계산
   const topThemes = useMemo(() => {
@@ -149,42 +186,10 @@ export default function Home() {
         .slice(0, 4)
   }, [allEtfData])
 
-  //ETF 랭킹 테이블
-  const filteredEtfs = useMemo(() => {
-    let result = [...etfData]
-
-    if (selectedTheme !== "all") {
-      result = result.filter((e) => e.theme === selectedTheme)
-    }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter((e) => e.name.toLowerCase().includes(query) || e.ticker.toLowerCase().includes(query))
-    }
-
-    return result.sort((a, b) => {
-      const valueA = a[sortKey as keyof ETF]
-      const valueB = b[sortKey as keyof ETF]
-
-      if (typeof valueA === "number" && typeof valueB === "number") {
-        return valueB - valueA
-      }
-
-      return String(valueB).localeCompare(String(valueA))
-    })
-  }, [etfData, selectedTheme, searchQuery, sortKey])
-
-  const handleLoadMore = () => {
-    if (hasMore) {
-      setPage((prev) => prev + 1)
-    }
-  }
-
   // ETF 선택 핸들러
-  const handleEtfSelect = (item: ETF) => {
+  const handleEtfSelect = useCallback((item: ETF) => {
     setSearchQuery(item.name)
-    // 여기서 필요한 경우 다른 상태 업데이트나 라우팅 처리 가능
-  }
+  }, [])
 
   return (
       <div className="container mx-auto py-6 px-4">
@@ -269,7 +274,7 @@ export default function Home() {
             />
           </div>
           <div className="flex gap-2">
-            <Select value={selectedTheme} onValueChange={(val) => setSelectedTheme(val)}>
+            <Select value={selectedTheme} onValueChange={setSelectedTheme}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="테마 선택" />
               </SelectTrigger>
@@ -283,7 +288,7 @@ export default function Home() {
               </SelectContent>
             </Select>
 
-            <Select value={sortKey} onValueChange={(val) => setSortKey(val)}>
+            <Select value={sortKey} onValueChange={setSortKey}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="정렬 기준" />
               </SelectTrigger>
@@ -321,6 +326,7 @@ export default function Home() {
             ))}
           </div>
         </div>
+
         {/* 상승/하락 ETF */}
         <div className="mb-8 grid md:grid-cols-2 gap-6">
           <Card>
@@ -389,6 +395,9 @@ export default function Home() {
           <Tabs defaultValue="all">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">ETF 수익 랭킹</h2>
+              <div className="text-sm text-gray-500">
+                전체 {filteredAndSortedEtfs.length}개 중 {displayedEtfs.length}개 표시
+              </div>
             </div>
 
             <TabsContent value="all">
@@ -408,16 +417,23 @@ export default function Home() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <EtfCard etfs={filteredEtfs} />
+                      <EtfCard etfs={displayedEtfs} />
                     </TableBody>
                   </Table>
                 </CardContent>
 
                 <CardFooter className="flex justify-center py-4">
                   {hasMore && (
-                      <Button variant="outline" onClick={handleLoadMore}>
-                        더 보기
+                      <Button
+                          variant="outline"
+                          onClick={handleLoadMore}
+                          disabled={loading}
+                      >
+                        {loading ? "로딩 중..." : "더 보기"}
                       </Button>
+                  )}
+                  {!hasMore && displayedEtfs.length > 0 && (
+                      <p className="text-sm text-gray-500">모든 데이터를 표시했습니다.</p>
                   )}
                 </CardFooter>
               </Card>
@@ -425,25 +441,7 @@ export default function Home() {
           </Tabs>
         </div>
 
-        {/* 추천 섹션 */}
-        <div className="mb-8">
-          <div className="bg-slate-50 rounded-xl p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">나만의 맞춤 ETF 추천</h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">
-                투자 성향과 목표에 맞는 ETF를 추천받아 더 효율적인 투자를 시작하세요. 회원가입 후 무료로 이용 가능합니다.
-              </p>
-            </div>
-            <div className="flex justify-center gap-4">
-              <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                <Link href="/recommendations">맞춤 ETF 추천받기</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="bg-white text-slate-900 border-slate-300 hover:bg-slate-100">
-                <Link href="/register">무료 회원가입</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+
       </div>
   )
 }
