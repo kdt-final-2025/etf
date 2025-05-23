@@ -11,7 +11,12 @@ import MarketTickerWidget from "@/components/MarketTickerWidget"
 import { fetchEtfs } from "@/lib/api/etf"
 import EnhancedSearchDropdown from "@/components/enhanced-search-dropdown"
 import { EtfRankingTable } from "@/components/etf-ranking-table"
+import { IMessage } from "@stomp/stompjs"
 
+interface EtfPriceUpdateMessage {
+  etfCode: string;
+  price: number;
+}
 
 // 시장 요약 데이터
 const marketSummary = {
@@ -180,6 +185,21 @@ export default function Home() {
       setPage((prev) => prev + 1)
     }
   }
+
+  const onPriceUpdate = (message: IMessage) => {
+    try {
+      const parsedBody: EtfPriceUpdateMessage = JSON.parse(message.body);
+      setEtfData((prev) =>
+        prev.map((etf) =>
+          etf.ticker === parsedBody.etfCode
+            ? { ...etf, price: parsedBody.price }
+            : etf
+        )
+      );
+    } catch (error) {
+      console.error('Failed to parse message body:', error);
+    }
+  };
 
   // ETF 선택 핸들러
   const handleEtfSelect = (item: ETF) => {
@@ -390,6 +410,7 @@ export default function Home() {
           filteredEtfs={filteredEtfs}
           hasMore={hasMore}
           onLoadMore={handleLoadMore}
+          onPriceUpdate={onPriceUpdate}
         />
 
         {/* 추천 섹션 */}

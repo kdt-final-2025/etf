@@ -11,17 +11,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { EtfTableBody, type ETF } from '@/components/etf-table-body';
+import { IMessage } from '@stomp/stompjs';
 
 interface EtfRankingTableProps {
   filteredEtfs: ETF[];
   hasMore: boolean;
   onLoadMore: () => void;
+  onPriceUpdate: (message: IMessage) => void;
 }
 
 export function EtfRankingTable({
   filteredEtfs,
   hasMore,
   onLoadMore,
+  onPriceUpdate,
 }: EtfRankingTableProps) {
   return (
     <div className="mb-8">
@@ -47,7 +50,10 @@ export function EtfRankingTable({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <EtfTableBody etfs={filteredEtfs} />
+                  <EtfTableBody
+                    etfs={filteredEtfs}
+                    onPriceUpdate={onPriceUpdate}
+                  />
                 </TableBody>
               </Table>
             </CardContent>

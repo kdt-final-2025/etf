@@ -3,6 +3,13 @@
 import Link from 'next/link';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { useWebSocket } from '@/lib/websocket/useWebSocket';
+import { useEffect } from 'react';
+import {
+  cleanupEtfPriceMonitoring,
+  setupEtfPriceMonitoring,
+} from '@/lib/api/etf';
+import { IMessage } from '@stomp/stompjs';
 
 export type ETF = {
   id: string;
@@ -17,9 +24,43 @@ export type ETF = {
 
 interface Props {
   etfs: ETF[];
+  onPriceUpdate: (message: IMessage) => void;
 }
 
-export function EtfTableBody({ etfs }: Props) {
+export function EtfTableBody({ etfs, onPriceUpdate }: Props) {
+  const tickerCodes = etfs.map((etf) => etf.ticker);
+  const {
+    connectionStatus,
+    error,
+    subscribe,
+    unsubscribe,
+    send,
+    connect,
+    disconnect,
+  } = useWebSocket('http://localhost:8080/ws');
+
+  useEffect(() => {
+    const etfCodes = etfs.map((etf) => etf.ticker);
+
+    let watchId: string | null = null;
+
+    const startMonitoring = async () => {
+      watchId = await setupEtfPriceMonitoring(
+        etfCodes,
+        subscribe,
+        onPriceUpdate
+      );
+    };
+
+    startMonitoring();
+
+    return () => {
+      if (watchId) {
+        cleanupEtfPriceMonitoring(watchId, etfCodes, unsubscribe);
+      }
+    };
+  }, [etfs]);
+
   return (
     <>
       {etfs.map((etf, index) => (
