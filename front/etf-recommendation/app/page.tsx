@@ -195,7 +195,8 @@ export default function Home() {
         <div className="container mx-auto py-6 px-4">
 
             {/* 히어로 섹션 */}
-            <div className="mb-8 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-8 text-gray-900 dark:from-slate-900 dark:to-slate-800 dark:text-white">
+            <div
+                className="mb-8 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-8 text-gray-900 dark:from-slate-900 dark:to-slate-800 dark:text-white">
                 <div className="grid md:grid-cols-2 gap-8 items-center">
                     <div>
                         <h1 className="text-4xl font-bold mb-4">FIETA</h1>
@@ -214,50 +215,91 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <Card className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+
+                        {/* 최고 수익률 카드 */}
+                        <Card
+                            className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 text-gray-900 dark:text-gray-100">
                                     <TrendingUp className="h-5 w-5"/>
-                                    최고 수익률
+                                    주간 최고 수익률 ETF
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-3xl font-bold text-green-700 dark:text-green-400">
-                                    {allEtfData.length > 0
-                                        ? `+${Math.max(...allEtfData.map((etf) => etf.returnRate)).toFixed(1)}%`
-                                        : "..."}
-                                </div>
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                    {allEtfData.length > 0
-                                        ? allEtfData.reduce(
-                                            (prev, curr) =>
-                                                curr.returnRate === Math.max(...allEtfData.map((e) => e.returnRate))
-                                                    ? curr
-                                                    : prev
-                                        ).name
-                                        : ""}
-                                </p>
+                                {allEtfData.length > 0 ? (() => {
+                                    // allEtfData를 복사하여 원본을 변경하지 않고, returnRate 기준으로 정렬
+                                    const sortedEtfs = [...allEtfData].sort((a, b) => {
+                                        // 안전하게 유효한 숫자만 비교하도록 합니다.
+                                        const valA = typeof a.returnRate === 'number' && !isNaN(a.returnRate) ? a.returnRate : -Infinity;
+                                        const valB = typeof b.returnRate === 'number' && !isNaN(b.returnRate) ? b.returnRate : -Infinity;
+                                        return valB - valA; // 내림차순 정렬
+                                    });
+
+                                    const topEtf = sortedEtfs[0]; // 가장 높은 수익률을 가진 ETF
+
+                                    // 표시될 수익률 값과 이름 결정
+                                    const displayReturnRate = topEtf && typeof topEtf.returnRate === 'number' && !isNaN(topEtf.returnRate)
+                                        ? topEtf.returnRate.toFixed(2) // 소수점 둘째 자리까지 표시
+                                        : "0.00"; // 기본값 설정
+
+                                    return (
+                                        <>
+                                            <div className="text-3xl font-bold text-green-700 dark:text-green-400">
+                                                +{displayReturnRate}%
+                                            </div>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300">
+                                                {topEtf?.name || "데이터 없음"}
+                                            </p>
+                                        </>
+                                    );
+                                })() : (
+                                    // 데이터 로딩 중이거나 없을 때
+                                    <>
+                                        <div className="text-3xl font-bold text-green-700 dark:text-green-400">...</div>
+                                        <p className="text-sm text-gray-700 dark:text-gray-300">데이터 로딩 중</p>
+                                    </>
+                                )}
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                        {/* 평균 수익률 카드 */}
+                        <Card
+                            className="bg-white shadow-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 text-gray-900 dark:text-gray-100">
                                     <BarChart3 className="h-5 w-5"/>
-                                    평균 수익률
+                                    주간 평균 수익률
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-3xl font-bold text-green-700 dark:text-green-400">
                                     {allEtfData.length > 0
-                                        ? `+${(allEtfData.reduce((sum, etf) => sum + etf.returnRate, 0) / allEtfData.length).toFixed(1)}%`
+                                        ? (() => {
+                                            // 유효한 returnRate만 필터링하여 합산
+                                            const validEtfs = allEtfData.filter(etf => typeof etf.returnRate === 'number' && !isNaN(etf.returnRate));
+                                            const sumReturnRate = validEtfs.reduce((sum, etf) => sum + etf.returnRate, 0);
+                                            const averageReturnRate = validEtfs.length > 0 ? sumReturnRate / validEtfs.length : 0;
+
+                                            // 소수점 둘째 자리까지 표시
+                                            const displayAvgReturn = averageReturnRate.toFixed(2);
+
+                                            // 계산된 평균이 0.00%일 경우 부호 없이 표시
+                                            if (parseFloat(displayAvgReturn) === 0) {
+                                                return `0.00%`;
+                                            }
+
+                                            return `${averageReturnRate >= 0 ? '+' : ''}${displayAvgReturn}%`;
+                                        })()
                                         : "..."}
                                 </div>
                                 <p className="text-sm text-gray-700 dark:text-gray-300">전체 ETF 기준</p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-white shadow-md border border-gray-200 col-span-2 dark:bg-gray-800 dark:border-gray-700">
+
+                        {/* 시장 요약 카드 */}
+                        <Card
+                            className="bg-white shadow-md border border-gray-200 col-span-2 dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg text-gray-900 dark:text-gray-100">시장 요약</CardTitle>
                             </CardHeader>
@@ -290,7 +332,7 @@ export default function Home() {
                         className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md"
                     >
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="테마 선택" />
+                            <SelectValue placeholder="테마 선택"/>
                         </SelectTrigger>
                         <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <SelectItem value="all">전체</SelectItem>
@@ -308,7 +350,7 @@ export default function Home() {
                         className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-md"
                     >
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="정렬 기준" />
+                            <SelectValue placeholder="정렬 기준"/>
                         </SelectTrigger>
                         <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             <SelectItem value="returnRate">수익률 순</SelectItem>
@@ -323,7 +365,7 @@ export default function Home() {
                         size="icon"
                         className="border-gray-300 text-gray-900 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-700"
                     >
-                        <Filter className="h-4 w-4" />
+                        <Filter className="h-4 w-4"/>
                     </Button>
                 </div>
             </div>
@@ -343,7 +385,7 @@ export default function Home() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">평균 수익률</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">주간 평균 수익률</p>
                                     <div className="text-xl font-bold text-green-600 dark:text-green-400">
                                         +{theme.returnRate.toFixed(1)}%
                                     </div>
@@ -363,7 +405,7 @@ export default function Home() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                             <ArrowUpRight className="h-5 w-5 text-green-600"/>
-                            상승률 상위 ETF
+                            실시간 상승률 상위 ETF
                         </CardTitle>
                         <CardDescription className="text-gray-500 dark:text-gray-400">
                             오늘 가장 많이 상승한 ETF
@@ -398,7 +440,7 @@ export default function Home() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                             <ArrowDownRight className="h-5 w-5 text-red-600"/>
-                            하락률 상위 ETF
+                            실시간 하락률 상위 ETF
                         </CardTitle>
                         <CardDescription className="text-gray-500 dark:text-gray-400">
                             오늘 가장 많이 하락한 ETF
@@ -453,7 +495,7 @@ export default function Home() {
                                             <TableHead className="text-right">현재가</TableHead>
                                             <TableHead className="text-right">등락률</TableHead>
                                             <TableHead className="text-right">거래량</TableHead>
-                                            <TableHead className="text-right">수익률</TableHead>
+                                            <TableHead className="text-right">수익률(주간)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>

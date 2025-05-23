@@ -35,57 +35,61 @@ function getThemeDisplayName(themeId: string): string {
         MULTI_ASSET: '멀티에셋',
         COMMODITIES: '원자재',
         HIGH_RISK: '고위험',
-        SECTOR: '섹터',
-        DIVIDEND: '배당',
+        SECTOR: '세터',
+        DIVIDEND: '배달',
         ESG: 'ESG',
         GOLD: '금',
-        GOVERNMENT_BOND: '국채',
-        CORPORATE_BOND: '회사채',
-        DEFENSE: '방위산업',
-        SEMICONDUCTOR: '반도체',
+        GOVERNMENT_BOND: '국체',
+        CORPORATE_BOND: '회사체',
+        DEFENSE: '방위사업',
+        SEMICONDUCTOR: '반동체',
         BIO: '바이오',
-        EMERGING_MARKETS: '신흥시장',
+        EMERGING_MARKETS: '신험시장',
     };
     return themeMap[themeId] || themeId;
 }
 
 function EtfTable({ etfs }: { etfs: EtfReturnDto[] }) {
     return (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="w-full min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+            <table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         ETF 이름
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         종목코드
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         수익률 (%)
                     </th>
                 </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {etfs.length === 0 ? (
                     <tr>
-                        <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                             ETF 정보가 없습니다
                         </td>
                     </tr>
                 ) : (
                     etfs.map((etf) => (
-                        <tr key={etf.etfId} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <tr key={etf.etfId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                 <Link href={`/etf/${etf.etfId}`} className="hover:underline">
                                     {etf.etfName}
                                 </Link>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {etf.etfCode}
                             </td>
                             <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
-                                etf.returnRate > 0 ? 'text-red-600' : etf.returnRate < 0 ? 'text-blue-600' : 'text-gray-500'
+                                etf.returnRate > 0
+                                    ? 'text-red-600'
+                                    : etf.returnRate < 0
+                                        ? 'text-blue-600'
+                                        : 'text-gray-500 dark:text-gray-400'
                             }`}>
                                 {etf.returnRate > 0 ? '+' : ''}
                                 {etf.returnRate.toFixed(2)}
@@ -124,9 +128,9 @@ function Pagination({
                 </Button>
             </Link>
             <div className="flex items-center mx-2">
-        <span className="text-sm px-3 py-1 rounded-md bg-gray-100">
-          {currentPage} / {totalPages}
-        </span>
+                <span className="text-sm px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                    {currentPage} / {totalPages}
+                </span>
             </div>
             <Link
                 href={`/themes/${theme}?page=${Math.min(totalPages, currentPage + 1)}&keyword=${encodeURIComponent(keyword)}`}
@@ -167,14 +171,14 @@ export default async function ThemePage({
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold dark:text-white">
                     {getThemeDisplayName(theme)} 테마 ETF
                 </h1>
-                <p className="text-gray-500 mt-2">
+                <p className="text-gray-500 dark:text-gray-400 mt-2">
                     총{' '}
                     <span className="font-medium">
-            {etfData.totalCount.toLocaleString()}
-          </span>
+                        {etfData.totalCount.toLocaleString()}
+                    </span>
                     개의 ETF가 있습니다
                 </p>
             </div>
