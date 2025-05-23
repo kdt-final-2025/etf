@@ -1,5 +1,8 @@
 package EtfRecommendService.etf;
 
+import EtfRecommendService.etf.domain.EtfProjection;
+import EtfRecommendService.etf.domain.Etf;
+import EtfRecommendService.etf.domain.EtfProjection;
 import EtfRecommendService.etf.domain.QEtf;
 import EtfRecommendService.etf.domain.QEtfProjection;
 import EtfRecommendService.etf.dto.EtfReturnDto;
@@ -20,32 +23,39 @@ public class EtfQueryRepository {
     private final QEtfProjection etfProjection = QEtfProjection.etfProjection;
     private final QEtf etf = QEtf.etf;
 
-    public List<EtfReturnDto> findEtfsByPeriod(
+    //페이징 있는 전체 etf 조회. 기본값은 주간 수익률 반환.
+    public List<EtfProjection> findEtfsByPeriod(
             Theme theme,
             String keyword,
-            Pageable pageable,
-            String period
+            Pageable pageable
     ) {
-        NumberExpression<Double> returnRate =
-                "monthly".equalsIgnoreCase(period) ? etfProjection.monthlyReturn : etfProjection.weeklyReturn;
-
         return jpaQueryFactory
-                .select(Projections.constructor(
-                        EtfReturnDto.class,
-                        etfProjection.id,
-                        etfProjection.etfName,
-                        etfProjection.etfCode,
-                        etfProjection.theme,
-                        returnRate
-                ))
-                .from(etfProjection)
-                .where(themeEq(theme), keywordContains(keyword))
+                .selectFrom(etfProjection)
+                .where(
+                        themeEq(theme),
+                        keywordContains(keyword)
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
     }
 
-    public Long fetchTotalCount(Theme theme, String keyword){
+    //페이징 없는 전체 조회용. 주간 수익률 반환.
+    public List<EtfProjection> findEtfsByKeyword(
+            Theme theme,
+            String keyword
+    ) {
+        return jpaQueryFactory
+                .select(etfProjection)
+                .from(etfProjection)
+                .where(
+                        themeEq(theme),
+                        keywordContains(keyword)
+                )
+                .fetch();
+    }
+
+    public Long fetchTotalCount(Theme theme, String keyword) {
         Long count = jpaQueryFactory
                 .select(etfProjection.count())
                 .from(etfProjection)
@@ -71,6 +81,14 @@ public class EtfQueryRepository {
         }
         return etfProjection.etfName.containsIgnoreCase(keyword)
                 .or(etfProjection.etfCode.containsIgnoreCase(keyword));
+    }
+
+    public EtfProjection findTopByThemeOrderByWeeklyReturn(Theme theme) {
+        return jpaQueryFactory.selectFrom(etfProjection)
+                .where(etfProjection.theme.eq(theme))
+                .orderBy(etfProjection.weeklyReturn.desc())
+                .limit(1)
+                .fetchOne();
     }
 }
 

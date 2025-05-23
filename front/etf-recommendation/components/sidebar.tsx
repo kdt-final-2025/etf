@@ -83,8 +83,8 @@ export default function Sidebar() {
         )}
       >
         <div className="p-4 border-b border-slate-700">
-          <h1 className="text-xl font-bold">폭삭 벌었수다</h1>
-          <p className="text-sm text-slate-400">ETF 추천 서비스</p>
+          <h1 className="text-xl font-bold">FIETA</h1>
+          <p className="text-sm text-slate-400">AI ETF 추천 서비스</p>
         </div>
 
         <nav className="flex-1 p-4">
@@ -158,7 +158,16 @@ export default function Sidebar() {
                 className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
               >
                 <User className="h-5 w-5" />
-                <span>내 프로필</span>
+                <span>내 프로필aaaa</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link href="/my-etf"
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-800"
+              >
+                <Star className="h-5 w-5" />
+                <span>나만의 ETF 추천</span>
               </Link>
             </li>
           </ul>

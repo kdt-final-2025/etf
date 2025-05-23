@@ -33,10 +33,20 @@ public class EtfRestController {
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(defaultValue = "weekly") String period) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        EtfResponse etfResponse = etfService.readAll(pageable, theme, keyword, period);
+        EtfResponse etfResponse = etfService.readAll(theme, keyword, pageable, period);
         return ResponseEntity.status(HttpStatus.OK).body(etfResponse);
     }
 
+    //페이징 없는 전체 조회용. 주간 수익률 반환.
+    @GetMapping("/etfs/search")
+    public ResponseEntity<EtfAllResponse> readAll(
+            @RequestParam(required = false) Theme theme,
+            @RequestParam(defaultValue = "") String keyword) {
+
+        EtfAllResponse etfAllResponse = etfService.searchAll(theme, keyword);
+
+        return ResponseEntity.status(HttpStatus.OK).body(etfAllResponse);
+    }
 
     @GetMapping("/etfs/{etfId}")
     public ResponseEntity<EtfDetailResponse> findById(@PathVariable Long etfId) {
@@ -63,11 +73,15 @@ public class EtfRestController {
 
     @Secured("ROLE_USER")
     @DeleteMapping("/etfs/{etfId}/subscription")
-    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId){
+    public ResponseEntity<SubscribeDeleteResponse> delete(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long etfId) {
         SubscribeDeleteResponse subscribeDeleteResponse = etfService.unsubscribe(userDetails.getUsername(), etfId);
         return ResponseEntity.status(HttpStatus.OK).body(subscribeDeleteResponse);
     }
 
+    @GetMapping("/etfs/recommend")
+    public ResponseEntity<EtfReadResponse> readTopByThemeOrderByWeeklyReturn(@RequestParam String theme){
+        return ResponseEntity.ok(etfService.findTopByThemeOrderByWeeklyReturn(Theme.fromDisplayName(theme)));
+    }
     //웹소켓
     //어떤 종목코드를 구독할지
     @GetMapping("/stocks")
